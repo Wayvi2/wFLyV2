@@ -1,5 +1,7 @@
 package com.wayvi.wfly.wflyV2;
 
+import com.wayvi.wfly.wflyV2.commands.ReloadCommand;
+import fr.traqueur.commands.api.CommandManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import util.ConfigUtil;
 
@@ -13,11 +15,22 @@ public final class WFlyV2 extends JavaPlugin {
         config.getConfig().set("version", config.getVersion());
         config.save();
 
+        //Commands
+
+        CommandManager commandManager = new CommandManager(this);
+        commandManager.registerCommands(new ReloadCommand(this, "reload"));
+    }
+}
 
 
 
 
-        getLogger().info("Plugin enabled");
+
+
+
+
+
+getLogger().info("Plugin enabled");
 
 
     }

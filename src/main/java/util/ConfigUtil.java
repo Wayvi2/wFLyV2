@@ -33,6 +33,10 @@ public class ConfigUtil {
         }
     }
 
+   public void reload() {
+        this.config = YamlConfiguration.loadConfiguration(this.file);
+    }
+
 
     public File getFile(){
         return this.file;

@@ -11,6 +11,7 @@ public class ConfigUtil {
 
     private File file;
     private FileConfiguration config;
+    private String version = "1.0";
 
     public ConfigUtil(Plugin plugin, String path){
         this(plugin.getDataFolder().getAbsolutePath() + "/" + path);
@@ -39,5 +40,9 @@ public class ConfigUtil {
 
     public FileConfiguration getConfig(){
         return this.config;
+    }
+
+    public String getVersion(){
+        return this.version;
     }
 }
