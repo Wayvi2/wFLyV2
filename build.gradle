@@ -60,3 +60,7 @@ shadowJar {
     relocate 'fr.traqueur.commands', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.commands"
 }
 
+
+build{
+    dependsOn(shadowJar)
+}

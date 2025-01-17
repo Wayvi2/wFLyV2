@@ -18,9 +18,11 @@ public final class WFlyV2 extends JavaPlugin {
         //Commands
 
         CommandManager commandManager = new CommandManager(this);
-        commandManager.registerCommands(new ReloadCommand(this, "reload"));
+        commandManager.registerCommand(new ReloadCommand(this, "reload"));
+
+
+        getLogger().info("Plugin enabled");
     }
-}
 
 
 
@@ -30,10 +32,8 @@ public final class WFlyV2 extends JavaPlugin {
 
 
 
-getLogger().info("Plugin enabled");
 
 
-    }
 
     @Override
     public void onDisable() {

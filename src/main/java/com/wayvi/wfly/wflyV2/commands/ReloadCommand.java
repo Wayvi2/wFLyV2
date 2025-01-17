@@ -12,14 +12,17 @@ public class ReloadCommand extends SimpleCommand {
 
 
     public ReloadCommand(JavaPlugin plugin, String name) {
-        super(plugin, name);
+        super(plugin, "wfly");
         setDescription("Reload file of the plugin.");
         setUsage("/wfly reload");
+        addArgs("reload:string");
     }
 
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
 
+
+        configUtil.save();
         configUtil.reload();
         commandSender.sendMessage("Plugin has been reloaded!");
 

@@ -60,7 +60,3 @@ shadowJar {
     relocate 'fr.traqueur.commands', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.commands"
 }
 
-shadowJar {
-    archiveFileName = rootProject.name + "-" + rootProject.version + ".jar"
-    destinationDirectory = rootProject.targetFolder
-}
