@@ -11,12 +11,12 @@ public final class WFlyV2 extends JavaPlugin {
     public void onEnable() {
 
         // CONFIG
-        ConfigUtil config = new ConfigUtil(this,"config.yml", "config.yml");
+        ConfigUtil config = new ConfigUtil(this,"config.yml");
         config.getConfig().set("version", config.getVersion());
-        config.save();
+        config.reload();
 
-        ConfigUtil message = new ConfigUtil(this,"message.yml", "message.yml");
-        message.save();
+        ConfigUtil message = new ConfigUtil(this,"message.yml");
+        message.reload();
 
         //Commands
 

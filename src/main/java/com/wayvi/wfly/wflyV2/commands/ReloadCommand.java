@@ -3,11 +3,8 @@ package com.wayvi.wfly.wflyV2.commands;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.impl.SimpleCommand;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import util.ConfigUtil;
-
-import java.util.Objects;
+import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 
 public class ReloadCommand extends SimpleCommand {
 

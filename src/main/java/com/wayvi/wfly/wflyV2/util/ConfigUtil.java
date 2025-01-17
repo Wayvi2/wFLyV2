@@ -1,4 +1,4 @@
-package util;
+package com.wayvi.wfly.wflyV2.util;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
