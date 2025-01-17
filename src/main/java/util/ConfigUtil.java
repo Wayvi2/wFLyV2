@@ -12,9 +12,13 @@ public class ConfigUtil {
     private FileConfiguration config;
     private String version = "1.0";
 
-    public ConfigUtil(Plugin plugin, String path){
+    public ConfigUtil(Plugin plugin, String path) {
         this(plugin.getDataFolder().getAbsolutePath() + "/" + path);
 
+        if (!this.file.exists()) {
+            plugin.saveResource(path, false);
+        }
+        this.config = YamlConfiguration.loadConfiguration(this.file);
     }
 
     public ConfigUtil(String path) {
@@ -35,6 +39,11 @@ public class ConfigUtil {
         this.config = YamlConfiguration.loadConfiguration(this.file);
     }
 
+    public void saveDefaultConfig(Plugin plugin) {
+        if (!this.file.exists()) {
+            plugin.saveResource(this.file.getName(), false);
+        }
+    }
 
     public File getFile(){
         return this.file;

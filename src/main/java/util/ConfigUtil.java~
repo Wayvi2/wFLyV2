@@ -5,7 +5,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
-import java.io.ObjectInputFilter;
 
 public class ConfigUtil {
 
@@ -13,9 +12,13 @@ public class ConfigUtil {
     private FileConfiguration config;
     private String version = "1.0";
 
-    public ConfigUtil(Plugin plugin, String path){
+    public ConfigUtil(Plugin plugin, String path) {
         this(plugin.getDataFolder().getAbsolutePath() + "/" + path);
 
+        if (!this.file.exists()) {
+            plugin.saveResource(path, false);
+        }
+        this.config = YamlConfiguration.loadConfiguration(this.file);
     }
 
     public ConfigUtil(String path) {
@@ -24,19 +27,35 @@ public class ConfigUtil {
     }
 
 
-    public boolean save() {
+    public void save() {
         try {
             this.config.save(this.file);
-            return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
         }
     }
 
    public void reload() {
         this.config = YamlConfiguration.loadConfiguration(this.file);
     }
+
+    public void saveDefaultConfig(Plugin plugin) {
+        if (!this.file.exists()) {
+            plugin.saveResource(this.file.getName(), false);
+        }
+    }
+
+    private String getString(String pathFile, String fileName) {
+        File configFile = new File(this.file.getParent(), fileName); // Assuming pathFile is relative to the current config file
+        FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+
+        return config.getString(pathFile, ""); // Providing a default empty string if the path does not exist
+    }
+
+
+
+
+
 
 
     public File getFile(){

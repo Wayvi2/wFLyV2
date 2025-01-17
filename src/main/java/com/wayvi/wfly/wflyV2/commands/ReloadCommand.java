@@ -3,12 +3,16 @@ package com.wayvi.wfly.wflyV2.commands;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.impl.SimpleCommand;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import util.ConfigUtil;
+
+import java.util.Objects;
 
 public class ReloadCommand extends SimpleCommand {
 
     ConfigUtil configUtil;
+
 
     public ReloadCommand(JavaPlugin plugin, String name, ConfigUtil configUtil) {
         super(plugin, "wfly");
@@ -22,9 +26,8 @@ public class ReloadCommand extends SimpleCommand {
     public void execute(CommandSender commandSender, Arguments arguments) {
 
 
-        configUtil.save();
         configUtil.reload();
-        commandSender.sendMessage("Plugin has been reloaded!");
+        commandSender.sendMessage("Plugin successfully reloaded!");
 
     }
 }

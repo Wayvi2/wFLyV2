@@ -13,7 +13,10 @@ public final class WFlyV2 extends JavaPlugin {
         // CONFIG
         ConfigUtil config = new ConfigUtil(this,"config.yml");
         config.getConfig().set("version", config.getVersion());
-        config.save();
+        config.reload();
+
+        ConfigUtil message = new ConfigUtil(this,"message.yml");
+        message.reload();
 
         //Commands
 
