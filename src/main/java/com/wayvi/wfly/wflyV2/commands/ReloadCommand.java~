@@ -15,9 +15,10 @@ public class ReloadCommand extends SimpleCommand {
 
 
     public ReloadCommand(JavaPlugin plugin, String name, ConfigUtil configUtil) {
-        super(plugin, "wfly reload");
+        super(plugin, "wfly");
         setDescription("Reload file of the plugin.");
         setUsage("/wfly reload");
+        addArgs("reload:string");
         this.configUtil = configUtil;
     }
 
