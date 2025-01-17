@@ -1,0 +1,4 @@
+name: wFlyV2
+version: '1.0-SNAPSHOT'
+main: com.wayvi.wfly.wflyV2.WFlyV2
+api-version: '1.21'
