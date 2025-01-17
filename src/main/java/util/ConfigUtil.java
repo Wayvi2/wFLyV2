@@ -5,7 +5,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
-import java.io.ObjectInputFilter;
 
 public class ConfigUtil {
 
@@ -15,6 +14,7 @@ public class ConfigUtil {
 
     public ConfigUtil(Plugin plugin, String path){
         this(plugin.getDataFolder().getAbsolutePath() + "/" + path);
+
     }
 
     public ConfigUtil(String path) {
@@ -23,13 +23,11 @@ public class ConfigUtil {
     }
 
 
-    public boolean save() {
+    public void save() {
         try {
             this.config.save(this.file);
-            return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
         }
     }
 

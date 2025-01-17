@@ -18,7 +18,7 @@ public final class WFlyV2 extends JavaPlugin {
         //Commands
 
         CommandManager commandManager = new CommandManager(this);
-        commandManager.registerCommand(new ReloadCommand(this, "reload"));
+        commandManager.registerCommand(new ReloadCommand(this, "reload", config));
 
 
         getLogger().info("Plugin enabled");

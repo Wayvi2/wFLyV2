@@ -15,6 +15,7 @@ public class ConfigUtil {
 
     public ConfigUtil(Plugin plugin, String path){
         this(plugin.getDataFolder().getAbsolutePath() + "/" + path);
+
     }
 
     public ConfigUtil(String path) {
@@ -31,6 +32,10 @@ public class ConfigUtil {
             e.printStackTrace();
             return false;
         }
+    }
+
+   public void reload() {
+        this.config = YamlConfiguration.loadConfiguration(this.file);
     }
 
 
