@@ -32,7 +32,7 @@ public class ReloadCommand extends Command<JavaPlugin>  {
     public void execute(CommandSender commandSender, Arguments arguments) {
 
         configUtil.reloadCustomConfig();
-        String message = configUtil.getCustomConfig().getString("message.reload");
+        String message = configUtil.getCustomMessage().getString("message.reload");
         assert message != null;
         plugin.getLogger().info(message);
         commandSender.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(message));

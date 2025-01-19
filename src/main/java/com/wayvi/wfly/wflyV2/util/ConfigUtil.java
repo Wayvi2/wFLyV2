@@ -13,9 +13,12 @@ public class ConfigUtil {
 
     //message.yml
     private File messageFile;
+    private FileConfiguration messageConfig;
+
 
     //config.yml
     private File configFile;
+    private FileConfiguration configConfig;
 
     private FileConfiguration customConfig;
     private String version = "1.0";
@@ -26,9 +29,6 @@ public class ConfigUtil {
         createCustomConfig();
     }
 
-    public FileConfiguration getCustomConfig() {
-        return this.customConfig;
-    }
 
 
     public void createCustomConfig() {
@@ -46,10 +46,11 @@ public class ConfigUtil {
             plugin.saveResource("config.yml", false);
         }
 
-        customConfig = new YamlConfiguration();
+        messageConfig = new YamlConfiguration();
+        configConfig = new YamlConfiguration();
         try {
-            customConfig.load(messageFile);
-            customConfig.load(configFile);
+            messageConfig.load(messageFile);
+            configConfig.load(configFile);
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
@@ -57,8 +58,8 @@ public class ConfigUtil {
 
     public void saveCustomConfig() {
         try {
-            customConfig.save(messageFile);
-            customConfig.save(configFile);
+            messageConfig.save(messageFile);
+            configConfig.save(configFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -66,8 +67,8 @@ public class ConfigUtil {
 
     public void reloadCustomConfig() {
         try {
-            customConfig.load(messageFile);
-            customConfig.load(configFile);
+            messageConfig.load(messageFile);
+            configConfig.load(configFile);
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
@@ -75,5 +76,13 @@ public class ConfigUtil {
 
     public String getVersion() {
         return version;
+    }
+
+    public FileConfiguration getCustomConfig() {
+        return this.configConfig;
+    }
+
+    public FileConfiguration getCustomMessage() {
+        return this.messageConfig;
     }
 }

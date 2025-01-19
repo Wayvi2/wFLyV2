@@ -52,8 +52,8 @@ public class FlyManager {
     public void updateFlyStatusInDB(Player player, int fly) {
         service.execute(() -> {
             this.requestHelper.upsert("fly", table -> {
-                table.uuid("player_id", player.getUniqueId());
-                table.integer("is_flying");
+                table.uuid("uniqueId", player.getUniqueId());
+                table.bigInt("isinFly", fly);
             });
         });
     }

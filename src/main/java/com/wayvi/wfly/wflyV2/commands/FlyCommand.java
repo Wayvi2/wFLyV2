@@ -31,8 +31,8 @@ public class FlyCommand extends Command<JavaPlugin> {
     public void execute(CommandSender commandSender, Arguments arguments) {
 
         //MESSAGE
-        String messageActivateFly = configUtil.getCustomConfig().getString("message.fly-activated");
-        String messageDisabledFly = configUtil.getCustomConfig().getString("message.fly-deactivated");
+        String messageActivateFly = configUtil.getCustomMessage().getString("message.fly-activated");
+        String messageDisabledFly = configUtil.getCustomMessage().getString("message.fly-deactivated");
 
         if (flyManager.isFlying((Player) commandSender)) {
             flyManager.manageFly((Player) commandSender, false);
