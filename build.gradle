@@ -23,6 +23,7 @@ repositories {
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.21.3-R0.1-SNAPSHOT")
     implementation 'com.github.Traqueur-dev:CommandsAPI:2.0.0'
+    implementation "net.kyori:adventure-api:4.18.0"
 }
 
 
@@ -58,6 +59,7 @@ shadowJar {
     dependsOn(jar)
 
     relocate 'fr.traqueur.commands', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.commands"
+    relocate 'net.kyori.adventure', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.adventure"
 }
 
 

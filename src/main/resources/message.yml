@@ -1,2 +1,2 @@
 message:
-  reload: "Plugin has been reloaded!"
+  reload: "<red>Plugin has been reloaded!"
