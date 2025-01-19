@@ -10,7 +10,13 @@ import java.io.IOException;
 
 public class ConfigUtil {
 
-    private File customConfigFile;
+
+    //message.yml
+    private File messageFile;
+
+    //config.yml
+    private File configFile;
+
     private FileConfiguration customConfig;
     private String version = "1.0";
     Plugin plugin;
@@ -26,15 +32,24 @@ public class ConfigUtil {
 
 
     public void createCustomConfig() {
-        customConfigFile = new File(plugin.getDataFolder(), "message.yml");
-        if (!customConfigFile.exists()) {
-            customConfigFile.getParentFile().mkdirs();
+
+        //message.yml
+        messageFile = new File(plugin.getDataFolder(), "message.yml");
+        if (!messageFile.exists()) {
+            messageFile.getParentFile().mkdirs();
             plugin.saveResource("message.yml", false);
+        }
+        //config.yml
+        configFile = new File(plugin.getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            configFile.getParentFile().mkdirs();
+            plugin.saveResource("config.yml", false);
         }
 
         customConfig = new YamlConfiguration();
         try {
-            customConfig.load(customConfigFile);
+            customConfig.load(messageFile);
+            customConfig.load(configFile);
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
@@ -42,7 +57,8 @@ public class ConfigUtil {
 
     public void saveCustomConfig() {
         try {
-            customConfig.save(customConfigFile);
+            customConfig.save(messageFile);
+            customConfig.save(configFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -50,7 +66,8 @@ public class ConfigUtil {
 
     public void reloadCustomConfig() {
         try {
-            customConfig.load(customConfigFile);
+            customConfig.load(messageFile);
+            customConfig.load(configFile);
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }

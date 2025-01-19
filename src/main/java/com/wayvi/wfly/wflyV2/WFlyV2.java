@@ -1,7 +1,6 @@
 package com.wayvi.wfly.wflyV2;
 
 import com.wayvi.wfly.wflyV2.commands.ReloadCommand;
-import com.wayvi.wfly.wflyV2.listeners.ChatListener;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import fr.traqueur.commands.api.CommandManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,7 +24,7 @@ public final class WFlyV2 extends JavaPlugin {
 
 
         //EVENTS
-        getServer().getPluginManager().registerEvents(new ChatListener(), this);
+
 
         getLogger().info("Plugin enabled");
     }
