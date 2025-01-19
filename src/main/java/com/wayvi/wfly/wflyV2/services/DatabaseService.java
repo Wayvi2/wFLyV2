@@ -34,7 +34,7 @@ public class DatabaseService {
             }
 
             DatabaseConfiguration configuration = DatabaseConfiguration.sqlite(true);
-            this.connection = new SqliteConnection(configuration, databaseFile);
+            this.connection = new SqliteConnection(configuration, plugin.getDataFolder());
 
 
         } catch (Exception e) {
