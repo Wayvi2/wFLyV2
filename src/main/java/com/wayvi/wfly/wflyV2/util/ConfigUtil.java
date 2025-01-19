@@ -24,9 +24,6 @@ public class ConfigUtil {
         return this.customConfig;
     }
 
-    public String getVersion() {
-        return version;
-    }
 
     public void createCustomConfig() {
         customConfigFile = new File(plugin.getDataFolder(), "message.yml");
@@ -57,5 +54,9 @@ public class ConfigUtil {
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
+    }
+
+    public String getVersion() {
+        return version;
     }
 }
