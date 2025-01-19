@@ -3,7 +3,6 @@ package com.wayvi.wfly.wflyV2.managers;
 import com.wayvi.wfly.wflyV2.services.DatabaseService;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import fr.maxlego08.sarah.RequestHelper;
-import fr.maxlego08.sarah.logger.JULogger;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -32,26 +31,27 @@ public class FlyManager {
     }
 
     public void manageFly(Player player, boolean fly) {
-        if (fly) {
+
+        if(fly){
             updateFlyStatusInDB(player, 1);
-        } else {
+        }else{
             updateFlyStatusInDB(player, 0);
         }
+
         player.setAllowFlight(fly);
         player.setFlying(fly);
     }
 
-    public boolean isFlying(Player player) {
-        return player.isFlying();
+    public List<AccessPlayerDTO> getIsInFlyBeforeDeconnect(Player player) throws SQLException {
+        return this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {
+            table.where("uniqueId", player.getUniqueId());
+        });
     }
 
-    public List<AccessPlayerDTO> getIsInFlyBeforeDeconnect(Player player) throws SQLException {
-        return this.requestHelper.select("isinFly", AccessPlayerDTO.class, table -> table.where("uniqueId", player.getUniqueId()));
-    }
 
     public void updateFlyStatusInDB(Player player, int fly) {
         service.execute(() -> {
-            this.requestHelper.upsert("fly", table -> {
+            this.requestHelper.insert("fly", table -> {
                 table.uuid("uniqueId", player.getUniqueId());
                 table.bigInt("isinFly", fly);
             });

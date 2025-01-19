@@ -32,7 +32,6 @@ public final class WFlyV2 extends JavaPlugin {
         //INIT RequestHelper
         RequestHelper requestHelper = new RequestHelper(connection, this.getLogger()::info);
 
-
         //INIT FlyManager
         FlyManager flyManager = new FlyManager(this, databaseService, requestHelper);
 
