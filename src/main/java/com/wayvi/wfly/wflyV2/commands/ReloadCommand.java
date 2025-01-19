@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyV2.commands;
 
 
+import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
@@ -21,6 +22,7 @@ public class ReloadCommand extends Command<JavaPlugin>  {
         super(plugin, "wfly.reload");
         setDescription("Reload file of the plugin.");
         setUsage("/wfly reload");
+        setPermission(Permissions.RELOAD);
         this.plugin = plugin;
         this.configUtil = configUtil;
         this.miniMessageSupportUtil = miniMessageSupportUtil;
