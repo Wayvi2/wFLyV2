@@ -1,2 +1,4 @@
 message:
   reload: "<red>Plugin has been reloaded!"
+  fly-activated: "<green>You have been set to fly! Use /fly to disable fly."
+  fly-deactivated: "<red>You have been set to walk! Use /fly to enable fly."
