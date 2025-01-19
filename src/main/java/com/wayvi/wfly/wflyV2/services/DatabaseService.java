@@ -15,6 +15,7 @@ public class DatabaseService {
     private DatabaseConnection connection;
     private Plugin plugin;
 
+
     public DatabaseService(Plugin plugin) {
         this.plugin = plugin;
     }
@@ -25,7 +26,7 @@ public class DatabaseService {
                 plugin.getDataFolder().mkdirs();
             }
 
-            databaseFile = new File(plugin.getDataFolder(), "db.db");
+            databaseFile = new File(plugin.getDataFolder(), "database.db");
 
             if (!databaseFile.exists()) {
                 if (databaseFile.createNewFile()) {
@@ -43,6 +44,10 @@ public class DatabaseService {
 
         MigrationManager.registerMigration(new CreateUserTableMigration());
         MigrationManager.execute(this.connection, plugin.getLogger()::info);
+    }
+
+    public DatabaseConnection getConnection() {
+        return connection;
     }
 }
 
