@@ -1,59 +1,61 @@
 package com.wayvi.wfly.wflyV2.util;
 
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
+import java.io.IOException;
 
 public class ConfigUtil {
 
-    private File file;
-    private FileConfiguration config;
+    private File customConfigFile;
+    private FileConfiguration customConfig;
     private String version = "1.0";
+    Plugin plugin;
 
-    public ConfigUtil(Plugin plugin, String path) {
-        this(plugin.getDataFolder().getAbsolutePath() + "/" + path);
+    public ConfigUtil(Plugin plugin) {
+        this.plugin = plugin;
+        createCustomConfig();
+    }
 
-        if (!this.file.exists()) {
-            plugin.saveResource(path, false);
+    public FileConfiguration getCustomConfig() {
+        return this.customConfig;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void createCustomConfig() {
+        customConfigFile = new File(plugin.getDataFolder(), "message.yml");
+        if (!customConfigFile.exists()) {
+            customConfigFile.getParentFile().mkdirs();
+            plugin.saveResource("message.yml", false);
         }
-        this.config = YamlConfiguration.loadConfiguration(this.file);
-    }
 
-    public ConfigUtil(String path) {
-        this.file = new File(path);
-        this.config = YamlConfiguration.loadConfiguration(this.file);
-    }
-
-
-    public void save() {
+        customConfig = new YamlConfiguration();
         try {
-            this.config.save(this.file);
-        } catch (Exception e) {
+            customConfig.load(customConfigFile);
+        } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
     }
 
-   public void reload() {
-        this.config = YamlConfiguration.loadConfiguration(this.file);
-    }
-
-    public void saveDefaultConfig(Plugin plugin) {
-        if (!this.file.exists()) {
-            plugin.saveResource(this.file.getName(), false);
+    public void saveCustomConfig() {
+        try {
+            customConfig.save(customConfigFile);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    public File getFile(){
-        return this.file;
-    }
-
-    public FileConfiguration getConfig(){
-        return this.config;
-    }
-
-    public String getVersion(){
-        return this.version;
+    public void reloadCustomConfig() {
+        try {
+            customConfig.load(customConfigFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -10,18 +10,11 @@ public final class WFlyV2 extends JavaPlugin {
     @Override
     public void onEnable() {
 
-        // CONFIG
-        ConfigUtil config = new ConfigUtil(this,"config.yml");
-        config.getConfig().set("version", config.getVersion());
-        config.reload();
-
-        ConfigUtil message = new ConfigUtil(this,"message.yml");
-        message.reload();
-
-        //Commands
+        ConfigUtil configUtil = new ConfigUtil(this);
+        configUtil.createCustomConfig();
 
         CommandManager commandManager = new CommandManager(this);
-        commandManager.registerCommand(new ReloadCommand(this, config));
+        commandManager.registerCommand(new ReloadCommand(this, configUtil));
 
 
         getLogger().info("Plugin enabled");
