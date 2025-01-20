@@ -38,47 +38,16 @@ public class FlyCommand extends Command<JavaPlugin> {
 
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
-
         Player player = (Player) commandSender;
-        // MESSAGE
-        String messageActivateFly = configUtil.getCustomMessage().getString("message.fly-activated");
-        String messageDisabledFly = configUtil.getCustomMessage().getString("message.fly-deactivated");
-
-        boolean isInFly = false;
         try {
-
-            List<AccessPlayerDTO> playersInFly = flyManager.getIsInFlyBeforeDeconnect(player);
-
-            for (AccessPlayerDTO dto : playersInFly) {
-                isInFly = dto.isInFly();
+            AccessPlayerDTO playersInFly = flyManager.getIsInFlyBeforeDeconnect(player);
+            String messageFly = playersInFly.isinFly() ? configUtil.getCustomMessage().getString("message.fly-deactivated") : configUtil.getCustomMessage().getString("message.fly-activated");
+                flyManager.manageFly(player, !playersInFly.isinFly());
+                player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageFly));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
 
-            if (isInFly) {
-                flyManager.manageFly(player, false);
-                flyManager.upsertFlyStatus(player, false);
 
-
-
-                player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageDisabledFly));
-            } else {
-                flyManager.manageFly(player, true);
-                flyManager.upsertFlyStatus(player, true);
-                player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageActivateFly));
-            }
-
-            boolean finalIsInFly = isInFly;
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    System.out.println(finalIsInFly);
-                }
-            }.runTaskLater(plugin, 20L); // Exécution après 1 seconde (20 ticks)
-
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            player.sendMessage("Une erreur s'est produite lors de la gestion du vol.");
-        }
-        player.sendMessage(String.valueOf(isInFly));
     }
 }
