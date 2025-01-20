@@ -2,6 +2,7 @@ package com.wayvi.wfly.wflyV2;
 
 import com.wayvi.wfly.wflyV2.commands.FlyCommand;
 import com.wayvi.wfly.wflyV2.commands.ReloadCommand;
+import com.wayvi.wfly.wflyV2.listeners.PlayerJoinListener;
 import com.wayvi.wfly.wflyV2.managers.FlyManager;
 import com.wayvi.wfly.wflyV2.services.DatabaseService;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
@@ -46,6 +47,9 @@ public final class WFlyV2 extends JavaPlugin {
         CommandManager commandManager = new CommandManager(this);
         commandManager.registerCommand(new ReloadCommand(this, configUtil, miniMessageSupportUtil));
         commandManager.registerCommand(new FlyCommand(this, flyManager, miniMessageSupportUtil, configUtil));
+
+        //LISTENER
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(flyManager), this);
 
         getLogger().info("Plugin enabled");
     }

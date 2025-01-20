@@ -63,11 +63,13 @@ processResources {
     }
 }
 
+
+
 shadowJar {
     dependsOn(jar)
 
     relocate 'fr.traqueur.commands', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.commands"
-    relocate 'sarah', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.sarah"
+    relocate 'fr.maxlego08.sarah', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.sarah"
     //relocate 'net.kyori.adventure', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.adventure"
     //relocate 'net.kyori.adventure.text.minimessage', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.adventure.text.minimessage"
 }
