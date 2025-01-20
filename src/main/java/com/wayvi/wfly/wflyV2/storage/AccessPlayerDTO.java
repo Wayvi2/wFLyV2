@@ -7,9 +7,9 @@ import java.util.UUID;
 
 public record AccessPlayerDTO(
         @Column(value ="uniqueId", primary = true) UUID uniqueId,
-        @Column(value ="isinFly") int isinFly) {
+        @Column(value ="isinFly") boolean isinFly) {
 
-    public int isInFly() {
+    public boolean isInFly() {
         return isinFly;
     }
 

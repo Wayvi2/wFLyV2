@@ -44,7 +44,7 @@ public class FlyCommand extends Command<JavaPlugin> {
         String messageActivateFly = configUtil.getCustomMessage().getString("message.fly-activated");
         String messageDisabledFly = configUtil.getCustomMessage().getString("message.fly-deactivated");
 
-        int isInFly = 0;
+        boolean isInFly = false;
         try {
 
             List<AccessPlayerDTO> playersInFly = flyManager.getIsInFlyBeforeDeconnect(player);
@@ -53,17 +53,26 @@ public class FlyCommand extends Command<JavaPlugin> {
                 isInFly = dto.isInFly();
             }
 
-
-            if (isInFly == 1) {
+            if (isInFly) {
                 flyManager.manageFly(player, false);
-                flyManager.updateFlyStatusInDB(player, 0);
+                flyManager.upsertFlyStatus(player, false);
+
+
+
                 player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageDisabledFly));
             } else {
-                flyManager.updateFlyStatusInDB(player, 1);
                 flyManager.manageFly(player, true);
-
+                flyManager.upsertFlyStatus(player, true);
                 player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageActivateFly));
             }
+
+            boolean finalIsInFly = isInFly;
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    System.out.println(finalIsInFly);
+                }
+            }.runTaskLater(plugin, 20L); // Exécution après 1 seconde (20 ticks)
 
 
         } catch (SQLException e) {
