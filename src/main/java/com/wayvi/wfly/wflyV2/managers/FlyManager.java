@@ -8,12 +8,15 @@ import org.bukkit.plugin.Plugin;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class FlyManager {
 
-    public static ExecutorService service = Executors.newFixedThreadPool(5);
+    public static ExecutorService service = Executors.newSingleThreadExecutor();
 
     Plugin plugin;
 
@@ -31,13 +34,6 @@ public class FlyManager {
     }
 
     public void manageFly(Player player, boolean fly) {
-
-        if(fly){
-            updateFlyStatusInDB(player, 1);
-        }else{
-            updateFlyStatusInDB(player, 0);
-        }
-
         player.setAllowFlight(fly);
         player.setFlying(fly);
     }
@@ -45,6 +41,7 @@ public class FlyManager {
     public List<AccessPlayerDTO> getIsInFlyBeforeDeconnect(Player player) throws SQLException {
         return this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {
             table.where("uniqueId", player.getUniqueId());
+
         });
     }
 

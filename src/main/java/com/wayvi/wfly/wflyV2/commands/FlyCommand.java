@@ -44,23 +44,32 @@ public class FlyCommand extends Command<JavaPlugin> {
         String messageActivateFly = configUtil.getCustomMessage().getString("message.fly-activated");
         String messageDisabledFly = configUtil.getCustomMessage().getString("message.fly-deactivated");
 
+        int isInFly = 0;
         try {
-            // Vérifie si le joueur est actuellement en mode vol
-            List<AccessPlayerDTO> players = flyManager.getIsInFlyBeforeDeconnect(player);
 
-            boolean isCurrentlyFlying = !players.isEmpty() && players.get(0).getIsInFly() == 1;
+            List<AccessPlayerDTO> playersInFly = flyManager.getIsInFlyBeforeDeconnect(player);
 
-            // Active ou désactive le mode vol selon l'état actuel
-            if (isCurrentlyFlying) {
-                flyManager.manageFly(player, false); // Désactive le vol
+            for (AccessPlayerDTO dto : playersInFly) {
+                isInFly = dto.isInFly();
+            }
+
+
+            if (isInFly == 1) {
+                flyManager.manageFly(player, false);
+                flyManager.updateFlyStatusInDB(player, 0);
                 player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageDisabledFly));
             } else {
-                flyManager.manageFly(player, true); // Active le vol
+                flyManager.updateFlyStatusInDB(player, 1);
+                flyManager.manageFly(player, true);
+
                 player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageActivateFly));
             }
+
+
         } catch (SQLException e) {
             e.printStackTrace();
             player.sendMessage("Une erreur s'est produite lors de la gestion du vol.");
         }
+        player.sendMessage(String.valueOf(isInFly));
     }
 }
