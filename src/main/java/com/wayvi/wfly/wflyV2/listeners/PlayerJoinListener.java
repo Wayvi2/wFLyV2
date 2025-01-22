@@ -20,7 +20,7 @@ public class PlayerJoinListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) throws SQLException {
         Player player = event.getPlayer();
-        AccessPlayerDTO playerFlyData = flyManager.getIsInFlyBeforeDeconnect(player);
+        AccessPlayerDTO playerFlyData = flyManager.getPlayerFlyData(player);
 
         if (playerFlyData.isinFly()) {
             flyManager.manageFly(player, true);

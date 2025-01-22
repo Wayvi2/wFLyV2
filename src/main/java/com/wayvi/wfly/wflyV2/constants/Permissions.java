@@ -5,6 +5,7 @@ public enum Permissions {
     RELOAD("wfly.reload"),
     FLY("wfly.fly"),
     FLY_SPEED("wfly.fly.speed"),
+    ADD_FLY_TIME("wfly.add.time"),
     ;
 
     private final String permission;

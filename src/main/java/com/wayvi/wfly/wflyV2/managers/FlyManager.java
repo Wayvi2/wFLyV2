@@ -1,5 +1,6 @@
 package com.wayvi.wfly.wflyV2.managers;
 
+import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
@@ -9,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.SQLException;
@@ -21,19 +23,17 @@ public class FlyManager {
 
     public static ExecutorService service = Executors.newSingleThreadExecutor();
 
-    private Plugin plugin;
+    private WFlyV2 plugin;
 
     private final RequestHelper requestHelper;
 
     private BukkitTask flyTask;
 
-
     private ConfigUtil configUtil;
 
     private MiniMessageSupportUtil miniMessageSupportUtil;
 
-
-    public FlyManager(Plugin plugin, RequestHelper requestHelper, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {
+    public FlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {;
         this.requestHelper = requestHelper;
         this.plugin = plugin;
         this.configUtil = configUtil;
@@ -96,12 +96,12 @@ public class FlyManager {
 
 
     //ACCESS DATABASE METHODES
-    public AccessPlayerDTO getIsInFlyBeforeDeconnect(Player player) throws SQLException {
+    public AccessPlayerDTO getPlayerFlyData(Player player) throws SQLException {
 
         List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> table.where("uniqueId", player.getUniqueId()));
 
         if (fly.isEmpty()) {
-            return new AccessPlayerDTO(player.getUniqueId(), false);
+            return new AccessPlayerDTO(player.getUniqueId(), false, plugin.getTimeFlyManager().getTimeRemaining(player));
         } else {
             return fly.getFirst();
         }

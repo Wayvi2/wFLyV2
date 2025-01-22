@@ -34,5 +34,6 @@ public class ReloadCommand extends Command<JavaPlugin>  {
         String message = configUtil.getCustomMessage().getString("message.reload");
         plugin.getLogger().info("Plugin reloaded");
         commandSender.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(message));
+
     }
 }

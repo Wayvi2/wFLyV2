@@ -5,7 +5,7 @@ import fr.maxlego08.sarah.Column;
 import java.util.UUID;
 
 public record AccessPlayerDTO(
-        @Column(value ="uniqueId", primary = true) UUID uniqueId,
-        @Column(value ="isinFly") boolean isinFly) {
-
-}
+        @Column(value = "uniqueId", primary = true) UUID uniqueId,
+        @Column(value = "isinFly") boolean isinFly,
+        @Column(value = "FlyTimeRemaining") int FlyTimeRemaining
+) {}
