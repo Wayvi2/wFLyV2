@@ -68,21 +68,25 @@ public class FlyManager {
 
     public void manageFlySpeed(Player player, double speed) {
 
-        if (speed > 1.0) {player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-speed-too-high")));
+        speed = speed / 10.0;
+
+        if (speed > 1.0) {
+            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(
+                    configUtil.getCustomMessage().getString("message.fly-speed-too-high")));
             return;
         }
 
-        if(player.hasPermission("wfly.fly.speed." + speed) && speed > 1.0) {
-
-            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-speed-too-high")));
-
-
+        for (int i = (int) (speed * 10); i >= 1; i--) {
+            if (player.hasPermission("wfly.fly.speed." + i)) {
+                player.setFlySpeed((float) i / 10.0f);
+                player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-speed").replace("%speed%", String.valueOf((i)))));
+                return;
+            }
         }
 
-        player.setFlySpeed((float) speed);
-
+        player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(
+                configUtil.getCustomMessage().getString("message.fly-speed-no-permission")));
     }
-
 
 
     //ACCESS DATABASE METHODES

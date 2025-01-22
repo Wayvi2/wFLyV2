@@ -20,7 +20,6 @@ public class FlySpeedCommand extends Command<JavaPlugin> {
         super(plugin, "flyspeed");
         setDescription("Manage the fly speed");
         setUsage("/flyspeed <number>");
-        setPermission(Permissions.FLY_SPEED.getPermission());
         addArgs("speed:double");
         this.flyManager = flyManager;
         this.configUtil = configUtil;
@@ -31,13 +30,8 @@ public class FlySpeedCommand extends Command<JavaPlugin> {
     public void execute(CommandSender commandSender, Arguments arguments) {
 
         double speed = arguments.get("speed");
-        double fspeed = speed / 10.0F;
+        flyManager.manageFlySpeed((Player) commandSender, speed);
 
-        String messageFlySpeed = speed > 10 ? configUtil.getCustomMessage().getString("message.fly-speed-too-high") : configUtil.getCustomMessage().getString("message.fly-speed").replace("%speed%", String.valueOf(speed));
-
-        flyManager.manageFlySpeed((Player) commandSender, fspeed);
-
-        commandSender.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageFlySpeed));
 
     }
 }
