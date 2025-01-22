@@ -29,10 +29,10 @@ public class ReloadCommand extends Command<JavaPlugin>  {
 
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
+
         configUtil.reloadCustomConfig();
         String message = configUtil.getCustomMessage().getString("message.reload");
-        assert message != null;
-        plugin.getLogger().info(message);
+        plugin.getLogger().info("Plugin reloaded");
         commandSender.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(message));
     }
 }

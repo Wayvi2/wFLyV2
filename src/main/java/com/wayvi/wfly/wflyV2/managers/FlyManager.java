@@ -46,14 +46,20 @@ public class FlyManager {
 
         upsertFlyStatus(player, fly);
 
+        String messageFly = fly ? configUtil.getCustomMessage().getString("message.fly-activated") : configUtil.getCustomMessage().getString("message.fly-deactivated");
+
         if (fly) {
             player.setAllowFlight(true);
             player.setFlying(true);
+            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageFly));
+
             if (flyTask != null && !flyTask.isCancelled()) {
                 flyTask.cancel();
             }
+
         } else {
             player.setFlying(false);
+            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageFly));
             flyTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
                 if (player.isFlying()) {
                     player.setFlying(false);

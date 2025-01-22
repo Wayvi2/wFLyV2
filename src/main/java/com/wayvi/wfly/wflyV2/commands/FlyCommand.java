@@ -37,11 +37,7 @@ public class FlyCommand extends Command<JavaPlugin> {
 
         try {
             AccessPlayerDTO playersInFly = flyManager.getIsInFlyBeforeDeconnect(player);
-
-            String messageFly = playersInFly.isinFly() ? configUtil.getCustomMessage().getString("message.fly-deactivated") : configUtil.getCustomMessage().getString("message.fly-activated");
-
             flyManager.manageFly(player, !playersInFly.isinFly());
-            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageFly));
 
             } catch (SQLException e) {
                 throw new RuntimeException(e);
