@@ -15,14 +15,13 @@ public class ConfigUtil {
     private File messageFile;
     private FileConfiguration messageConfig;
 
-
     //config.yml
     private File configFile;
     private FileConfiguration configConfig;
 
     private FileConfiguration customConfig;
     private String version = "1.0";
-    Plugin plugin;
+    private final Plugin plugin;
 
     public ConfigUtil(Plugin plugin) {
         this.plugin = plugin;

@@ -13,10 +13,9 @@ import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 
 public class ReloadCommand extends Command<JavaPlugin>  {
 
-    MiniMessageSupportUtil miniMessageSupportUtil;
-    ConfigUtil configUtil;
-    Plugin plugin;
-
+    private final MiniMessageSupportUtil miniMessageSupportUtil;
+    private final ConfigUtil configUtil;
+    private final Plugin plugin;
 
     public ReloadCommand(JavaPlugin plugin, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {
         super(plugin, "wfly.reload");
@@ -30,16 +29,10 @@ public class ReloadCommand extends Command<JavaPlugin>  {
 
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
-
         configUtil.reloadCustomConfig();
         String message = configUtil.getCustomMessage().getString("message.reload");
         assert message != null;
         plugin.getLogger().info(message);
         commandSender.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(message));
-
-
-
     }
-
-
 }

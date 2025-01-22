@@ -11,7 +11,7 @@ import java.sql.SQLException;
 
 public class PlayerJoinListener implements Listener {
 
-    FlyManager flyManager;
+    private final FlyManager flyManager;
 
     public PlayerJoinListener(FlyManager flyManager) {
         this.flyManager = flyManager;

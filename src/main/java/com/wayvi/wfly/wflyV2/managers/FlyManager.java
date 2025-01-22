@@ -72,10 +72,10 @@ public class FlyManager {
             return;
         }
 
-        if(player.hasPermission("wfly.fly.speed." + speed)) {
-            if(speed > speed/10){
-                player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-speed-too-high")));
-            }
+        if(player.hasPermission("wfly.fly.speed." + speed) && speed > 1.0) {
+
+            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-speed-too-high")));
+
 
         }
 

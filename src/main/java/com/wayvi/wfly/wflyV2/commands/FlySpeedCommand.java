@@ -12,9 +12,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class FlySpeedCommand extends Command<JavaPlugin> {
 
-    FlyManager flyManager;
-    ConfigUtil configUtil;
-    MiniMessageSupportUtil miniMessageSupportUtil;
+    private final FlyManager flyManager;
+    private final ConfigUtil configUtil;
+    private final MiniMessageSupportUtil miniMessageSupportUtil;
 
     public FlySpeedCommand(JavaPlugin plugin, FlyManager flyManager, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {
         super(plugin, "flyspeed");
