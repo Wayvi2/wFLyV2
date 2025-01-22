@@ -53,6 +53,11 @@ public class TimeFlyManager {
         service.execute(() -> {
             this.requestHelper.upsert("fly", table -> {
                 table.uuid("uniqueId", player.getUniqueId()).primary();
+                try {
+                    table.bool("isinFly", plugin.getFlyManager().getPlayerFlyData(player).isinFly());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 table.bigInt("FlyTimeRemaining", timeRemaining);
             });
         });

@@ -113,6 +113,7 @@ public class FlyManager {
             this.requestHelper.upsert("fly", table -> {
                 table.uuid("uniqueId", player.getUniqueId()).primary();
                 table.bool("isinFly", isFlying);
+                table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
             });
         });
     }
