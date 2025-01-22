@@ -42,7 +42,7 @@ public final class WFlyV2 extends JavaPlugin {
         MiniMessageSupportUtil miniMessageSupportUtil = new MiniMessageSupportUtil();
 
         //INIT FlyManager
-        FlyManager flyManager = new FlyManager(this, databaseService, requestHelper, configUtil, miniMessageSupportUtil);
+        FlyManager flyManager = new FlyManager(this, requestHelper, configUtil, miniMessageSupportUtil);
 
 
         // COMMANDS
@@ -53,6 +53,7 @@ public final class WFlyV2 extends JavaPlugin {
 
         //LISTENER
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(flyManager), this);
+
 
         getLogger().info("Plugin enabled");
     }

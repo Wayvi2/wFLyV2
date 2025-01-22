@@ -25,22 +25,20 @@ public class FlyManager {
 
     public static ExecutorService service = Executors.newSingleThreadExecutor();
 
-    Plugin plugin;
+    private Plugin plugin;
 
     private final RequestHelper requestHelper;
 
     private BukkitTask flyTask;
 
-    private DatabaseService databaseService;
 
     private ConfigUtil configUtil;
 
     private MiniMessageSupportUtil miniMessageSupportUtil;
 
 
-    public FlyManager(Plugin plugin, DatabaseService databaseService, RequestHelper requestHelper, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {
+    public FlyManager(Plugin plugin, RequestHelper requestHelper, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {
         this.requestHelper = requestHelper;
-        this.databaseService = databaseService;
         this.plugin = plugin;
         this.configUtil = configUtil;
         this.miniMessageSupportUtil = miniMessageSupportUtil;
@@ -61,8 +59,12 @@ public class FlyManager {
         } else {
             player.setFlying(false);
             flyTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+                if (player.isFlying()) {
+                    player.setFlying(false);
+                }
                 if (player.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR) {
                     player.setAllowFlight(false);
+                    player.setFlySpeed(0.1F);
                 }
             }, 20L, 20L);
         }
@@ -73,7 +75,6 @@ public class FlyManager {
         if (speed > 1.0) {player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-speed-too-high")));
             return;
         }
-        player.sendMessage("on passe la");
         player.setFlySpeed((float) speed);
     }
 
