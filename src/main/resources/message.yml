@@ -1,2 +1,6 @@
 message:
   reload: "<red>Plugin has been reloaded!"
+  fly-activated: "<green>You have been set to fly! Use /fly to disable fly."
+  fly-deactivated: "<red>You have been set to walk! Use /fly to enable fly."
+  fly-speed-too-high: "<red>Speed too high! Maximum speed is 10.0"
+  fly-speed: "<green>You have set your fly speed to <yellow>%speed%"
