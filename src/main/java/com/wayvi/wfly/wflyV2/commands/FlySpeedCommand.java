@@ -20,7 +20,7 @@ public class FlySpeedCommand extends Command<JavaPlugin> {
         super(plugin, "flyspeed");
         setDescription("Manage the fly speed");
         setUsage("/flyspeed <number>");
-        setPermission(Permissions.FLY_SPEED);
+        setPermission(Permissions.FLY_SPEED.getPermission());
         addArgs("speed:double");
         this.flyManager = flyManager;
         this.configUtil = configUtil;

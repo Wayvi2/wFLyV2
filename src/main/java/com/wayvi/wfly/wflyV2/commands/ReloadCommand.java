@@ -22,7 +22,7 @@ public class ReloadCommand extends Command<JavaPlugin>  {
         super(plugin, "wfly.reload");
         setDescription("Reload file of the plugin.");
         setUsage("/wfly reload");
-        setPermission(Permissions.RELOAD);
+        setPermission(Permissions.RELOAD.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
         this.miniMessageSupportUtil = miniMessageSupportUtil;
