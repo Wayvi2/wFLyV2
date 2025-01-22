@@ -29,7 +29,7 @@ public class FlyCommand extends Command<JavaPlugin> {
         super(plugin, "fly");
         setDescription("Fly command");
         setUsage("/fly");
-        setPermission(Permissions.RELOAD);
+        setPermission(Permissions.FLY);
         this.flyManager = flyManager;
         this.miniMessageSupportUtil = miniMessageSupportUtil;
         this.configUtil = configUtil;
@@ -39,15 +39,17 @@ public class FlyCommand extends Command<JavaPlugin> {
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = (Player) commandSender;
+
         try {
             AccessPlayerDTO playersInFly = flyManager.getIsInFlyBeforeDeconnect(player);
+
             String messageFly = playersInFly.isinFly() ? configUtil.getCustomMessage().getString("message.fly-deactivated") : configUtil.getCustomMessage().getString("message.fly-activated");
-                flyManager.manageFly(player, !playersInFly.isinFly());
-                player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageFly));
+
+            flyManager.manageFly(player, !playersInFly.isinFly());
+            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageFly));
+
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-
-
     }
 }

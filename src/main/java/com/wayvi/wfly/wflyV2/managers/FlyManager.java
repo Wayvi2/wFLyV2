@@ -2,6 +2,8 @@ package com.wayvi.wfly.wflyV2.managers;
 
 import com.wayvi.wfly.wflyV2.services.DatabaseService;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyV2.util.ConfigUtil;
+import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -31,11 +33,17 @@ public class FlyManager {
 
     private DatabaseService databaseService;
 
+    private ConfigUtil configUtil;
 
-    public FlyManager(Plugin plugin, DatabaseService databaseService, RequestHelper requestHelper) {
+    private MiniMessageSupportUtil miniMessageSupportUtil;
+
+
+    public FlyManager(Plugin plugin, DatabaseService databaseService, RequestHelper requestHelper, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {
         this.requestHelper = requestHelper;
         this.databaseService = databaseService;
         this.plugin = plugin;
+        this.configUtil = configUtil;
+        this.miniMessageSupportUtil = miniMessageSupportUtil;
 
 
     }
@@ -52,8 +60,6 @@ public class FlyManager {
             }
         } else {
             player.setFlying(false);
-
-
             flyTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
                 if (player.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR) {
                     player.setAllowFlight(false);
@@ -62,54 +68,18 @@ public class FlyManager {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-Dan,s le cas fly = False
-On enleve le fly  et 1 tick plus tard on fait le calculer de quand enlever la permission
-
-/*
-                    new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        player.setAllowFlight(false);
-                        player.sendMessage("toto");
-                    }
-                }.runTaskLater(plugin, (long) Math.sqrt(2 * player.getFallDistance() / 0.08));
-            } else {
-                player.setAllowFlight(false);
+    public void manageFlySpeed(Player player, double speed) {
+        player.sendMessage(String.valueOf(speed));
+        if (speed > 1.0) {player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-speed-too-high")));
+            return;
         }
-        player.setFlying(fly);
- */
+        player.sendMessage("on passe la");
+        player.setFlySpeed((float) speed);
+    }
 
 
 
-
-
-
-        /*
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                player.sendMessage(String.valueOf(player.getAllowFlight()));
-            }
-        }.runTaskTimer(plugin, 0, 20);
-  */
-
-
+    //ACCESS DATABASE METHODES
     public AccessPlayerDTO getIsInFlyBeforeDeconnect(Player player) throws SQLException {
 
         List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> table.where("uniqueId", player.getUniqueId()));

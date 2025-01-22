@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyV2;
 
 import com.wayvi.wfly.wflyV2.commands.FlyCommand;
+import com.wayvi.wfly.wflyV2.commands.FlySpeedCommand;
 import com.wayvi.wfly.wflyV2.commands.ReloadCommand;
 import com.wayvi.wfly.wflyV2.listeners.PlayerJoinListener;
 import com.wayvi.wfly.wflyV2.managers.FlyManager;
@@ -33,9 +34,6 @@ public final class WFlyV2 extends JavaPlugin {
         //INIT RequestHelper
         RequestHelper requestHelper = new RequestHelper(connection, this.getLogger()::info);
 
-        //INIT FlyManager
-        FlyManager flyManager = new FlyManager(this, databaseService, requestHelper);
-
         // CONFIGS
         ConfigUtil configUtil = new ConfigUtil(this);
         configUtil.createCustomConfig();
@@ -43,10 +41,15 @@ public final class WFlyV2 extends JavaPlugin {
         //INIT miniMessageSupport
         MiniMessageSupportUtil miniMessageSupportUtil = new MiniMessageSupportUtil();
 
+        //INIT FlyManager
+        FlyManager flyManager = new FlyManager(this, databaseService, requestHelper, configUtil, miniMessageSupportUtil);
+
+
         // COMMANDS
         CommandManager commandManager = new CommandManager(this);
         commandManager.registerCommand(new ReloadCommand(this, configUtil, miniMessageSupportUtil));
         commandManager.registerCommand(new FlyCommand(this, flyManager, miniMessageSupportUtil, configUtil));
+        commandManager.registerCommand(new FlySpeedCommand(this, flyManager, configUtil, miniMessageSupportUtil));
 
         //LISTENER
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(flyManager), this);
