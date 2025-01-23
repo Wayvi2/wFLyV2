@@ -1,6 +1,6 @@
 package com.wayvi.wfly.wflyV2.commands;
 
-import com.wayvi.wfly.wflyV2.managers.FlyManager;
+import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
 import org.bukkit.command.CommandSender;

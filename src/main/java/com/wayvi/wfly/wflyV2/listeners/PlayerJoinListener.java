@@ -1,6 +1,6 @@
 package com.wayvi.wfly.wflyV2.listeners;
 
-import com.wayvi.wfly.wflyV2.managers.FlyManager;
+import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
