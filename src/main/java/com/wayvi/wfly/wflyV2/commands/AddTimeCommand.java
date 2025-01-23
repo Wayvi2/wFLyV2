@@ -29,7 +29,12 @@ public class AddTimeCommand extends Command<JavaPlugin> {
 
         Player target = args.get("player");
         int time = args.get("time");
-        plugin.getTimeFlyManager().upsertTimeFly(target, time);
+        try {
+            plugin.getTimeFlyManager().addFlytime(target, time);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         sender.sendMessage("ajouter " + time + " secondes");
     }
 }
