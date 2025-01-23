@@ -70,6 +70,7 @@ public class FlyManager {
                 }
             }, 20L, 20L);
         }
+
         upsertFlyStatus(player, fly);
     }
 
@@ -122,6 +123,7 @@ public class FlyManager {
             });
         });
     }
+
 
 
     public boolean getFlyStatus(Player player) throws SQLException {

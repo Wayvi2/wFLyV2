@@ -40,8 +40,16 @@ public class FlyCommand extends Command<JavaPlugin> {
 
         try {
             AccessPlayerDTO playersInFly = plugin.getFlyManager().getPlayerFlyData(player);
-            plugin.getFlyManager().manageFly(player, !playersInFly.isinFly());
-            plugin.getTimeFlyManager().decrementTimeRemaining(player, !playersInFly.isinFly());
+
+            if (!playersInFly.isinFly()) {
+                plugin.getFlyManager().manageFly(player, true);
+                plugin.getTimeFlyManager().decrementTimeRemaining(player, true);
+
+            } else {
+                plugin.getFlyManager().manageFly(player, false);
+                plugin.getTimeFlyManager().decrementTimeRemaining(player, false);
+            }
+
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

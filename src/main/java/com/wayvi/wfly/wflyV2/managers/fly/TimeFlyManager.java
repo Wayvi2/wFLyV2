@@ -29,32 +29,36 @@ public class TimeFlyManager {
         this.plugin = plugin;
     }
 
-    public void decrementTimeRemaining(Player player, boolean bool) throws SQLException {
 
-
-        if (timeTask != null && !timeTask.isCancelled()){
+    // TODO : Fix problem with the timefly in DB --> DB update 1/2 on disabling fly
+    public void decrementTimeRemaining(Player player, boolean isFlyEnabled) throws SQLException {
+        if (timeTask != null && !timeTask.isCancelled()) {
             timeTask.cancel();
         }
 
-        if (bool){
+        if (isFlyEnabled) {
             timeRemaining = getTimeRemaining(player);
             timeTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-                if (timeRemaining == 0) {
+
+                if (timeRemaining <= 1) {
+                    timeRemaining = 0;
+                    upsertTimeFly(player, timeRemaining); // Mise à jour finale
                     plugin.getFlyManager().manageFly(player, false);
                     timeTask.cancel();
-                    upsertTimeFly(player, 0);
                     return;
                 }
-                timeRemaining = timeRemaining - 1;
+
+
+                timeRemaining--;
                 player.sendMessage(String.valueOf(timeRemaining));
+
             }, 20L, 20L);
-
         } else {
-            timeTask.cancel();
+            upsertTimeFly(player, timeRemaining);
         }
-        upsertTimeFly(player, timeRemaining);
-
     }
+
+
 
 
     public void upsertTimeFly(Player player, int newtimeRemaining) {
