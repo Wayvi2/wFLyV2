@@ -1,9 +1,11 @@
 package com.wayvi.wfly.wflyV2;
 
+import com.wayvi.wfly.wflyV2.commands.AddTimeCommand;
 import com.wayvi.wfly.wflyV2.commands.FlyCommand;
 import com.wayvi.wfly.wflyV2.commands.FlySpeedCommand;
 import com.wayvi.wfly.wflyV2.commands.ReloadCommand;
 import com.wayvi.wfly.wflyV2.listeners.PlayerJoinListener;
+import com.wayvi.wfly.wflyV2.listeners.PlayerLeaveListener;
 import com.wayvi.wfly.wflyV2.managers.FlyManager;
 import com.wayvi.wfly.wflyV2.managers.TimeFlyManager;
 import com.wayvi.wfly.wflyV2.services.DatabaseService;
@@ -46,16 +48,18 @@ public final class WFlyV2 extends JavaPlugin {
         //INIT FlyManager
         this.flyManager = new FlyManager(this, requestHelper, configUtil, miniMessageSupportUtil);
 
-        this.timeFlyManager = new TimeFlyManager(this, requestHelper);
+        this.timeFlyManager = new TimeFlyManager(this, requestHelper, miniMessageSupportUtil);
 
         // COMMANDS
         CommandManager commandManager = new CommandManager(this);
         commandManager.registerCommand(new ReloadCommand(this, configUtil, miniMessageSupportUtil));
-        commandManager.registerCommand(new FlyCommand(this, flyManager));
-        commandManager.registerCommand(new FlySpeedCommand(this, flyManager));
+        commandManager.registerCommand(new FlyCommand(this));
+        commandManager.registerCommand(new FlySpeedCommand(this, this.flyManager));
+        commandManager.registerCommand(new AddTimeCommand(this));
 
         //LISTENER
-        getServer().getPluginManager().registerEvents(new PlayerJoinListener(flyManager), this);
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(this.flyManager), this);
+        getServer().getPluginManager().registerEvents(new PlayerLeaveListener(this), this);
 
 
         getLogger().info("Plugin enabled");

@@ -51,6 +51,7 @@ public class FlyManager {
         if (fly) {
             player.setAllowFlight(true);
             player.setFlying(true);
+
             player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageFly));
 
             if (flyTask != null && !flyTask.isCancelled()) {
@@ -59,6 +60,7 @@ public class FlyManager {
 
         } else {
             player.setFlying(false);
+
             player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageFly));
             flyTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
                 if (player.isFlying()) {
@@ -113,7 +115,11 @@ public class FlyManager {
             this.requestHelper.upsert("fly", table -> {
                 table.uuid("uniqueId", player.getUniqueId()).primary();
                 table.bool("isinFly", isFlying);
-                table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
+                try {
+                    table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             });
         });
     }
