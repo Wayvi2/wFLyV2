@@ -42,7 +42,7 @@ public class TimeFlyManager {
 
                 if (timeRemaining <= 1) {
                     timeRemaining = 0;
-                    upsertTimeFly(player, timeRemaining); // Mise à jour finale
+                    upsertTimeFly(player, timeRemaining);
                     plugin.getFlyManager().manageFly(player, false);
                     timeTask.cancel();
                     return;

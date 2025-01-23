@@ -71,6 +71,7 @@ public class FlyManager {
             }, 20L, 20L);
         }
 
+
         upsertFlyStatus(player, fly);
     }
 
@@ -103,7 +104,7 @@ public class FlyManager {
         List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> table.where("uniqueId", player.getUniqueId()));
 
         if (fly.isEmpty()) {
-            return new AccessPlayerDTO(player.getUniqueId(), false, plugin.getTimeFlyManager().getTimeRemaining(player));
+            return new AccessPlayerDTO(player.getUniqueId(), !plugin.getFlyManager().getFlyStatus(player), plugin.getTimeFlyManager().getTimeRemaining(player));
         } else {
             return fly.getFirst();
         }
