@@ -32,9 +32,13 @@ public class TimeFlyManager {
 
     public void decrementTimeRemaining(Player player, boolean bool) throws SQLException {
 
-        timeRemaining = getTimeRemaining(player);
+
+        if (timeTask != null && !timeTask.isCancelled()){
+            timeTask.cancel();
+        }
 
         if (bool){
+            timeRemaining = getTimeRemaining(player);
             timeTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
                 if (timeRemaining == 0) {
                     plugin.getFlyManager().manageFly(player, false);
@@ -50,6 +54,7 @@ public class TimeFlyManager {
             timeTask.cancel();
         }
         upsertTimeFly(player, timeRemaining);
+
     }
 
 
@@ -58,7 +63,8 @@ public class TimeFlyManager {
             this.requestHelper.upsert("fly", table -> {
                 table.uuid("uniqueId", player.getUniqueId()).primary();
                 try {
-                    table.bool("isinFly", plugin.getFlyManager().getPlayerFlyData(player).isinFly());
+                    AccessPlayerDTO playerFlyData = plugin.getFlyManager().getPlayerFlyData(player);
+                    table.bool("isinFly", !playerFlyData.isinFly());
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -70,8 +76,7 @@ public class TimeFlyManager {
 
     public int getTimeRemaining(Player player) throws SQLException {
         AccessPlayerDTO fly = plugin.getFlyManager().getPlayerFlyData(player);
-        timeRemaining = fly.FlyTimeRemaining();
-        return timeRemaining;
+        return fly.FlyTimeRemaining();
     }
 
 }

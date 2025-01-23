@@ -30,8 +30,12 @@ public class FlyCommand extends Command<JavaPlugin> {
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = (Player) commandSender;
 
-        if(plugin.getTimeFlyManager().getTimeRemaining(player) == 0){
-            return;
+        try {
+            if(plugin.getTimeFlyManager().getTimeRemaining(player) == 0){
+                return;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
 
         try {

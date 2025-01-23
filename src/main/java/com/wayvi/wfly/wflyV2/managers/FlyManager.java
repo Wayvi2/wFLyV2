@@ -44,7 +44,6 @@ public class FlyManager {
 
     public void manageFly(Player player, boolean fly) {
 
-        upsertFlyStatus(player, fly);
 
         String messageFly = fly ? configUtil.getCustomMessage().getString("message.fly-activated") : configUtil.getCustomMessage().getString("message.fly-deactivated");
 
@@ -69,9 +68,11 @@ public class FlyManager {
                 if (player.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR) {
                     player.setAllowFlight(false);
                     player.setFlySpeed(0.1F);
+                    flyTask.cancel();
                 }
             }, 20L, 20L);
         }
+        upsertFlyStatus(player, fly);
     }
 
     public void manageFlySpeed(Player player, double speed) {
@@ -124,6 +125,11 @@ public class FlyManager {
         });
     }
 
+
+    public boolean getFlyStatus(Player player) throws SQLException {
+        AccessPlayerDTO fly = plugin.getFlyManager().getPlayerFlyData(player);
+        return fly.isinFly();
+    }
 
 
 
