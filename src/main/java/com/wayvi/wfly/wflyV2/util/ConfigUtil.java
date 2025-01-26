@@ -34,16 +34,12 @@ public class ConfigUtil {
 
         //message.yml
         messageFile = new File(plugin.getDataFolder(), "message.yml");
-        if (!messageFile.exists()) {
-            messageFile.getParentFile().mkdirs();
-            plugin.saveResource("message.yml", false);
-        }
+        ifNotExistCreateCustomConfig(messageFile, "message.yml");
+
         //config.yml
         configFile = new File(plugin.getDataFolder(), "config.yml");
-        if (!configFile.exists()) {
-            configFile.getParentFile().mkdirs();
-            plugin.saveResource("config.yml", false);
-        }
+        ifNotExistCreateCustomConfig(configFile, "config.yml");
+
 
         messageConfig = new YamlConfiguration();
         configConfig = new YamlConfiguration();
@@ -52,6 +48,13 @@ public class ConfigUtil {
             configConfig.load(configFile);
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void ifNotExistCreateCustomConfig(File file, String name) {
+        if (!file.exists()) {
+            file.getParentFile().mkdirs();
+            plugin.saveResource(name, false);
         }
     }
 
