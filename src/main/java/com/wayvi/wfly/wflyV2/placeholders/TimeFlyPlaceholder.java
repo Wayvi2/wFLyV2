@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class TimeFlyPlaceholder extends PlaceholderExpansion {
 

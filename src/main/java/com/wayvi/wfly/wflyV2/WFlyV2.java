@@ -19,6 +19,8 @@ import fr.traqueur.commands.api.CommandManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 
+import java.sql.SQLException;
+
 public final class WFlyV2 extends JavaPlugin {
 
     private FlyManager flyManager;
@@ -58,13 +60,15 @@ public final class WFlyV2 extends JavaPlugin {
 
         //INIT TimeFlyManager
         this.timeFlyManager = new TimeFlyManager(this, requestHelper, miniMessageSupportUtil, configUtil);
+        timeFlyManager.decrementTimeRemaining();
+
 
         // COMMANDS
         CommandManager commandManager = new CommandManager(this);
         commandManager.registerCommand(new ReloadCommand(this, configUtil, miniMessageSupportUtil));
-        commandManager.registerCommand(new FlyCommand(this));
+        commandManager.registerCommand(new FlyCommand(this, miniMessageSupportUtil, configUtil));
         commandManager.registerCommand(new FlySpeedCommand(this, this.flyManager));
-        commandManager.registerCommand(new AddTimeCommand(this));
+        commandManager.registerCommand(new AddTimeCommand(this, miniMessageSupportUtil, configUtil));
 
         //LISTENER
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this.flyManager, this.timeFlyManager), this);

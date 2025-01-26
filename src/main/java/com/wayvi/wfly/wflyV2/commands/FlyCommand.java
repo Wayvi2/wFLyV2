@@ -3,6 +3,7 @@ package com.wayvi.wfly.wflyV2.commands;
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
@@ -17,12 +18,18 @@ public class FlyCommand extends Command<JavaPlugin> {
 
     private final WFlyV2 plugin;
 
-    public FlyCommand(WFlyV2 plugin) {
+    private MiniMessageSupportUtil miniMessageSupportUtil;
+
+    private ConfigUtil configUtil;
+
+    public FlyCommand(WFlyV2 plugin, MiniMessageSupportUtil miniMessageSupportUtil, ConfigUtil configUtil) {
         super(plugin, "fly");
         setDescription("Fly command");
         setUsage("/fly");
         setPermission(Permissions.FLY.getPermission());
         this.plugin = plugin;
+        this.miniMessageSupportUtil =miniMessageSupportUtil;
+        this.configUtil = configUtil;
 
     }
 
@@ -31,12 +38,16 @@ public class FlyCommand extends Command<JavaPlugin> {
         Player player = (Player) commandSender;
 
         try {
-            AccessPlayerDTO playersInFly = plugin.getFlyManager().getPlayerFlyData(player);
+            AccessPlayerDTO playersInFly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
 
+            if(playersInFly.FlyTimeRemaining() == 0){
+                player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.no-timefly-remaining")));
+                return;
+            }
 
-            plugin.getFlyManager().manageFly(player, !playersInFly.isinFly());
-            plugin.getTimeFlyManager().decrementTimeRemaining(player, !playersInFly.isinFly());
-
+            String message = playersInFly.isinFly() ? configUtil.getCustomMessage().getString("message.fly-deactivated") : configUtil.getCustomMessage().getString("message.fly-activated");
+            plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
+            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(message));
 
             } catch (SQLException e) {
                 throw new RuntimeException(e);

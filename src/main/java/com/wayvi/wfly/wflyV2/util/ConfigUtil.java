@@ -19,6 +19,8 @@ public class ConfigUtil {
     private File configFile;
     private FileConfiguration configConfig;
 
+
+
     private FileConfiguration customConfig;
     private String version = "1.0";
     private final Plugin plugin;

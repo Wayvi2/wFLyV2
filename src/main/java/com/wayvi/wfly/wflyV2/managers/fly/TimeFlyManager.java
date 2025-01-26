@@ -8,8 +8,11 @@ import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,7 +39,7 @@ public class TimeFlyManager {
         this.configUtil = configUtil;
     }
 
-
+/*
     public void decrementTimeRemaining(Player player, boolean isFlyEnabled) throws SQLException {
         if (timeTask != null && !timeTask.isCancelled()) {
             timeTask.cancel();
@@ -71,32 +74,57 @@ public class TimeFlyManager {
         }
     }
 
-
-    public void addFlytime(Player player, int time) throws SQLException {
-
+     */
+    public void decrementTimeRemaining() {
         if (timeTask != null && !timeTask.isCancelled()) {
-            // Ajouter le temps au vol actif
-            timeRemaining += time;
-            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time))
-            ));
-        } else {
-            // Si le vol est désactivé, récupérer le temps restant depuis la base de données et l'ajouter
-            int flyTime = getTimeRemaining(player);
-            int newTime = flyTime + time;
-            upsertTimeFly(player, newTime);
-            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time))
-            ));
+            timeTask.cancel();
         }
+
+        timeTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            try {
+                List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
+
+                for (AccessPlayerDTO accessPlayerDTO : fly) {
+                    timeRemaining = accessPlayerDTO.FlyTimeRemaining();
+
+                    if (accessPlayerDTO.isinFly()) { // Vérifie si le joueur est en fly
+                        if (timeRemaining > 0) {
+                            timeRemaining--; // Diminue le temps restant
+                            upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
+                        } else {
+                            // Désactive le vol seulement si le temps est à 0
+                            timeRemaining = 0;
+                            upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
+                            plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
+                            plugin.getFlyManager().upsertFlyStatus(Bukkit.getPlayer(accessPlayerDTO.uniqueId()), false);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Erreur lors de la gestion du temps fly : " + e.getMessage());
+            }
+        }, 20L, 20L);
     }
 
 
-    public void upsertTimeFly(Player player, int newtimeRemaining) {
+
+
+
+
+    public void addFlytime(Player player, int time) throws SQLException {
+            int flyTime = getTimeRemaining(player);
+            int newTime = flyTime + time;
+            upsertTimeFly(player.getUniqueId(), newTime);
+    }
+
+
+    public void upsertTimeFly(@NotNull UUID player, int newtimeRemaining) {
         service.execute(() -> {
             this.requestHelper.upsert("fly", table -> {
-                table.uuid("uniqueId", player.getUniqueId()).primary();
+                table.uuid("uniqueId", player).primary();
                 try {
                     AccessPlayerDTO playerFlyData = plugin.getFlyManager().getPlayerFlyData(player);
-                    table.bool("isinFly", !playerFlyData.isinFly());
+                    table.bool("isinFly", playerFlyData.isinFly());
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -108,11 +136,11 @@ public class TimeFlyManager {
 
     public int getTimeRemaining(Player player) throws SQLException {
         if (timeTask != null && !timeTask.isCancelled()) {
-            // Si une tâche est en cours, retourner la valeur locale
+
             return timeRemaining;
         } else {
-            // Sinon, récupérer le temps restant à partir de la base de données
-            AccessPlayerDTO fly = plugin.getFlyManager().getPlayerFlyData(player);
+
+            AccessPlayerDTO fly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
             return fly.FlyTimeRemaining();
         }
     }

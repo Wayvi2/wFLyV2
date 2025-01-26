@@ -1,6 +1,8 @@
 package com.wayvi.wfly.wflyV2.listeners;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -18,11 +20,13 @@ public class PlayerLeaveListener implements Listener {
 
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) throws SQLException {
+        Player player = event.getPlayer();
+        int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
 
-        int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(event.getPlayer());
-        plugin.getTimeFlyManager().upsertTimeFly(event.getPlayer(), timeRemaining);
 
+        AccessPlayerDTO playerData = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
 
+        plugin.getTimeFlyManager().upsertTimeFly(playerData.uniqueId(), timeRemaining);
     }
 
 }

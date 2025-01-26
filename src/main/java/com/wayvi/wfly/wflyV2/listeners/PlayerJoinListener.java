@@ -23,11 +23,11 @@ public class PlayerJoinListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) throws SQLException {
         Player player = event.getPlayer();
-        AccessPlayerDTO playerFlyData = flyManager.getPlayerFlyData(player);
+        AccessPlayerDTO playerFlyData = flyManager.getPlayerFlyData(player.getUniqueId());
 
 
         if (playerFlyData.isinFly()) {
-            flyManager.manageFly(player, true);
+            flyManager.manageFly(player.getUniqueId(), true);
         }
     }
 
