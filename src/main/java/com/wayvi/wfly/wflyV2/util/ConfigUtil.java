@@ -40,15 +40,10 @@ public class ConfigUtil {
         configFile = new File(plugin.getDataFolder(), "config.yml");
         ifNotExistCreateCustomConfig(configFile, "config.yml");
 
-
         messageConfig = new YamlConfiguration();
         configConfig = new YamlConfiguration();
-        try {
-            messageConfig.load(messageFile);
-            configConfig.load(configFile);
-        } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
-        }
+
+        reloadCustomConfig();
     }
 
     public void ifNotExistCreateCustomConfig(File file, String name) {
