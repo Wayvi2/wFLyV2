@@ -6,3 +6,4 @@ message:
   fly-speed: "<green>You have set your fly speed to <yellow>%speed%"
   fly-speed-no-permission: "<red>You do not have permission to set your fly speed to <yellow>%speed%"
   no-timefly-remaining: "<red>You have no timefly remaining!"
+  fly-time-added: "<green>You have been given <yellow>%time% <green>timefly!"

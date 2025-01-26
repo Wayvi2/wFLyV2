@@ -2,6 +2,7 @@ package com.wayvi.wfly.wflyV2.managers.fly;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
@@ -24,63 +25,69 @@ public class TimeFlyManager {
 
     private BukkitTask timeTask;
 
-    public TimeFlyManager(WFlyV2 plugin, RequestHelper requestHelper, MiniMessageSupportUtil miniMessageSupportUtil) {
+    private MiniMessageSupportUtil miniMessageSupportUtil;
+
+    private ConfigUtil configUtil;
+
+    public TimeFlyManager(WFlyV2 plugin, RequestHelper requestHelper, MiniMessageSupportUtil miniMessageSupportUtil, ConfigUtil configUtil) {
         this.requestHelper = requestHelper;
         this.plugin = plugin;
+        this.miniMessageSupportUtil = miniMessageSupportUtil;
+        this.configUtil = configUtil;
     }
 
 
-    // TODO : Fix problem with the timefly in DB --> DB update 1/2 on disabling fly
     public void decrementTimeRemaining(Player player, boolean isFlyEnabled) throws SQLException {
         if (timeTask != null && !timeTask.isCancelled()) {
             timeTask.cancel();
         }
 
         if (isFlyEnabled) {
+
+
             timeRemaining = getTimeRemaining(player);
             timeTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
 
                 if (timeRemaining <= 1) {
                     timeRemaining = 0;
                     upsertTimeFly(player, timeRemaining);
+
                     try {
                         plugin.getFlyManager().manageFly(player, false);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
+
                     timeTask.cancel();
                     return;
                 }
-
-
                 timeRemaining--;
-                player.sendMessage(String.valueOf(timeRemaining));
 
             }, 20L, 20L);
         } else {
+
             upsertTimeFly(player, timeRemaining);
+            timeTask.cancel();
         }
     }
 
 
     public void addFlytime(Player player, int time) throws SQLException {
 
-        if(timeTask != null && !timeTask.isCancelled()){
-            int flyTime = timeRemaining;
-            upsertTimeFly(player, flyTime + time);
-
-        } else {
-            int flyTime = getTimeRemaining(player);
-            upsertTimeFly(player, flyTime + time);
-        }
-
         if (timeTask != null && !timeTask.isCancelled()) {
-            timeTask.cancel();
+            // Ajouter le temps au vol actif
+            timeRemaining += time;
+            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time))
+            ));
+        } else {
+            // Si le vol est désactivé, récupérer le temps restant depuis la base de données et l'ajouter
+            int flyTime = getTimeRemaining(player);
+            int newTime = flyTime + time;
+            upsertTimeFly(player, newTime);
+            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time))
+            ));
         }
-        decrementTimeRemaining(player, plugin.getFlyManager().getFlyStatus(player));
     }
-
-
 
 
     public void upsertTimeFly(Player player, int newtimeRemaining) {
@@ -100,8 +107,14 @@ public class TimeFlyManager {
     }
 
     public int getTimeRemaining(Player player) throws SQLException {
-        AccessPlayerDTO fly = plugin.getFlyManager().getPlayerFlyData(player);
-        return fly.FlyTimeRemaining();
+        if (timeTask != null && !timeTask.isCancelled()) {
+            // Si une tâche est en cours, retourner la valeur locale
+            return timeRemaining;
+        } else {
+            // Sinon, récupérer le temps restant à partir de la base de données
+            AccessPlayerDTO fly = plugin.getFlyManager().getPlayerFlyData(player);
+            return fly.FlyTimeRemaining();
+        }
     }
 
 }

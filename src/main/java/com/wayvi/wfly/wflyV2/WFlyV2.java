@@ -7,6 +7,7 @@ import com.wayvi.wfly.wflyV2.commands.ReloadCommand;
 import com.wayvi.wfly.wflyV2.listeners.PlayerJoinListener;
 import com.wayvi.wfly.wflyV2.listeners.PlayerLeaveListener;
 import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
+import com.wayvi.wfly.wflyV2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyV2.managers.fly.TimeFlyManager;
 import com.wayvi.wfly.wflyV2.services.DatabaseService;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
@@ -35,6 +36,13 @@ public final class WFlyV2 extends JavaPlugin {
         DatabaseService databaseService = new DatabaseService(this);
         databaseService.initializeDatabase();
 
+
+
+        PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this);
+        placeholerapiManager.checkPlaceholderAPI();
+        placeholerapiManager.initialize();
+
+
         //INIT RequestHelper
         RequestHelper requestHelper = new RequestHelper(connection, this.getLogger()::info);
 
@@ -48,7 +56,8 @@ public final class WFlyV2 extends JavaPlugin {
         //INIT FlyManager
         this.flyManager = new FlyManager(this, requestHelper, configUtil, miniMessageSupportUtil);
 
-        this.timeFlyManager = new TimeFlyManager(this, requestHelper, miniMessageSupportUtil);
+        //INIT TimeFlyManager
+        this.timeFlyManager = new TimeFlyManager(this, requestHelper, miniMessageSupportUtil, configUtil);
 
         // COMMANDS
         CommandManager commandManager = new CommandManager(this);

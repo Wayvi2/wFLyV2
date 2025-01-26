@@ -34,14 +34,8 @@ public class FlyManager {
     }
 
     public void manageFly(Player player, boolean fly) throws SQLException {
-        String messageFly = fly
-                ? configUtil.getCustomMessage().getString("message.fly-activated")
-                : configUtil.getCustomMessage().getString("message.fly-deactivated");
+        String messageFly = fly ? configUtil.getCustomMessage().getString("message.fly-activated") : configUtil.getCustomMessage().getString("message.fly-deactivated");
 
-        if (plugin.getTimeFlyManager().getTimeRemaining(player) == 0) {
-            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.no-timefly-remaining")));
-            return;
-        }
 
         if (fly) {
             player.setAllowFlight(true);
@@ -53,6 +47,7 @@ public class FlyManager {
                 flyTask.cancel();
             }
         } else {
+
             player.setFlying(false);
             player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageFly));
 
@@ -66,9 +61,16 @@ public class FlyManager {
                     flyTask.cancel();
                 }
             }, 20L, 20L);
+
+            //if(plugin.getTimeFlyManager().getTimeRemaining(player) == 0) {
+            //player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.no-timefly-remaining")));
+            //return;
+            //}
+
         }
 
         upsertFlyStatus(player, fly);
+
     }
 
     public void manageFlySpeed(Player player, double speed) {

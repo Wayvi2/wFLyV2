@@ -34,7 +34,5 @@ public class AddTimeCommand extends Command<JavaPlugin> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        sender.sendMessage("ajouter " + time + " secondes");
     }
 }
