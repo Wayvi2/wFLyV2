@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.SQLException;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -44,7 +43,11 @@ public class TimeFlyManager {
                 if (timeRemaining <= 1) {
                     timeRemaining = 0;
                     upsertTimeFly(player, timeRemaining);
-                    plugin.getFlyManager().manageFly(player, false);
+                    try {
+                        plugin.getFlyManager().manageFly(player, false);
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                     timeTask.cancel();
                     return;
                 }
@@ -74,7 +77,7 @@ public class TimeFlyManager {
         if (timeTask != null && !timeTask.isCancelled()) {
             timeTask.cancel();
         }
-        decrementTimeRemaining(player, !plugin.getFlyManager().getFlyStatus(player));
+        decrementTimeRemaining(player, plugin.getFlyManager().getFlyStatus(player));
     }
 
 

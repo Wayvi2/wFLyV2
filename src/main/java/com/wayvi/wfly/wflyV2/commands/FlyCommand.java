@@ -31,24 +31,12 @@ public class FlyCommand extends Command<JavaPlugin> {
         Player player = (Player) commandSender;
 
         try {
-            if(plugin.getTimeFlyManager().getTimeRemaining(player) == 0){
-                return;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
             AccessPlayerDTO playersInFly = plugin.getFlyManager().getPlayerFlyData(player);
 
-            if (!playersInFly.isinFly()) {
-                plugin.getFlyManager().manageFly(player, true);
-                plugin.getTimeFlyManager().decrementTimeRemaining(player, true);
 
-            } else {
-                plugin.getFlyManager().manageFly(player, false);
-                plugin.getTimeFlyManager().decrementTimeRemaining(player, false);
-            }
+            plugin.getFlyManager().manageFly(player, !playersInFly.isinFly());
+            plugin.getTimeFlyManager().decrementTimeRemaining(player, !playersInFly.isinFly());
+
 
             } catch (SQLException e) {
                 throw new RuntimeException(e);
