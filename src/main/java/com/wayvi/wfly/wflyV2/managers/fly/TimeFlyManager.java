@@ -80,19 +80,24 @@ public class TimeFlyManager {
             timeTask.cancel();
         }
 
+
+
         timeTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             try {
                 List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
 
+
+
                 for (AccessPlayerDTO accessPlayerDTO : fly) {
+
+                    Player player = Bukkit.getPlayer(accessPlayerDTO.uniqueId());
                     timeRemaining = accessPlayerDTO.FlyTimeRemaining();
 
-                    if (accessPlayerDTO.isinFly()) { // Vérifie si le joueur est en fly
+                    if (accessPlayerDTO.isinFly() && player.isOnline()) {
                         if (timeRemaining > 0) {
-                            timeRemaining--; // Diminue le temps restant
+                            timeRemaining--;
                             upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
                         } else {
-                            // Désactive le vol seulement si le temps est à 0
                             timeRemaining = 0;
                             upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
                             plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);

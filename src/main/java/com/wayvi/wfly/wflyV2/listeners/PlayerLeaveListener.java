@@ -27,6 +27,7 @@ public class PlayerLeaveListener implements Listener {
         AccessPlayerDTO playerData = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
 
         plugin.getTimeFlyManager().upsertTimeFly(playerData.uniqueId(), timeRemaining);
+        player.setAllowFlight(false);
     }
 
 }
