@@ -1,7 +1,8 @@
 version: '1.0'
 
-
-fly-decrement-method: PLAYER_FLY_MODE # ou PLAYER_FLYING_MODE
+# PLAYER_FLYING_MODE : decrement fly when player fly
+# PLAYER_FLY_MODE : decrement fly when player active /fly
+fly-decrement-method: PLAYER_FLY_MODE
 
 format-placeholder:
   seconds: true
