@@ -45,13 +45,11 @@ public class TimeFlyManager {
         }
 
         timeTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-
             try {
                 List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
                 for (AccessPlayerDTO accessPlayerDTO : fly) {
 
-
-                    if(configUtil.getCustomConfig().getString("fly-decrement-method").equals("PLAYER_FLYING_MODE")) {
+                    if (configUtil.getCustomConfig().getString("fly-decrement-method").equals("PLAYER_FLYING_MODE")) {
                         decrementTimeRemainingFlying();
                         return;
                     }
@@ -59,17 +57,20 @@ public class TimeFlyManager {
                     Player player = Bukkit.getPlayer(accessPlayerDTO.uniqueId());
                     timeRemaining = accessPlayerDTO.FlyTimeRemaining();
 
-                    if (accessPlayerDTO.isinFly() && player.isOnline()) {
-                        if (timeRemaining > 0) {
-                            timeRemaining--;
-                            upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
-                        } else {
-                            timeRemaining = 0;
-                            upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
-                            plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
-                            plugin.getFlyManager().upsertFlyStatus(Bukkit.getPlayer(accessPlayerDTO.uniqueId()), false);
-                        }
+                    if (!accessPlayerDTO.isinFly() || !player.isOnline()) {
+                        continue;
                     }
+
+                    if (timeRemaining > 0) {
+                        timeRemaining--;
+                        upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
+                        return;
+                    }
+
+                    timeRemaining = 0;
+                    upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
+                    plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
+                    plugin.getFlyManager().upsertFlyStatus(Bukkit.getPlayer(accessPlayerDTO.uniqueId()), false);
                 }
             } catch (SQLException e) {
                 plugin.getLogger().severe("Error to manage fly mode " + e.getMessage());
@@ -78,35 +79,37 @@ public class TimeFlyManager {
     }
 
 
+
     //Manage the time remaining when the player is flying : equals to PLAYER_FLYING_MODE in config
     public void decrementTimeRemainingFlying() throws SQLException {
-
         List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
 
+        for (AccessPlayerDTO accessPlayerDTO : fly) {
+            Player player = Bukkit.getPlayer(accessPlayerDTO.uniqueId());
+            timeRemaining = accessPlayerDTO.FlyTimeRemaining();
 
-            for (AccessPlayerDTO accessPlayerDTO : fly) {
-
-                Player player = Bukkit.getPlayer(accessPlayerDTO.uniqueId());
-                timeRemaining = accessPlayerDTO.FlyTimeRemaining();
-
-                if(player.isFlying() && player.isOnline()){
-
-                    if (timeRemaining > 0) {
-                        timeRemaining--;
-                        upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
-                    } else {
-                        timeRemaining = 0;
-                        upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
-                        try {
-                            plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
-                        }
-                        plugin.getFlyManager().upsertFlyStatus(Bukkit.getPlayer(accessPlayerDTO.uniqueId()), false);
-                    }
-                }
+            if (!player.isFlying() || !player.isOnline()) {
+                continue;
             }
+
+            if (timeRemaining > 0) {
+                timeRemaining--;
+                upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
+                return;
+            }
+
+            timeRemaining = 0;
+            upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
+
+            try {
+                plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            plugin.getFlyManager().upsertFlyStatus(Bukkit.getPlayer(accessPlayerDTO.uniqueId()), false);
+        }
     }
+
 
 
 
