@@ -46,7 +46,6 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
             }
 
         }
-
         return null;
     }
 

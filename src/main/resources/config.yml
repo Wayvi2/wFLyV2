@@ -1,1 +1,11 @@
 version: '1.0'
+
+
+fly-decrement-method: PLAYER_FLY_MODE # ou PLAYER_FLYING_MODE
+
+format-placeholder:
+  seconds: true
+  minutes: true
+  hours: true
+  days: true
+  format: "%seconds% %minutes% %hours% %days%"

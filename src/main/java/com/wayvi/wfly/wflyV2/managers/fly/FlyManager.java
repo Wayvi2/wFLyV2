@@ -56,6 +56,11 @@ public class FlyManager {
                 if (player1.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR) {
                     player1.setAllowFlight(false);
                     upsertFlyStatus(player1, false);
+                    try {
+                        plugin.getTimeFlyManager().upsertTimeFly(player1.getUniqueId(), plugin.getTimeFlyManager().getTimeRemaining(player1));
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                     player1.setFlySpeed(0.1F);
                     flyTask.cancel();
                 }
@@ -116,5 +121,10 @@ public class FlyManager {
     public boolean getFlyStatus(Player player) throws SQLException {
         AccessPlayerDTO fly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
         return !fly.isinFly();
+    }
+
+
+    public String getFlyMode(){
+        return configUtil.getCustomConfig().getString("fly-decrement-method");
     }
 }
