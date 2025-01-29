@@ -18,17 +18,14 @@ public class FlyCommand extends Command<JavaPlugin> {
 
     private final WFlyV2 plugin;
 
-    private MiniMessageSupportUtil miniMessageSupportUtil;
-
     private ConfigUtil configUtil;
 
-    public FlyCommand(WFlyV2 plugin, MiniMessageSupportUtil miniMessageSupportUtil, ConfigUtil configUtil) {
+    public FlyCommand(WFlyV2 plugin, ConfigUtil configUtil) {
         super(plugin, "fly");
         setDescription("Fly command");
         setUsage("/fly");
         setPermission(Permissions.FLY.getPermission());
         this.plugin = plugin;
-        this.miniMessageSupportUtil =miniMessageSupportUtil;
         this.configUtil = configUtil;
 
     }

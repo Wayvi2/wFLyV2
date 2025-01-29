@@ -16,18 +16,16 @@ import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 
 public class ReloadCommand extends Command<JavaPlugin>  {
 
-    private final MiniMessageSupportUtil miniMessageSupportUtil;
     private final ConfigUtil configUtil;
     private final Plugin plugin;
 
-    public ReloadCommand(JavaPlugin plugin, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {
+    public ReloadCommand(JavaPlugin plugin, ConfigUtil configUtil) {
         super(plugin, "wfly.reload");
         setDescription("Reload file of the plugin.");
         setUsage("/wfly reload");
         setPermission(Permissions.RELOAD.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
-        this.miniMessageSupportUtil = miniMessageSupportUtil;
     }
 
     @Override

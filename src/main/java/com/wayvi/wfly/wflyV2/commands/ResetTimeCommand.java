@@ -16,18 +16,15 @@ public class ResetTimeCommand extends Command<JavaPlugin> {
 
     private final WFlyV2 plugin;
 
-    private MiniMessageSupportUtil miniMessageSupportUtil;
-
     ConfigUtil configUtil;
 
-    public ResetTimeCommand(WFlyV2 plugin, MiniMessageSupportUtil miniMessageSupportUtil, ConfigUtil configUtil) {
+    public ResetTimeCommand(WFlyV2 plugin, ConfigUtil configUtil) {
     super(plugin, "wfly.resettime");
     setDescription("Manage fly time for players");
     setUsage("/fly addtime <player> <time>");
     addArgs("player",Player.class);
     setPermission(Permissions.ADD_FLY_TIME.getPermission());
         this.plugin = plugin;
-        this.miniMessageSupportUtil = miniMessageSupportUtil;
         this.configUtil = configUtil;
 }
 

@@ -67,12 +67,12 @@ public final class WFlyV2 extends JavaPlugin {
 
         // COMMANDS
         CommandManager commandManager = new CommandManager(this);
-        commandManager.registerCommand(new ReloadCommand(this, configUtil, miniMessageSupportUtil));
-        commandManager.registerCommand(new FlyCommand(this, miniMessageSupportUtil, configUtil));
+        commandManager.registerCommand(new ReloadCommand(this, configUtil));
+        commandManager.registerCommand(new FlyCommand(this, configUtil));
         commandManager.registerCommand(new FlySpeedCommand(this, this.flyManager));
-        commandManager.registerCommand(new AddTimeCommand(this, miniMessageSupportUtil, configUtil));
-        commandManager.registerCommand(new ResetTimeCommand(this, miniMessageSupportUtil, configUtil));
-        commandManager.registerCommand(new RemoveTimeCommand(this, miniMessageSupportUtil, configUtil));
+        commandManager.registerCommand(new AddTimeCommand(this, configUtil));
+        commandManager.registerCommand(new ResetTimeCommand(this, configUtil));
+        commandManager.registerCommand(new RemoveTimeCommand(this, configUtil));
 
         //LISTENER
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this.flyManager, this.timeFlyManager), this);

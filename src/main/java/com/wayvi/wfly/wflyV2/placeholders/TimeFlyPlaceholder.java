@@ -4,7 +4,6 @@ import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import net.kyori.adventure.text.Component;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -125,7 +124,6 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
         format = format.replace("%hours_suffixe%", enabledFormats.get("hours") ? hoursSuffix : "");
         format = format.replace("%days_suffixe%", enabledFormats.get("days") ? daysSuffix : "");
 
-        // Nettoyer les espaces inutiles
         format = format.replaceAll("\\s+", " ").trim();
         return format;
     }
