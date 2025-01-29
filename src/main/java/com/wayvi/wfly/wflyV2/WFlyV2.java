@@ -72,6 +72,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new FlySpeedCommand(this, this.flyManager));
         commandManager.registerCommand(new AddTimeCommand(this, miniMessageSupportUtil, configUtil));
         commandManager.registerCommand(new ResetTimeCommand(this, miniMessageSupportUtil, configUtil));
+        commandManager.registerCommand(new RemoveTimeCommand(this, miniMessageSupportUtil, configUtil));
 
         //LISTENER
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this.flyManager, this.timeFlyManager), this);

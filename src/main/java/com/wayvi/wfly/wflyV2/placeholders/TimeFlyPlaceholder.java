@@ -48,7 +48,7 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
             if (params.equals("fly_remaining")) {
                 try {
                     int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
-                    return String.valueOf(formatTime(timeRemaining));
+                    return formatTime(timeRemaining);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -57,7 +57,7 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
         return null;
     }
 
-    private Component formatTime(int seconds) {
+    private String formatTime(int seconds) {
         Map<String, Boolean> enabledFormats = plugin.getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
         String format = plugin.getTimeFormatTranslatorUtil().getPlaceholderFormat();
         boolean autoFormat = configUtil.getCustomConfig().getBoolean("format-placeholder.auto-format");
@@ -112,7 +112,7 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
             format = format.replace("%minutes_suffixe%", minutesSuffix);
             format = format.replace("%hours_suffixe%", hoursSuffix);
             format = format.replace("%days_suffixe%", daysSuffix);
-            return miniMessageSupportUtil.sendMiniMessageFormat(format);
+            return format;
         }
 
         format = format.replace("%seconds%", enabledFormats.get("seconds") ? sec + "" : "");
@@ -127,7 +127,7 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
 
         // Nettoyer les espaces inutiles
         format = format.replaceAll("\\s+", " ").trim();
-        return miniMessageSupportUtil.sendMiniMessageFormat(format);
+        return format;
     }
 
 

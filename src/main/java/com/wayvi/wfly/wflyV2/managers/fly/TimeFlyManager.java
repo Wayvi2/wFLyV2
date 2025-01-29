@@ -113,6 +113,12 @@ public class TimeFlyManager {
             upsertTimeFly(player.getUniqueId(), newTime);
     }
 
+    public void removeFlytime(Player player, int time) throws SQLException {
+        int flyTime = getTimeRemaining(player);
+        int newTime = flyTime - time;
+        upsertTimeFly(player.getUniqueId(), newTime);
+    }
+
     public void resetFlytime(Player player) throws SQLException {
         upsertTimeFly(player.getUniqueId(), 0);
     }
