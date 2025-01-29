@@ -42,7 +42,10 @@ public final class WFlyV2 extends JavaPlugin {
         ConfigUtil configUtil = new ConfigUtil(this);
         configUtil.createCustomConfig();
 
-        PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this, configUtil);
+        //INIT miniMessageSupport
+        MiniMessageSupportUtil miniMessageSupportUtil = new MiniMessageSupportUtil();
+
+        PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this, configUtil,miniMessageSupportUtil);
         placeholerapiManager.checkPlaceholderAPI();
         placeholerapiManager.initialize();
 
@@ -53,8 +56,6 @@ public final class WFlyV2 extends JavaPlugin {
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
 
 
-        //INIT miniMessageSupport
-        MiniMessageSupportUtil miniMessageSupportUtil = new MiniMessageSupportUtil();
 
         //INIT FlyManager
         this.flyManager = new FlyManager(this, requestHelper, configUtil, miniMessageSupportUtil);

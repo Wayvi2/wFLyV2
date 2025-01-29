@@ -2,7 +2,9 @@ package com.wayvi.wfly.wflyV2.placeholders;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
+import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import net.kyori.adventure.text.Component;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -15,10 +17,12 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
 
     private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
+    MiniMessageSupportUtil miniMessageSupportUtil;
 
-    public TimeFlyPlaceholder(WFlyV2 plugin, ConfigUtil configUtil) {
+    public TimeFlyPlaceholder(WFlyV2 plugin, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {
         this.plugin = plugin;
         this.configUtil = configUtil;
+        this.miniMessageSupportUtil=miniMessageSupportUtil;
     }
 
     @Override
@@ -44,7 +48,7 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
             if (params.equals("fly_remaining")) {
                 try {
                     int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
-                    return formatTime(timeRemaining);
+                    return String.valueOf(formatTime(timeRemaining));
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -53,7 +57,7 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
         return null;
     }
 
-    private String formatTime(int seconds) {
+    private Component formatTime(int seconds) {
         Map<String, Boolean> enabledFormats = plugin.getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
         String format = plugin.getTimeFormatTranslatorUtil().getPlaceholderFormat();
         boolean autoFormat = configUtil.getCustomConfig().getBoolean("format-placeholder.auto-format");
@@ -99,7 +103,6 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
             hours = hours % 24;
         }
 
-
         if (!autoFormat) {
             format = format.replace("%seconds%", sec + "");
             format = format.replace("%minutes%", minutes + "");
@@ -109,16 +112,13 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
             format = format.replace("%minutes_suffixe%", minutesSuffix);
             format = format.replace("%hours_suffixe%", hoursSuffix);
             format = format.replace("%days_suffixe%", daysSuffix);
-
-            return format;
+            return miniMessageSupportUtil.sendMiniMessageFormat(format);
         }
-
 
         format = format.replace("%seconds%", enabledFormats.get("seconds") ? sec + "" : "");
         format = format.replace("%minutes%", enabledFormats.get("minutes") ? minutes + "" : "");
         format = format.replace("%hours%", enabledFormats.get("hours") ? hours + "" : "");
         format = format.replace("%days%", enabledFormats.get("days") ? days + "" : "");
-
 
         format = format.replace("%seconds_suffixe%", enabledFormats.get("seconds") ? secondsSuffix : "");
         format = format.replace("%minutes_suffixe%", enabledFormats.get("minutes") ? minutesSuffix : "");
@@ -127,7 +127,8 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
 
         // Nettoyer les espaces inutiles
         format = format.replaceAll("\\s+", " ").trim();
-
-        return format;
+        return miniMessageSupportUtil.sendMiniMessageFormat(format);
     }
+
+
 }
