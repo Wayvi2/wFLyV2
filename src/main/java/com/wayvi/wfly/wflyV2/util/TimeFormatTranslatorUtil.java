@@ -11,6 +11,10 @@ public class TimeFormatTranslatorUtil {
         this.configUtil = configUtil;
     }
 
+    public List<String> getTimeFormat() {
+        return configUtil.getCustomConfig().getStringList("time-format");
+    }
+
     public String getPlaceholderFormat() {
         return configUtil.getCustomConfig().getString("format-placeholder.format");
     }
