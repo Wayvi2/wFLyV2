@@ -40,7 +40,7 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
         int time = args.get("time");
         try {
             plugin.getTimeFlyManager().removeFlytime(target, time);
-            target.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time))));
+            target.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-time-removed").replace("%time%", String.valueOf(time))));
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -49,4 +49,4 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
 }
 
 
-}
+
