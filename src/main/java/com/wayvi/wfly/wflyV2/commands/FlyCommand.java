@@ -41,13 +41,13 @@ public class FlyCommand extends Command<JavaPlugin> {
             AccessPlayerDTO playersInFly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
 
             if(playersInFly.FlyTimeRemaining() == 0){
-                player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.no-timefly-remaining")));
+                MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
                 return;
             }
 
             String message = playersInFly.isinFly() ? configUtil.getCustomMessage().getString("message.fly-deactivated") : configUtil.getCustomMessage().getString("message.fly-activated");
             plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
-            player.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(message));
+            MiniMessageSupportUtil.sendMiniMessageFormat(player,message);
 
             } catch (SQLException e) {
                 throw new RuntimeException(e);

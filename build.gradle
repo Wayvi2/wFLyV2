@@ -31,12 +31,15 @@ repositories {
 
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT")
+    //compileOnly("io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
     compileOnly('me.clip:placeholderapi:2.11.6')
     implementation 'com.github.Traqueur-dev:CommandsAPI:2.0.0'
     implementation 'com.github.Maxlego08:Sarah:1.12'
-    //implementation "net.kyori:adventure-api:4.18.0"
-    //implementation 'net.kyori:adventure-text-minimessage:4.13.0'
+    implementation "net.kyori:adventure-api:4.18.0"
+    implementation 'net.kyori:adventure-text-minimessage:4.13.0'
+    implementation("net.kyori:adventure-text-serializer-legacy:4.18.0")
+
 }
 
 
@@ -76,8 +79,8 @@ shadowJar {
     relocate 'fr.traqueur.commands', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.commands"
     relocate 'fr.maxlego08.sarah', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.sarah"
     //relocate 'me.clip.placeholderapi', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.placeholderapi"
-    //relocate 'net.kyori.adventure', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.adventure"
-    //relocate 'net.kyori.adventure.text.minimessage', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.adventure.text.minimessage"
+    relocate 'net.kyori.adventure', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.adventure"
+    relocate 'net.kyori.adventure.text.minimessage', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.adventure.text.minimessage"
 }
 
 

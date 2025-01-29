@@ -5,7 +5,10 @@ import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
@@ -33,7 +36,10 @@ public class ReloadCommand extends Command<JavaPlugin>  {
         configUtil.reloadCustomConfig();
         String message = configUtil.getCustomMessage().getString("message.reload");
         plugin.getLogger().info("Plugin reloaded");
-        commandSender.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(message));
+
+
+        MiniMessageSupportUtil.sendMiniMessageFormat((Player) commandSender,message);
+
 
     }
 }

@@ -40,7 +40,7 @@ public class AddTimeCommand extends Command<JavaPlugin> {
         int time = args.get("time");
         try {
             plugin.getTimeFlyManager().addFlytime(target, time);
-            target.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time))));
+            MiniMessageSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time)));
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

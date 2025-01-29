@@ -38,7 +38,7 @@ public void execute(CommandSender sender, Arguments args) {
 
     try {
         plugin.getTimeFlyManager().resetFlytime(target);
-        target.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(configUtil.getCustomMessage().getString("message.fly-time-reset")));
+        MiniMessageSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-reset"));
 
     } catch (SQLException e) {
         throw new RuntimeException(e);
