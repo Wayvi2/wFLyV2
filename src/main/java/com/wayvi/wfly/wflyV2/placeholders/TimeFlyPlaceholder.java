@@ -69,7 +69,6 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
         int minutes = (seconds % 3600) / 60;
         int sec = seconds % 60;
 
-        // Conversion des valeurs en fonction des unités activées
         if (!enabledFormats.get("days")) {
             hours += days * 24;
             days = 0;
@@ -100,7 +99,7 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
             hours = hours % 24;
         }
 
-        // Si auto-format est désactivé, on affiche les placeholders bruts (sans suppression des inactifs)
+
         if (!autoFormat) {
             format = format.replace("%seconds%", sec + "");
             format = format.replace("%minutes%", minutes + "");
@@ -114,13 +113,13 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
             return format;
         }
 
-        // Si auto-format est activé, on nettoie les placeholders inactifs
+
         format = format.replace("%seconds%", enabledFormats.get("seconds") ? sec + "" : "");
         format = format.replace("%minutes%", enabledFormats.get("minutes") ? minutes + "" : "");
         format = format.replace("%hours%", enabledFormats.get("hours") ? hours + "" : "");
         format = format.replace("%days%", enabledFormats.get("days") ? days + "" : "");
 
-        // Remplacer les suffixes seulement si la valeur est présente
+
         format = format.replace("%seconds_suffixe%", enabledFormats.get("seconds") ? secondsSuffix : "");
         format = format.replace("%minutes_suffixe%", enabledFormats.get("minutes") ? minutesSuffix : "");
         format = format.replace("%hours_suffixe%", enabledFormats.get("hours") ? hoursSuffix : "");
