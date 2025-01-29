@@ -1,11 +1,11 @@
 package com.wayvi.wfly.wflyV2.services;
 
+import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.migrations.CreateUserTableMigration;
 import fr.maxlego08.sarah.DatabaseConfiguration;
 import fr.maxlego08.sarah.DatabaseConnection;
 import fr.maxlego08.sarah.MigrationManager;
 import fr.maxlego08.sarah.SqliteConnection;
-import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 
@@ -13,10 +13,10 @@ public class DatabaseService {
 
     private File databaseFile;
     private DatabaseConnection connection;
-    private Plugin plugin;
+    private WFlyV2 plugin;
 
 
-    public DatabaseService(Plugin plugin) {
+    public DatabaseService(WFlyV2 plugin) {
         this.plugin = plugin;
     }
 

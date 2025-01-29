@@ -1,7 +1,11 @@
+##############################################################################################
+#                                            WFLY PLUGIN                                     #
+##                                                                                           #
+#   Documentation : https://app.gitbook.com/o/ew6PbMsQsqKjVC6kUf22/s/wnts7HZ5JI6Nxy4VSXbq/   #
+#                                                                                            #
+##############################################################################################
 version: '1.0'
 
-# PLAYER_FLYING_MODE : decrement fly when player fly
-# PLAYER_FLY_MODE : decrement fly when player active /fly
 fly-decrement-method: PLAYER_FLY_MODE
 
 format-placeholder:
@@ -10,10 +14,13 @@ format-placeholder:
   hours: true
   days: true
   auto-format: true
-  format: "%seconds%%seconds_suffixe% %minutes%%minutes_suffixe% %hours%%hours_suffixe% %days%%days_suffixe%"
+  format: "<#FFC77A>%seconds%<#FF9D00>%seconds_suffixe% <#FFC77A>%minutes%<#FF9D00>%minutes_suffixe% <#FFC77A>%hours%<#FF9D00>%hours_suffixe% <#FFC77A>%days%<#FF9D00>%days_suffixe%"
   other-format:
-    seconds_suffixe: "s"
-    minutes_suffixe: "m"
-    hours_suffixe: "h"
-    days_suffixe: "d"
+    seconds_suffixe: "seconds"
+    minutes_suffixe: "minutes"
+    hours_suffixe: "hours"
+    days_suffixe: "days"
+
+
+
 

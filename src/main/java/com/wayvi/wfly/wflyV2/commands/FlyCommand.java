@@ -2,12 +2,12 @@ package com.wayvi.wfly.wflyV2.commands;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
+import com.wayvi.wfly.wflyV2.managers.ConditionWorldManager;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,13 +20,16 @@ public class FlyCommand extends Command<JavaPlugin> {
 
     private ConfigUtil configUtil;
 
-    public FlyCommand(WFlyV2 plugin, ConfigUtil configUtil) {
+    ConditionWorldManager conditionWorldManager;
+
+    public FlyCommand(WFlyV2 plugin, ConfigUtil configUtil, ConditionWorldManager conditionWorldManager) {
         super(plugin, "fly");
         setDescription("Fly command");
         setUsage("/fly");
         setPermission(Permissions.FLY.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
+        this.conditionWorldManager = conditionWorldManager;
 
     }
 
@@ -39,6 +42,10 @@ public class FlyCommand extends Command<JavaPlugin> {
 
             if(playersInFly.FlyTimeRemaining() == 0){
                 MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
+                return;
+            }
+            if (conditionWorldManager.canFly(player)) {
+                MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-fly-in-world"));
                 return;
             }
 

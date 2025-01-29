@@ -16,12 +16,10 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
 
     private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
-    MiniMessageSupportUtil miniMessageSupportUtil;
 
-    public TimeFlyPlaceholder(WFlyV2 plugin, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {
+    public TimeFlyPlaceholder(WFlyV2 plugin, ConfigUtil configUtil) {
         this.plugin = plugin;
         this.configUtil = configUtil;
-        this.miniMessageSupportUtil=miniMessageSupportUtil;
     }
 
     @Override
@@ -61,7 +59,6 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
         String format = plugin.getTimeFormatTranslatorUtil().getPlaceholderFormat();
         boolean autoFormat = configUtil.getCustomConfig().getBoolean("format-placeholder.auto-format");
 
-        // Récupérer les suffixes
         String secondsSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.seconds_suffixe");
         String minutesSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.minutes_suffixe");
         String hoursSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.hours_suffixe");

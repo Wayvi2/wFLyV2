@@ -24,7 +24,7 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
         setUsage("/fly addtime <player> <time>");
         addArgs("player", Player.class);
         addArgs("time:int");
-        setPermission(Permissions.ADD_FLY_TIME.getPermission());
+        setPermission(Permissions.REMOVE_FLY_TIME.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
     }

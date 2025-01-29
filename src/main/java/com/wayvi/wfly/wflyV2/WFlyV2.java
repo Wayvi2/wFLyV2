@@ -3,6 +3,7 @@ package com.wayvi.wfly.wflyV2;
 import com.wayvi.wfly.wflyV2.commands.*;
 import com.wayvi.wfly.wflyV2.listeners.PlayerJoinListener;
 import com.wayvi.wfly.wflyV2.listeners.PlayerLeaveListener;
+import com.wayvi.wfly.wflyV2.managers.ConditionWorldManager;
 import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
 import com.wayvi.wfly.wflyV2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyV2.managers.fly.TimeFlyManager;
@@ -55,6 +56,8 @@ public final class WFlyV2 extends JavaPlugin {
 
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
 
+        ConditionWorldManager conditionWorldManager = new ConditionWorldManager(this, configUtil, requestHelper);
+        //conditionWorldManager.checkCanFly();
 
 
         //INIT FlyManager
@@ -68,7 +71,7 @@ public final class WFlyV2 extends JavaPlugin {
         // COMMANDS
         CommandManager commandManager = new CommandManager(this);
         commandManager.registerCommand(new ReloadCommand(this, configUtil));
-        commandManager.registerCommand(new FlyCommand(this, configUtil));
+        commandManager.registerCommand(new FlyCommand(this, configUtil, conditionWorldManager));
         commandManager.registerCommand(new FlySpeedCommand(this, this.flyManager));
         commandManager.registerCommand(new AddTimeCommand(this, configUtil));
         commandManager.registerCommand(new ResetTimeCommand(this, configUtil));
