@@ -15,14 +15,15 @@ public class ConfigUtil {
     private File messageFile;
     private FileConfiguration messageConfig;
 
-
     //config.yml
     private File configFile;
     private FileConfiguration configConfig;
 
+
+
     private FileConfiguration customConfig;
     private String version = "1.0";
-    Plugin plugin;
+    private final Plugin plugin;
 
     public ConfigUtil(Plugin plugin) {
         this.plugin = plugin;
@@ -35,24 +36,22 @@ public class ConfigUtil {
 
         //message.yml
         messageFile = new File(plugin.getDataFolder(), "message.yml");
-        if (!messageFile.exists()) {
-            messageFile.getParentFile().mkdirs();
-            plugin.saveResource("message.yml", false);
-        }
+        ifNotExistCreateCustomConfig(messageFile, "message.yml");
+
         //config.yml
         configFile = new File(plugin.getDataFolder(), "config.yml");
-        if (!configFile.exists()) {
-            configFile.getParentFile().mkdirs();
-            plugin.saveResource("config.yml", false);
-        }
+        ifNotExistCreateCustomConfig(configFile, "config.yml");
 
         messageConfig = new YamlConfiguration();
         configConfig = new YamlConfiguration();
-        try {
-            messageConfig.load(messageFile);
-            configConfig.load(configFile);
-        } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
+
+        reloadCustomConfig();
+    }
+
+    public void ifNotExistCreateCustomConfig(File file, String name) {
+        if (!file.exists()) {
+            file.getParentFile().mkdirs();
+            plugin.saveResource(name, false);
         }
     }
 

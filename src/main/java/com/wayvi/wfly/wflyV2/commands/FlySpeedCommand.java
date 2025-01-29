@@ -1,9 +1,6 @@
 package com.wayvi.wfly.wflyV2.commands;
 
-import com.wayvi.wfly.wflyV2.constants.Permissions;
-import com.wayvi.wfly.wflyV2.managers.FlyManager;
-import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
 import org.bukkit.command.CommandSender;
@@ -12,32 +9,22 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class FlySpeedCommand extends Command<JavaPlugin> {
 
-    FlyManager flyManager;
-    ConfigUtil configUtil;
-    MiniMessageSupportUtil miniMessageSupportUtil;
+    private final FlyManager flyManager;
 
-    public FlySpeedCommand(JavaPlugin plugin, FlyManager flyManager, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {
+    public FlySpeedCommand(JavaPlugin plugin, FlyManager flyManager) {
         super(plugin, "flyspeed");
         setDescription("Manage the fly speed");
         setUsage("/flyspeed <number>");
-        setPermission(Permissions.FLY_SPEED);
         addArgs("speed:double");
         this.flyManager = flyManager;
-        this.configUtil = configUtil;
-        this.miniMessageSupportUtil = miniMessageSupportUtil;
     }
 
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
 
         double speed = arguments.get("speed");
-        double fspeed = speed / 10.0F;
+        flyManager.manageFlySpeed((Player) commandSender, speed);
 
-        String messageFlySpeed = speed > 10 ? configUtil.getCustomMessage().getString("message.fly-speed-too-high") : configUtil.getCustomMessage().getString("message.fly-speed").replace("%speed%", String.valueOf(speed));
-
-        flyManager.manageFlySpeed((Player) commandSender, fspeed);
-
-        commandSender.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(messageFlySpeed));
 
     }
 }

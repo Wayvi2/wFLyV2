@@ -1,9 +1,21 @@
 package com.wayvi.wfly.wflyV2.constants;
 
-public class Permissions {
+public enum Permissions {
 
-    public static final String RELOAD = "wfly.reload";
-    public static final String FLY = "wfly.fly";
-    public static final String FLY_SPEED = "wfly.fly.speed";
+    RELOAD("wfly.reload"),
+    FLY("wfly.fly"),
+    FLY_SPEED("wfly.fly.speed"),
+    ADD_FLY_TIME("wfly.add.time"),
+    INFINITE_FLY("wfly.infinite.fly"),
+    ;
 
+    private final String permission;
+
+    Permissions(String permission) {
+        this.permission = permission;
+    }
+
+    public String getPermission(){
+        return permission;
+    }
 }

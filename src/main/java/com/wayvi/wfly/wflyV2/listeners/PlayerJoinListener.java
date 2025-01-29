@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyV2.listeners;
 
-import com.wayvi.wfly.wflyV2.managers.FlyManager;
+import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
+import com.wayvi.wfly.wflyV2.managers.fly.TimeFlyManager;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,19 +12,22 @@ import java.sql.SQLException;
 
 public class PlayerJoinListener implements Listener {
 
-    FlyManager flyManager;
+    private final FlyManager flyManager;
+    private final TimeFlyManager timeFlyManager;
 
-    public PlayerJoinListener(FlyManager flyManager) {
+    public PlayerJoinListener(FlyManager flyManager, TimeFlyManager timeFlyManager) {
         this.flyManager = flyManager;
+        this.timeFlyManager = timeFlyManager;
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) throws SQLException {
         Player player = event.getPlayer();
-        AccessPlayerDTO playerFlyData = flyManager.getIsInFlyBeforeDeconnect(player);
+        AccessPlayerDTO playerFlyData = flyManager.getPlayerFlyData(player.getUniqueId());
+
 
         if (playerFlyData.isinFly()) {
-            flyManager.manageFly(player, true);
+            flyManager.manageFly(player.getUniqueId(), true);
         }
     }
 

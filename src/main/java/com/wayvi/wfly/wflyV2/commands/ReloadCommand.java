@@ -5,7 +5,10 @@ import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
@@ -13,19 +16,16 @@ import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 
 public class ReloadCommand extends Command<JavaPlugin>  {
 
-    MiniMessageSupportUtil miniMessageSupportUtil;
-    ConfigUtil configUtil;
-    Plugin plugin;
+    private final ConfigUtil configUtil;
+    private final Plugin plugin;
 
-
-    public ReloadCommand(JavaPlugin plugin, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {
+    public ReloadCommand(JavaPlugin plugin, ConfigUtil configUtil) {
         super(plugin, "wfly.reload");
         setDescription("Reload file of the plugin.");
         setUsage("/wfly reload");
-        setPermission(Permissions.RELOAD);
+        setPermission(Permissions.RELOAD.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
-        this.miniMessageSupportUtil = miniMessageSupportUtil;
     }
 
     @Override
@@ -33,13 +33,11 @@ public class ReloadCommand extends Command<JavaPlugin>  {
 
         configUtil.reloadCustomConfig();
         String message = configUtil.getCustomMessage().getString("message.reload");
-        assert message != null;
-        plugin.getLogger().info(message);
-        commandSender.sendMessage(miniMessageSupportUtil.sendMiniMessageFormat(message));
+        plugin.getLogger().info("Plugin reloaded");
 
+
+        MiniMessageSupportUtil.sendMiniMessageFormat((Player) commandSender,message);
 
 
     }
-
-
 }

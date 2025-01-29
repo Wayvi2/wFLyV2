@@ -1,1 +1,19 @@
 version: '1.0'
+
+# PLAYER_FLYING_MODE : decrement fly when player fly
+# PLAYER_FLY_MODE : decrement fly when player active /fly
+fly-decrement-method: PLAYER_FLY_MODE
+
+format-placeholder:
+  seconds: true
+  minutes: false
+  hours: true
+  days: true
+  auto-format: true
+  format: "%seconds%%seconds_suffixe% %minutes%%minutes_suffixe% %hours%%hours_suffixe% %days%%days_suffixe%"
+  other-format:
+    seconds_suffixe: "s"
+    minutes_suffixe: "m"
+    hours_suffixe: "h"
+    days_suffixe: "d"
+
