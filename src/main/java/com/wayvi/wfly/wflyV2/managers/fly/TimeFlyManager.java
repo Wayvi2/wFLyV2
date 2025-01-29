@@ -28,14 +28,11 @@ public class TimeFlyManager {
 
     private BukkitTask timeTask;
 
-    private MiniMessageSupportUtil miniMessageSupportUtil;
-
     private ConfigUtil configUtil;
 
-    public TimeFlyManager(WFlyV2 plugin, RequestHelper requestHelper, MiniMessageSupportUtil miniMessageSupportUtil, ConfigUtil configUtil) {
+    public TimeFlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
         this.requestHelper = requestHelper;
         this.plugin = plugin;
-        this.miniMessageSupportUtil = miniMessageSupportUtil;
         this.configUtil = configUtil;
     }
 
@@ -110,15 +107,14 @@ public class TimeFlyManager {
         }
     }
 
-
-
-
-
-
     public void addFlytime(Player player, int time) throws SQLException {
             int flyTime = getTimeRemaining(player);
             int newTime = flyTime + time;
             upsertTimeFly(player.getUniqueId(), newTime);
+    }
+
+    public void resetFlytime(Player player) throws SQLException {
+        upsertTimeFly(player.getUniqueId(), 0);
     }
 
 
@@ -140,10 +136,8 @@ public class TimeFlyManager {
 
     public int getTimeRemaining(Player player) throws SQLException {
         if (timeTask != null && !timeTask.isCancelled()) {
-
             return timeRemaining;
         } else {
-
             AccessPlayerDTO fly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
             return fly.FlyTimeRemaining();
         }

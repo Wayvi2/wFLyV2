@@ -9,4 +9,5 @@ format-placeholder:
   minutes: true
   hours: true
   days: true
+  auto-format: true
   format: "%seconds% %minutes% %hours% %days%"

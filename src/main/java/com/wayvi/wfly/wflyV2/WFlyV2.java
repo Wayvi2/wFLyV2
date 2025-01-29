@@ -1,9 +1,6 @@
 package com.wayvi.wfly.wflyV2;
 
-import com.wayvi.wfly.wflyV2.commands.AddTimeCommand;
-import com.wayvi.wfly.wflyV2.commands.FlyCommand;
-import com.wayvi.wfly.wflyV2.commands.FlySpeedCommand;
-import com.wayvi.wfly.wflyV2.commands.ReloadCommand;
+import com.wayvi.wfly.wflyV2.commands.*;
 import com.wayvi.wfly.wflyV2.listeners.PlayerJoinListener;
 import com.wayvi.wfly.wflyV2.listeners.PlayerLeaveListener;
 import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
@@ -11,6 +8,7 @@ import com.wayvi.wfly.wflyV2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyV2.managers.fly.TimeFlyManager;
 import com.wayvi.wfly.wflyV2.services.DatabaseService;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.TimeFormatTranslatorUtil;
 import fr.maxlego08.sarah.DatabaseConfiguration;
 import fr.maxlego08.sarah.DatabaseConnection;
 import fr.maxlego08.sarah.SqliteConnection;
@@ -27,6 +25,8 @@ public final class WFlyV2 extends JavaPlugin {
 
     private TimeFlyManager timeFlyManager;
 
+    private TimeFormatTranslatorUtil timeFormatTranslatorUtil;
+
     @Override
     public void onEnable() {
 
@@ -38,9 +38,11 @@ public final class WFlyV2 extends JavaPlugin {
         DatabaseService databaseService = new DatabaseService(this);
         databaseService.initializeDatabase();
 
+        // CONFIGS
+        ConfigUtil configUtil = new ConfigUtil(this);
+        configUtil.createCustomConfig();
 
-
-        PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this);
+        PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this, configUtil);
         placeholerapiManager.checkPlaceholderAPI();
         placeholerapiManager.initialize();
 
@@ -48,9 +50,8 @@ public final class WFlyV2 extends JavaPlugin {
         //INIT RequestHelper
         RequestHelper requestHelper = new RequestHelper(connection, this.getLogger()::info);
 
-        // CONFIGS
-        ConfigUtil configUtil = new ConfigUtil(this);
-        configUtil.createCustomConfig();
+        this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
+
 
         //INIT miniMessageSupport
         MiniMessageSupportUtil miniMessageSupportUtil = new MiniMessageSupportUtil();
@@ -59,7 +60,7 @@ public final class WFlyV2 extends JavaPlugin {
         this.flyManager = new FlyManager(this, requestHelper, configUtil, miniMessageSupportUtil);
 
         //INIT TimeFlyManager
-        this.timeFlyManager = new TimeFlyManager(this, requestHelper, miniMessageSupportUtil, configUtil);
+        this.timeFlyManager = new TimeFlyManager(this, requestHelper, configUtil);
         timeFlyManager.decrementTimeRemaining();
 
 
@@ -69,6 +70,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new FlyCommand(this, miniMessageSupportUtil, configUtil));
         commandManager.registerCommand(new FlySpeedCommand(this, this.flyManager));
         commandManager.registerCommand(new AddTimeCommand(this, miniMessageSupportUtil, configUtil));
+        commandManager.registerCommand(new ResetTimeCommand(this, miniMessageSupportUtil, configUtil));
 
         //LISTENER
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this.flyManager, this.timeFlyManager), this);
@@ -89,5 +91,9 @@ public final class WFlyV2 extends JavaPlugin {
 
     public FlyManager getFlyManager() {
         return flyManager;
+    }
+
+    public TimeFormatTranslatorUtil getTimeFormatTranslatorUtil() {
+        return timeFormatTranslatorUtil;
     }
 }
