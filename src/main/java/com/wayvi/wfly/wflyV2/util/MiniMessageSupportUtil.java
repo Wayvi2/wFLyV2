@@ -19,5 +19,10 @@ public class MiniMessageSupportUtil {
             String spigotMessage = translateToSpigot(minimessage);
             player.sendMessage(spigotMessage);
         }
+
+    public static Object convertMiniMessageFormat(String minimessage) {
+        return translateToSpigot(minimessage);
+    }
+
     }
 

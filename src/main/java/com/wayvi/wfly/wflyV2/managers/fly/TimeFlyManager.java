@@ -113,10 +113,16 @@ public class TimeFlyManager {
             upsertTimeFly(player.getUniqueId(), newTime);
     }
 
-    public void removeFlytime(Player player, int time) throws SQLException {
+    public boolean removeFlytime(Player player, int time) throws SQLException {
         int flyTime = getTimeRemaining(player);
         int newTime = flyTime - time;
+        if (newTime < 0) {
+            player.sendMessage("§cYou can't remove too much time");
+            player.sendMessage("§cMax time is " + flyTime);
+            return false;
+        }
         upsertTimeFly(player.getUniqueId(), newTime);
+        return true;
     }
 
     public void resetFlytime(Player player) throws SQLException {

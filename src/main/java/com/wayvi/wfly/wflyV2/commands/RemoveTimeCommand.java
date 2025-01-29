@@ -19,7 +19,7 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
     ConfigUtil configUtil;
 
     public RemoveTimeCommand(WFlyV2 plugin, ConfigUtil configUtil) {
-        super(plugin, "wfly.addtime");
+        super(plugin, "wfly.removetime");
         setDescription("Manage fly time for players");
         setUsage("/fly addtime <player> <time>");
         addArgs("player", Player.class);
@@ -36,8 +36,10 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
 
         int time = args.get("time");
         try {
-            plugin.getTimeFlyManager().removeFlytime(target, time);
-            MiniMessageSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-removed").replace("%time%", String.valueOf(time)));
+            if (plugin.getTimeFlyManager().removeFlytime(target, time)){
+                MiniMessageSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time)));
+            }
+
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
