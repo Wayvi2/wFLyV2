@@ -13,13 +13,13 @@ import org.bukkit.entity.Player;
 import java.sql.SQLException;
 import java.util.List;
 
-public class ConditionWorldManager {
+public class ConditionManager {
 
     private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
     private final RequestHelper requestHelper;
 
-    public ConditionWorldManager(WFlyV2 plugin, ConfigUtil configUtil, RequestHelper requestHelper) {
+    public ConditionManager(WFlyV2 plugin, ConfigUtil configUtil, RequestHelper requestHelper) {
         this.plugin = plugin;
         this.configUtil = configUtil;
         this.requestHelper = requestHelper;
@@ -28,25 +28,25 @@ public class ConditionWorldManager {
     public boolean canFly(Player player) {
         FileConfiguration config = configUtil.getCustomConfig();
 
-        // Vérification si "conditions" est une section valide
         if (config.isConfigurationSection("conditions")) {
             ConfigurationSection conditionsSection = config.getConfigurationSection("conditions");
             if (conditionsSection != null) {
                 for (String key : conditionsSection.getKeys(false)) {
-                    String placeholder = conditionsSection.getString(key + ".placeholder");
+                    String placeholder = conditionsSection.getString( key + ".placeholder");
                     String value = conditionsSection.getString(key + ".equals");
 
                     if (placeholder == null || value == null) {
-                        plugin.getLogger().warning("Invalid condition configuration for key: " + key);
+                        plugin.getLogger().warning("Invalid condition configuration for key: " + key+ " Skipping..."); ;
                         continue;
                     }
 
                     String actualValue = PlaceholderAPI.setPlaceholders(player, placeholder);
-                    if (!value.equalsIgnoreCase(actualValue)) {
+                    if (value.equalsIgnoreCase(actualValue)) {
                         return true;
                     }
                 }
             }
+            plugin.getLogger().warning("Conditions section not found in config.yml!");
         }
         return false;
     }
@@ -58,7 +58,7 @@ public class ConditionWorldManager {
             for (AccessPlayerDTO accessPlayerDTO : fly) {
                 Player player = Bukkit.getPlayer(accessPlayerDTO.uniqueId());
                 try {
-                    if (player != null && !canFly(player)){
+                    if (player != null && canFly(player)){
                         plugin.getFlyManager().manageFly(player.getUniqueId(), false);
 
                     }
