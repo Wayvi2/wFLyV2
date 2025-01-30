@@ -213,12 +213,7 @@ public class TimeFlyManager {
     }
 
     public int getTimeRemaining(Player player) throws SQLException {
-        if (timeTask != null && !timeTask.isCancelled()) {
-            return timeRemaining;
-        } else {
-            AccessPlayerDTO fly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
-            return fly.FlyTimeRemaining();
-        }
+        AccessPlayerDTO fly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
+        return fly.FlyTimeRemaining();
     }
-
 }
