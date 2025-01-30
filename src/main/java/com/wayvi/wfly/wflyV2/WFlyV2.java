@@ -3,6 +3,7 @@ package com.wayvi.wfly.wflyV2;
 import com.wayvi.wfly.wflyV2.commands.*;
 import com.wayvi.wfly.wflyV2.listeners.PlayerJoinListener;
 import com.wayvi.wfly.wflyV2.listeners.PlayerLeaveListener;
+import com.wayvi.wfly.wflyV2.managers.ConditionManager;
 import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
 import com.wayvi.wfly.wflyV2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyV2.managers.fly.TimeFlyManager;
@@ -16,8 +17,6 @@ import fr.maxlego08.sarah.RequestHelper;
 import fr.traqueur.commands.api.CommandManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-
-import java.sql.SQLException;
 
 public final class WFlyV2 extends JavaPlugin {
 
@@ -55,6 +54,8 @@ public final class WFlyV2 extends JavaPlugin {
 
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
 
+        ConditionManager conditionWorldManager = new ConditionManager(this, configUtil, requestHelper);
+        conditionWorldManager.checkCanFly();
 
 
         //INIT FlyManager
@@ -68,7 +69,7 @@ public final class WFlyV2 extends JavaPlugin {
         // COMMANDS
         CommandManager commandManager = new CommandManager(this);
         commandManager.registerCommand(new ReloadCommand(this, configUtil));
-        commandManager.registerCommand(new FlyCommand(this, configUtil));
+        commandManager.registerCommand(new FlyCommand(this, configUtil, conditionWorldManager));
         commandManager.registerCommand(new FlySpeedCommand(this, this.flyManager));
         commandManager.registerCommand(new AddTimeCommand(this, configUtil));
         commandManager.registerCommand(new ResetTimeCommand(this, configUtil));

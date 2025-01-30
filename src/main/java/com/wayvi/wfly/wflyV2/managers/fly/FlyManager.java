@@ -97,7 +97,7 @@ public class FlyManager {
         if (fly.isEmpty()) {
             return new AccessPlayerDTO(player, false, 0);
         } else {
-            return fly.getFirst();
+            return fly.get(0);
         }
     }
 
@@ -106,22 +106,14 @@ public class FlyManager {
             this.requestHelper.upsert("fly", table -> {
                 table.uuid("uniqueId", player.getUniqueId()).primary();
                 table.bool("isinFly", isFlying);
+
                 try {
                     table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
+
             });
         });
-    }
-
-    public boolean getFlyStatus(Player player) throws SQLException {
-        AccessPlayerDTO fly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
-        return !fly.isinFly();
-    }
-
-
-    public String getFlyMode(){
-        return configUtil.getCustomConfig().getString("fly-decrement-method");
     }
 }

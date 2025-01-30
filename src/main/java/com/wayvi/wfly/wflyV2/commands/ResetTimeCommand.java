@@ -23,7 +23,7 @@ public class ResetTimeCommand extends Command<JavaPlugin> {
     setDescription("Manage fly time for players");
     setUsage("/fly addtime <player> <time>");
     addArgs("player",Player.class);
-    setPermission(Permissions.ADD_FLY_TIME.getPermission());
+    setPermission(Permissions.ADD_RESET_TIME.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
 }
