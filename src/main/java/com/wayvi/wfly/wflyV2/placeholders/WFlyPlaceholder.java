@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyV2.placeholders;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -11,13 +12,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.UUID;
 
-public class TimeFlyPlaceholder extends PlaceholderExpansion {
+public class WFlyPlaceholder extends PlaceholderExpansion {
 
     private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
 
-    public TimeFlyPlaceholder(WFlyV2 plugin, ConfigUtil configUtil) {
+    public WFlyPlaceholder(WFlyV2 plugin, ConfigUtil configUtil) {
         this.plugin = plugin;
         this.configUtil = configUtil;
     }
@@ -42,19 +44,32 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
         if (offlinePlayer.isOnline() && offlinePlayer.getPlayer() != null) {
             Player player = offlinePlayer.getPlayer();
 
+
             if (params.equals("fly_remaining")) {
                 try {
                     int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
-                    return (String) formatTime(timeRemaining);
+                    return formatTime(timeRemaining);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
             }
+
+            if (params.equals("fly_activate")) {
+                try {
+                    UUID player1 = offlinePlayer.getUniqueId();
+                    AccessPlayerDTO isFlying = plugin.getFlyManager().getPlayerFlyData(player1);
+                    return String.valueOf(isFlying.isinFly());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+
         }
         return null;
     }
 
-    private Object formatTime(int seconds) {
+    private String formatTime(int seconds) {
         Map<String, Boolean> enabledFormats = plugin.getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
         String format = plugin.getTimeFormatTranslatorUtil().getPlaceholderFormat();
         boolean autoFormat = configUtil.getCustomConfig().getBoolean("format-placeholder.auto-format");
@@ -108,7 +123,7 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
             format = format.replace("%minutes_suffixe%", minutesSuffix);
             format = format.replace("%hours_suffixe%", hoursSuffix);
             format = format.replace("%days_suffixe%", daysSuffix);
-            return MiniMessageSupportUtil.convertMiniMessageFormat(format);
+            return (String) MiniMessageSupportUtil.convertMiniMessageFormat(format);
         }
 
         format = format.replace("%seconds%", enabledFormats.get("seconds") ? sec + "" : "");
@@ -123,8 +138,6 @@ public class TimeFlyPlaceholder extends PlaceholderExpansion {
 
         format = format.replaceAll("\\s+", " ").trim();
 
-        return MiniMessageSupportUtil.convertMiniMessageFormat(format);
+        return (String) MiniMessageSupportUtil.convertMiniMessageFormat(format);
     }
-
-
 }

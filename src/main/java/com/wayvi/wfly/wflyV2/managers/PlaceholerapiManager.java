@@ -1,8 +1,7 @@
 package com.wayvi.wfly.wflyV2.managers;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
-import com.wayvi.wfly.wflyV2.placeholders.TimeFlyPlaceholder;
-import com.wayvi.wfly.wflyV2.placeholders.isFlyingPlaceholder;
+import com.wayvi.wfly.wflyV2.placeholders.WFlyPlaceholder;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import org.bukkit.Bukkit;
@@ -30,8 +29,7 @@ public class PlaceholerapiManager {
 
 
     public void initialize() {
-        new TimeFlyPlaceholder(plugin, configUtil).register();
-        new isFlyingPlaceholder(plugin).register();
+        new WFlyPlaceholder(plugin, configUtil).register();
     }
 }
 

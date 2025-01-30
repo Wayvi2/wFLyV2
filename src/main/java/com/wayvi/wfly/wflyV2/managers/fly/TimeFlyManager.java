@@ -5,13 +5,18 @@ import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,6 +35,8 @@ public class TimeFlyManager {
 
     private ConfigUtil configUtil;
 
+    private final Map<UUID, Integer> lastNotifiedTime = new HashMap<>();
+
     public TimeFlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
         this.requestHelper = requestHelper;
         this.plugin = plugin;
@@ -42,6 +49,11 @@ public class TimeFlyManager {
         }
 
         timeTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            try {
+                manageCommandMessageOnTimeLeft();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             try {
                 List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
                 for (AccessPlayerDTO accessPlayerDTO : fly) {
@@ -128,6 +140,60 @@ public class TimeFlyManager {
     public void resetFlytime(Player player) throws SQLException {
         upsertTimeFly(player.getUniqueId(), 0);
     }
+
+
+    public void manageCommandMessageOnTimeLeft() throws SQLException {;
+
+        List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
+        FileConfiguration config = configUtil.getCustomMessage();
+        if (!config.isConfigurationSection("commands-time-remaining")) {
+            return;
+        }
+
+        ConfigurationSection conditionsSection = config.getConfigurationSection("commands-time-remaining");
+        if (conditionsSection == null) {
+            return;
+        }
+
+        for (String key : conditionsSection.getKeys(false)) {
+            String command = conditionsSection.getString(key + ".commands");
+            if (command == null) {
+                continue;
+            }
+
+
+            int timeRemaining;
+            try {
+                timeRemaining = Integer.parseInt(key);
+            } catch (NumberFormatException e) {
+                continue;
+            }
+
+            for (AccessPlayerDTO accessPlayerDTO : fly) {
+                if (accessPlayerDTO.FlyTimeRemaining() != timeRemaining) {
+                    continue;
+                }
+
+                int playerTimeRemaining = accessPlayerDTO.FlyTimeRemaining();
+                UUID playerUUID = accessPlayerDTO.uniqueId();
+
+                if (lastNotifiedTime.getOrDefault(playerUUID, -1) == playerTimeRemaining) {
+                    continue;
+                }
+
+                Player player = Bukkit.getPlayer(accessPlayerDTO.uniqueId());
+                if (player == null) {
+                    continue;
+                }
+
+                lastNotifiedTime.put(playerUUID, playerTimeRemaining);
+                command = command.replace("%player%", player.getName());
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+            }
+        }
+    }
+
+
 
 
     public void upsertTimeFly(@NotNull UUID player, int newtimeRemaining) {

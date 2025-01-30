@@ -22,5 +22,11 @@ format-placeholder:
     days_suffixe: "days"
 
 
+#mean if condition is valid, player will can't activate his fly
+conditions:
+  my-first-conditions:
+    placeholder: "%player_name%"
+    equals: "Wayvi2"
+
 
 

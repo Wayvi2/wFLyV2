@@ -10,3 +10,15 @@ message:
   fly-time-removed: "<red>You have been taken <yellow>%time% <red>timefly!"
   fly-time-reset: "<green>You have been given <yellow>0 <green>timefly!"
   no-fly-in-world: "<red>You cannot fly in this world!"
+
+
+
+commands-time-remaining:
+  1:
+    commands: "title %player% title {"text":"You have 1 seconds fly left!","bold":true,"color":"gold"}"
+  2:
+    commands: "title %player% title {"text":"You have 2 seconds fly left!","bold":true,"color":"gold"}"
+  3:
+    commands: "title %player% title {"text":"You have 3 seconds fly left!","bold":true,"color":"gold"}"
+  5:
+    commands: "title %player% title {"text":"You have 5 seconds fly left!","bold":true,"color":"gold"}"

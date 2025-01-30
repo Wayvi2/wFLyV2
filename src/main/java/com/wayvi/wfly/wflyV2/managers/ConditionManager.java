@@ -46,7 +46,6 @@ public class ConditionManager {
                     }
                 }
             }
-            plugin.getLogger().warning("Conditions section not found in config.yml!");
         }
         return false;
     }
