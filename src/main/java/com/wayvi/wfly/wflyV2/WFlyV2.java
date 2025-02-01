@@ -31,9 +31,6 @@ public final class WFlyV2 extends JavaPlugin {
     @Override
     public void onEnable() {
 
-        //CREATE INSTANCE TO ACCESS DATABASE
-        DatabaseConfiguration configuration = DatabaseConfiguration.sqlite(true);
-        DatabaseConnection connection = new SqliteConnection(configuration, getDataFolder());
 
         //INIT DATABASE
         DatabaseService databaseService = new DatabaseService(this);
@@ -52,7 +49,7 @@ public final class WFlyV2 extends JavaPlugin {
 
 
         //INIT RequestHelper
-        RequestHelper requestHelper = new RequestHelper(connection, this.getLogger()::info);
+        RequestHelper requestHelper = new RequestHelper(databaseService.getConnection(), this.getLogger()::info);
 
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
 

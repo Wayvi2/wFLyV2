@@ -14,11 +14,13 @@ message:
 
 
 commands-time-remaining:
+  0:
+    commands: 'title %player% title {"text":"You have 0 seconds fly left!","bold":true,"color":"gold"}'
   1:
-    commands: "title %player% title {"text":"You have 1 seconds fly left!","bold":true,"color":"gold"}"
+    commands: 'title %player% title {"text":"You have 1 seconds fly left!","bold":true,"color":"gold"}'
   2:
-    commands: "title %player% title {"text":"You have 2 seconds fly left!","bold":true,"color":"gold"}"
+    commands: 'title %player% title {"text":"You have 2 seconds fly left!","bold":true,"color":"gold"}'
   3:
-    commands: "title %player% title {"text":"You have 3 seconds fly left!","bold":true,"color":"gold"}"
+    commands: 'title %player% title {"text":"You have 3 seconds fly left!","bold":true,"color":"gold"}'
   5:
-    commands: "title %player% title {"text":"You have 5 seconds fly left!","bold":true,"color":"gold"}"
+    commands: 'title %player% title {"text":"You have 5 seconds fly left!","bold":true,"color":"gold"}'

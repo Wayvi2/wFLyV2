@@ -59,8 +59,6 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                     throw new RuntimeException(e);
                 }
             }
-
-
         }
         return null;
     }
