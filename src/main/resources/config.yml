@@ -9,7 +9,6 @@ version: '1.0'
 
 save-database-delay: 60 # in seconds
 
-
 fly-decrement-method: PLAYER_FLY_MODE
 
 format-placeholder:

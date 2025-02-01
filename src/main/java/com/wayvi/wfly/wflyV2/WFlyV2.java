@@ -10,9 +10,6 @@ import com.wayvi.wfly.wflyV2.managers.fly.TimeFlyManager;
 import com.wayvi.wfly.wflyV2.services.DatabaseService;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import com.wayvi.wfly.wflyV2.util.TimeFormatTranslatorUtil;
-import fr.maxlego08.sarah.DatabaseConfiguration;
-import fr.maxlego08.sarah.DatabaseConnection;
-import fr.maxlego08.sarah.SqliteConnection;
 import fr.maxlego08.sarah.RequestHelper;
 import fr.traqueur.commands.api.CommandManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -30,6 +27,8 @@ public final class WFlyV2 extends JavaPlugin {
 
     @Override
     public void onEnable() {
+
+        Metrics metrics = new Metrics(this, 24609);
 
 
         //INIT DATABASE
