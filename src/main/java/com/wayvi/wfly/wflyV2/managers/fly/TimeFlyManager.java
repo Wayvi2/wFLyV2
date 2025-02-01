@@ -84,7 +84,6 @@ public class TimeFlyManager {
 
             assert decrementMethod != null;
             if (decrementMethod.equals("PLAYER_FLYING_MODE")) {
-                Bukkit.broadcastMessage("entre ici");
                 if (isFlying && player.isFlying()) {
                     timeRemaining--;
                     flyTimes.put(playerUUID, timeRemaining);
@@ -95,8 +94,6 @@ public class TimeFlyManager {
                     flyTimes.put(playerUUID, timeRemaining);
                 }
             }
-
-            // Met à jour les informations de vol après la décrémentation
             if (timeRemaining <= 0) {
                 plugin.getFlyManager().manageFly(playerUUID, false);
                 plugin.getFlyManager().upsertFlyStatus(player, false);
