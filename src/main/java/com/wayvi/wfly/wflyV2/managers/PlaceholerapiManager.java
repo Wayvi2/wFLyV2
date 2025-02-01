@@ -11,13 +11,11 @@ import java.util.logging.Level;
 public class PlaceholerapiManager {
     private WFlyV2 plugin;
     private ConfigUtil configUtil;
-    private MiniMessageSupportUtil miniMessageSupportUtil;
 
 
-    public PlaceholerapiManager(WFlyV2 plugin, ConfigUtil configutil, MiniMessageSupportUtil miniMessageSupportUtil) {
+    public PlaceholerapiManager(WFlyV2 plugin, ConfigUtil configutil) {
         this.plugin = plugin;
         this.configUtil = configutil;
-        this.miniMessageSupportUtil=miniMessageSupportUtil;
     }
 
     public void checkPlaceholderAPI() {

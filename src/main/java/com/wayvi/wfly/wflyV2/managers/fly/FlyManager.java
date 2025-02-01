@@ -25,13 +25,11 @@ public class FlyManager {
     private final RequestHelper requestHelper;
     private BukkitTask flyTask;
     private ConfigUtil configUtil;
-    private MiniMessageSupportUtil miniMessageSupportUtil;
 
-    public FlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil, MiniMessageSupportUtil miniMessageSupportUtil) {
+    public FlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
         this.requestHelper = requestHelper;
         this.plugin = plugin;
         this.configUtil = configUtil;
-        this.miniMessageSupportUtil = miniMessageSupportUtil;
     }
 
     public void manageFly(UUID player, boolean fly) throws SQLException {
@@ -56,11 +54,7 @@ public class FlyManager {
                 if (player1.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR) {
                     player1.setAllowFlight(false);
                     upsertFlyStatus(player1, false);
-                    try {
-                        plugin.getTimeFlyManager().upsertTimeFly(player1.getUniqueId(), plugin.getTimeFlyManager().getTimeRemaining(player1));
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
+                    plugin.getTimeFlyManager().upsertTimeFly(player1.getUniqueId(), plugin.getTimeFlyManager().getTimeRemaining(player1));
                     player1.setFlySpeed(0.1F);
                     flyTask.cancel();
                 }
@@ -107,11 +101,7 @@ public class FlyManager {
                 table.uuid("uniqueId", player.getUniqueId()).primary();
                 table.bool("isinFly", isFlying);
 
-                try {
-                    table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
 
             });
         });

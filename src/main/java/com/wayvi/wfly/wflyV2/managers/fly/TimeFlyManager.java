@@ -3,9 +3,7 @@ package com.wayvi.wfly.wflyV2.managers.fly;
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
-import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -14,206 +12,154 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class TimeFlyManager {
 
-    public static ExecutorService service = Executors.newSingleThreadExecutor();
-
+    private final WFlyV2 plugin;
     private final RequestHelper requestHelper;
+    private final ConfigUtil configUtil;
+    private final Map<UUID, Integer> flyTimes = new ConcurrentHashMap<>();
+    private final Map<UUID, Integer> lastNotifiedTime = new ConcurrentHashMap<>();
 
-    private WFlyV2 plugin;
-
-    private int timeRemaining;
-
-    private BukkitTask timeTask;
-
-    private ConfigUtil configUtil;
-
-    private final Map<UUID, Integer> lastNotifiedTime = new HashMap<>();
+    private static final ExecutorService sqlExecutor = Executors.newSingleThreadExecutor();
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public TimeFlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
-        this.requestHelper = requestHelper;
         this.plugin = plugin;
+        this.requestHelper = requestHelper;
         this.configUtil = configUtil;
+        loadFlyTimes();
+        startDecrementTask();
     }
 
-    public void decrementTimeRemaining() {
-        if (timeTask != null && !timeTask.isCancelled()) {
-            timeTask.cancel();
+    private void loadFlyTimes() {
+        List<AccessPlayerDTO> flyData = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
+        for (AccessPlayerDTO accessPlayerDTO : flyData) {
+            flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
         }
+    }
 
-        timeTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+    public void saveFlyTimes() {
+        int seconds = configUtil.getCustomConfig().getInt("save-database-delay");
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
+
+                upsertTimeFly(entry.getKey(), entry.getValue());
+                plugin.getLogger().info("Fly time saved for player: " + entry.getKey());
+            }
+        }, 0L, 20L*seconds);
+    }
+
+    private void startDecrementTask() {
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             try {
+                decrementTimeRemaining();
                 manageCommandMessageOnTimeLeft();
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                plugin.getLogger().severe("Error managing fly time: " + e.getMessage());
             }
-            try {
-                List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
-                for (AccessPlayerDTO accessPlayerDTO : fly) {
 
-                    if (configUtil.getCustomConfig().getString("fly-decrement-method").equals("PLAYER_FLYING_MODE")) {
-                        decrementTimeRemainingFlying();
-                        return;
-                    }
-
-                    Player player = Bukkit.getPlayer(accessPlayerDTO.uniqueId());
-                    timeRemaining = accessPlayerDTO.FlyTimeRemaining();
-
-                    if (!accessPlayerDTO.isinFly() || !player.isOnline()) {
-                        continue;
-                    }
-
-                    if (timeRemaining > 0) {
-                        timeRemaining--;
-                        upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
-                        return;
-                    }
-
-                    timeRemaining = 0;
-                    upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
-                    plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
-                    plugin.getFlyManager().upsertFlyStatus(Bukkit.getPlayer(accessPlayerDTO.uniqueId()), false);
-                }
-            } catch (SQLException e) {
-                plugin.getLogger().severe("Error to manage fly mode " + e.getMessage());
-            }
-        }, 20L, 20L);
+        }, 0, 20);
     }
 
+    public void decrementTimeRemaining() throws SQLException {
+        for (UUID playerUUID : flyTimes.keySet()) {
+            Player player = Bukkit.getPlayer(playerUUID);
+            if (player == null || !player.isOnline()) continue;
 
+            int timeRemaining = flyTimes.get(playerUUID);
+            if (timeRemaining <= 0) continue;
 
-    //Manage the time remaining when the player is flying : equals to PLAYER_FLYING_MODE in config
-    public void decrementTimeRemainingFlying() throws SQLException {
-        List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
-
-        for (AccessPlayerDTO accessPlayerDTO : fly) {
-            Player player = Bukkit.getPlayer(accessPlayerDTO.uniqueId());
-            timeRemaining = accessPlayerDTO.FlyTimeRemaining();
-
-            if (!player.isFlying() || !player.isOnline()) {
+            if (configUtil.getCustomConfig().getString("fly-decrement-method").equals("PLAYER_FLYING_MODE") && !player.isFlying()) {
                 continue;
             }
 
-            if (timeRemaining > 0) {
-                timeRemaining--;
-                upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
-                return;
-            }
+            timeRemaining--;
+            flyTimes.put(playerUUID, timeRemaining);
 
-            timeRemaining = 0;
-            upsertTimeFly(accessPlayerDTO.uniqueId(), timeRemaining);
-
-            try {
-                plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+            if (timeRemaining == 0) {
+                plugin.getFlyManager().manageFly(playerUUID, false);
+                plugin.getFlyManager().upsertFlyStatus(player, false);
             }
-            plugin.getFlyManager().upsertFlyStatus(Bukkit.getPlayer(accessPlayerDTO.uniqueId()), false);
         }
     }
 
-    public void addFlytime(Player player, int time) throws SQLException {
-            int flyTime = getTimeRemaining(player);
-            int newTime = flyTime + time;
-            upsertTimeFly(player.getUniqueId(), newTime);
+    public void addFlytime(Player player, int time) {
+        UUID playerUUID = player.getUniqueId();
+        int newTime = flyTimes.getOrDefault(playerUUID, 0) + time;
+        flyTimes.put(playerUUID, newTime);
+        upsertTimeFly(playerUUID, newTime);
     }
 
-    public boolean removeFlytime(Player player, int time) throws SQLException {
-        int flyTime = getTimeRemaining(player);
-        int newTime = flyTime - time;
-        if (newTime < 0) {
+    public boolean removeFlyTime(Player player, int time) {
+        UUID playerUUID = player.getUniqueId();
+        int currentFlyTime = flyTimes.getOrDefault(playerUUID, 0);
+
+        if (time > currentFlyTime) {
             player.sendMessage("§cYou can't remove too much time");
-            player.sendMessage("§cMax time is " + flyTime);
             return false;
         }
-        upsertTimeFly(player.getUniqueId(), newTime);
+
+        int newTime = currentFlyTime - time;
+        flyTimes.put(playerUUID, newTime);
+        upsertTimeFly(playerUUID, newTime);
         return true;
     }
 
-    public void resetFlytime(Player player) throws SQLException {
+    public void resetFlytime(Player player) {
+        flyTimes.put(player.getUniqueId(), 0);
         upsertTimeFly(player.getUniqueId(), 0);
     }
 
-
-    public void manageCommandMessageOnTimeLeft() throws SQLException {;
-
-        List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
+    private void manageCommandMessageOnTimeLeft() throws SQLException {
         FileConfiguration config = configUtil.getCustomMessage();
-        if (!config.isConfigurationSection("commands-time-remaining")) {
-            return;
-        }
-
         ConfigurationSection conditionsSection = config.getConfigurationSection("commands-time-remaining");
-        if (conditionsSection == null) {
-            return;
-        }
+        if (conditionsSection == null) return;
 
         for (String key : conditionsSection.getKeys(false)) {
-            String command = conditionsSection.getString(key + ".commands");
-            if (command == null) {
-                continue;
-            }
-
-
-            int timeRemaining;
+            int targetTime;
             try {
-                timeRemaining = Integer.parseInt(key);
+                targetTime = Integer.parseInt(key);
             } catch (NumberFormatException e) {
                 continue;
             }
 
-            for (AccessPlayerDTO accessPlayerDTO : fly) {
-                if (accessPlayerDTO.FlyTimeRemaining() != timeRemaining) {
+            String command = conditionsSection.getString(key + ".commands");
+            if (command == null) continue;
+
+            for (UUID playerUUID : flyTimes.keySet()) {
+                int playerTimeRemaining = flyTimes.get(playerUUID);
+                if (playerTimeRemaining != targetTime || lastNotifiedTime.getOrDefault(playerUUID, -1) == targetTime) {
                     continue;
                 }
 
-                int playerTimeRemaining = accessPlayerDTO.FlyTimeRemaining();
-                UUID playerUUID = accessPlayerDTO.uniqueId();
-
-                if (lastNotifiedTime.getOrDefault(playerUUID, -1) == playerTimeRemaining) {
-                    continue;
+                Player player = Bukkit.getPlayer(playerUUID);
+                if (player != null) {
+                    lastNotifiedTime.put(playerUUID, targetTime);
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
                 }
-
-                Player player = Bukkit.getPlayer(accessPlayerDTO.uniqueId());
-                if (player == null) {
-                    continue;
-                }
-
-                lastNotifiedTime.put(playerUUID, playerTimeRemaining);
-                command = command.replace("%player%", player.getName());
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
             }
         }
     }
 
-
-
-
-    public void upsertTimeFly(@NotNull UUID player, int newtimeRemaining) {
-        service.execute(() -> {
+    public void upsertTimeFly(@NotNull UUID playerUUID, int newTimeRemaining) {
+        sqlExecutor.execute(() -> {
             this.requestHelper.upsert("fly", table -> {
-                table.uuid("uniqueId", player).primary();
+                table.uuid("uniqueId", playerUUID).primary();
                 try {
-                    AccessPlayerDTO playerFlyData = plugin.getFlyManager().getPlayerFlyData(player);
+                    AccessPlayerDTO playerFlyData = plugin.getFlyManager().getPlayerFlyData(playerUUID);
                     table.bool("isinFly", playerFlyData.isinFly());
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-                table.bigInt("FlyTimeRemaining", newtimeRemaining);
-
+                table.bigInt("FlyTimeRemaining", newTimeRemaining);
             });
         });
     }
 
-    public int getTimeRemaining(Player player) throws SQLException {
-        AccessPlayerDTO fly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
-        return fly.FlyTimeRemaining();
+    public int getTimeRemaining(Player player) {
+        return flyTimes.getOrDefault(player.getUniqueId(), 0);
     }
 }

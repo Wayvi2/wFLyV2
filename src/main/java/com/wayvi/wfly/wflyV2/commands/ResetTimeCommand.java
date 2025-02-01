@@ -33,13 +33,9 @@ public void execute(CommandSender sender, Arguments args) {
 
     Player target = args.get("player");
 
-    try {
-        plugin.getTimeFlyManager().resetFlytime(target);
-        MiniMessageSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-reset"));
+    plugin.getTimeFlyManager().resetFlytime(target);
+    MiniMessageSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-reset"));
 
-    } catch (SQLException e) {
-        throw new RuntimeException(e);
-    }
 }
 }
 

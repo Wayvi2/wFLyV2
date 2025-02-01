@@ -18,6 +18,8 @@ import fr.traqueur.commands.api.CommandManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 
+import java.sql.SQLException;
+
 public final class WFlyV2 extends JavaPlugin {
 
     private FlyManager flyManager;
@@ -44,7 +46,7 @@ public final class WFlyV2 extends JavaPlugin {
         //INIT miniMessageSupport
         MiniMessageSupportUtil miniMessageSupportUtil = new MiniMessageSupportUtil();
 
-        PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this, configUtil,miniMessageSupportUtil);
+        PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this, configUtil);
         placeholerapiManager.checkPlaceholderAPI();
         placeholerapiManager.initialize();
 
@@ -59,11 +61,16 @@ public final class WFlyV2 extends JavaPlugin {
 
 
         //INIT FlyManager
-        this.flyManager = new FlyManager(this, requestHelper, configUtil, miniMessageSupportUtil);
+        this.flyManager = new FlyManager(this, requestHelper, configUtil);
 
         //INIT TimeFlyManager
         this.timeFlyManager = new TimeFlyManager(this, requestHelper, configUtil);
-        timeFlyManager.decrementTimeRemaining();
+        try {
+            timeFlyManager.decrementTimeRemaining();
+            timeFlyManager.saveFlyTimes();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
 
         // COMMANDS
@@ -76,7 +83,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new RemoveTimeCommand(this, configUtil));
 
         //LISTENER
-        getServer().getPluginManager().registerEvents(new PlayerJoinListener(this.flyManager, this.timeFlyManager), this);
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(this.flyManager), this);
         getServer().getPluginManager().registerEvents(new PlayerLeaveListener(this), this);
 
 

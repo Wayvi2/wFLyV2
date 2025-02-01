@@ -46,12 +46,8 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
 
 
             if (params.equals("fly_remaining")) {
-                try {
-                    int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
-                    return formatTime(timeRemaining);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
+                return formatTime(timeRemaining);
             }
 
             if (params.equals("fly_activate")) {
