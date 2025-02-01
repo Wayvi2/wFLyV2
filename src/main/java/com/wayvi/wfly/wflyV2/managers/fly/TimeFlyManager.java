@@ -8,7 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
@@ -21,10 +20,10 @@ public class TimeFlyManager {
     private final RequestHelper requestHelper;
     private final ConfigUtil configUtil;
     private final Map<UUID, Integer> flyTimes = new ConcurrentHashMap<>();
+    private final Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> lastNotifiedTime = new ConcurrentHashMap<>();
 
     private static final ExecutorService sqlExecutor = Executors.newSingleThreadExecutor();
-    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public TimeFlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
         this.plugin = plugin;
@@ -38,6 +37,7 @@ public class TimeFlyManager {
         List<AccessPlayerDTO> flyData = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
             flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
+            isFlying.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.isinFly());
         }
     }
 
@@ -67,19 +67,37 @@ public class TimeFlyManager {
     public void decrementTimeRemaining() throws SQLException {
         for (UUID playerUUID : flyTimes.keySet()) {
             Player player = Bukkit.getPlayer(playerUUID);
+
             if (player == null || !player.isOnline()) continue;
 
             int timeRemaining = flyTimes.get(playerUUID);
-            if (timeRemaining <= 0) continue;
-
-            if (configUtil.getCustomConfig().getString("fly-decrement-method").equals("PLAYER_FLYING_MODE") && !player.isFlying()) {
-                continue;
-            }
-
-            timeRemaining--;
-            flyTimes.put(playerUUID, timeRemaining);
+            boolean isFlying = this.isFlying.getOrDefault(playerUUID, false);
 
             if (timeRemaining == 0) {
+                plugin.getFlyManager().manageFly(playerUUID, false);
+                plugin.getFlyManager().upsertFlyStatus(player, false);
+            }
+
+            if (timeRemaining <= 0) continue;
+
+            String decrementMethod = configUtil.getCustomConfig().getString("fly-decrement-method");
+
+            assert decrementMethod != null;
+            if (decrementMethod.equals("PLAYER_FLYING_MODE")) {
+                Bukkit.broadcastMessage("entre ici");
+                if (isFlying && player.isFlying()) {
+                    timeRemaining--;
+                    flyTimes.put(playerUUID, timeRemaining);
+                }
+            } else if (decrementMethod.equals("PLAYER_FLY_MODE")) {
+                if (this.isFlying.getOrDefault(playerUUID, false)) {
+                    timeRemaining--;
+                    flyTimes.put(playerUUID, timeRemaining);
+                }
+            }
+
+            // Met à jour les informations de vol après la décrémentation
+            if (timeRemaining <= 0) {
                 plugin.getFlyManager().manageFly(playerUUID, false);
                 plugin.getFlyManager().upsertFlyStatus(player, false);
             }
@@ -161,5 +179,9 @@ public class TimeFlyManager {
 
     public int getTimeRemaining(Player player) {
         return flyTimes.getOrDefault(player.getUniqueId(), 0);
+    }
+
+    public void updateFlyStatus(UUID playerUUID, boolean isFlying) {
+        this.isFlying.put(playerUUID, isFlying);
     }
 }

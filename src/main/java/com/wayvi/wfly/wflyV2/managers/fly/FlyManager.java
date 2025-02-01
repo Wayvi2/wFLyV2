@@ -13,6 +13,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,6 +26,7 @@ public class FlyManager {
     private final RequestHelper requestHelper;
     private BukkitTask flyTask;
     private ConfigUtil configUtil;
+
 
     public FlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
         this.requestHelper = requestHelper;
@@ -44,12 +46,14 @@ public class FlyManager {
             player1.setAllowFlight(true);
             player1.setFlying(true);
             upsertFlyStatus(player1, true);
+            plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), true);
         } else {
             player1.setFlying(false);
 
             flyTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
                 if (player1.isFlying()) {
                     player1.setFlying(false);
+                    plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
                 }
                 if (player1.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR) {
                     player1.setAllowFlight(false);
