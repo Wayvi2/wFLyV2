@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyV2;
 
 import com.wayvi.wfly.wflyV2.commands.*;
+import com.wayvi.wfly.wflyV2.handlers.CustomMessagehandler;
 import com.wayvi.wfly.wflyV2.listeners.PlayerJoinListener;
 import com.wayvi.wfly.wflyV2.listeners.PlayerLeaveListener;
 import com.wayvi.wfly.wflyV2.managers.ConditionManager;
@@ -77,6 +78,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new AddTimeCommand(this, configUtil));
         commandManager.registerCommand(new ResetTimeCommand(this, configUtil));
         commandManager.registerCommand(new RemoveTimeCommand(this, configUtil));
+        commandManager.setMessageHandler(new CustomMessagehandler(configUtil));
 
         //LISTENER
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this.flyManager), this);

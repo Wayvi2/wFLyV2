@@ -44,7 +44,7 @@ public class FlyCommand extends Command<JavaPlugin> {
             String message = playersInFly.isinFly() ? configUtil.getCustomMessage().getString("message.fly-deactivated") : configUtil.getCustomMessage().getString("message.fly-activated");
 
             if (conditionWorldManager.canFly(player)) {
-                MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-fly-in-world"));
+                MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-fly-here"));
                 return;
             }
 

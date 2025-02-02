@@ -26,6 +26,11 @@ public class ConditionManager {
     }
 
     public boolean canFly(Player player) {
+
+        if (player.isOp()) {
+            return false;
+        }
+
         FileConfiguration config = configUtil.getCustomConfig();
 
         if (config.isConfigurationSection("conditions")) {
@@ -44,6 +49,7 @@ public class ConditionManager {
                     String actualValue = PlaceholderAPI.setPlaceholders(player, value);
 
                     if (actualValue.equalsIgnoreCase(actualPlaceholder)) {
+
                         return true;
                     }
                 }

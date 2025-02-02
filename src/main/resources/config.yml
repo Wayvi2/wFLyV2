@@ -16,7 +16,7 @@ format-placeholder:
   minutes: false
   hours: true
   days: true
-  unlimited: "Unlimited" #need permission wfly.infinite.fly
+  unlimited: "<blue>Unlimited" #need permission wfly.infinite.fly
   auto-format: true
   format: "<#FFC77A>%seconds%<#FF9D00>%seconds_suffixe% <#FFC77A>%minutes%<#FF9D00>%minutes_suffixe% <#FFC77A>%hours%<#FF9D00>%hours_suffixe% <#FFC77A>%days%<#FF9D00>%days_suffixe%"
   other-format:
