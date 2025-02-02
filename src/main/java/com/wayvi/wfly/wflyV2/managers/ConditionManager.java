@@ -40,8 +40,10 @@ public class ConditionManager {
                         continue;
                     }
 
-                    String actualValue = PlaceholderAPI.setPlaceholders(player, placeholder);
-                    if (value.equalsIgnoreCase(actualValue)) {
+                    String actualPlaceholder = PlaceholderAPI.setPlaceholders(player, placeholder);
+                    String actualValue = PlaceholderAPI.setPlaceholders(player, value);
+
+                    if (actualValue.equalsIgnoreCase(actualPlaceholder)) {
                         return true;
                     }
                 }

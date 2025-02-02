@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyV2.managers.fly;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
@@ -69,7 +70,12 @@ public class TimeFlyManager {
         for (UUID playerUUID : flyTimes.keySet()) {
             Player player = Bukkit.getPlayer(playerUUID);
 
+
             if (player == null || !player.isOnline()) continue;
+
+            if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
+                return;
+            }
 
             int timeRemaining = flyTimes.get(playerUUID);
             boolean isFlying = this.isFlying.getOrDefault(playerUUID, false);

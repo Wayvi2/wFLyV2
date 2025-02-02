@@ -6,9 +6,9 @@
 ##############################################################################################
 version: '1.0'
 
-
 save-database-delay: 60 # in seconds
 
+#see docs for more info
 fly-decrement-method: PLAYER_FLY_MODE
 
 format-placeholder:
@@ -16,6 +16,7 @@ format-placeholder:
   minutes: false
   hours: true
   days: true
+  unlimited: "Unlimited" #need permission wfly.infinite.fly
   auto-format: true
   format: "<#FFC77A>%seconds%<#FF9D00>%seconds_suffixe% <#FFC77A>%minutes%<#FF9D00>%minutes_suffixe% <#FFC77A>%hours%<#FF9D00>%hours_suffixe% <#FFC77A>%days%<#FF9D00>%days_suffixe%"
   other-format:
@@ -25,11 +26,11 @@ format-placeholder:
     days_suffixe: "days"
 
 
-#mean if condition is valid, player will can't activate his fly
+#mean if condition is valid, players will can't activate her fly
 conditions:
   my-first-conditions:
     placeholder: "%player_name%"
-    equals: "Wayvi2"
+    equals: "Wayvi2" #player with name "Wayvi2" can't fly
 
 
 
