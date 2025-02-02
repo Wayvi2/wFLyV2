@@ -3,6 +3,7 @@ package com.wayvi.wfly.wflyV2.managers.fly;
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
+import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -73,9 +74,9 @@ public class TimeFlyManager {
             int timeRemaining = flyTimes.get(playerUUID);
             boolean isFlying = this.isFlying.getOrDefault(playerUUID, false);
 
-            if (timeRemaining == 0) {
+            if (timeRemaining == 0 && isFlying) {
                 plugin.getFlyManager().manageFly(playerUUID, false);
-                plugin.getFlyManager().upsertFlyStatus(player, false);
+                this.isFlying.put(playerUUID, false);
             }
 
             if (timeRemaining <= 0) continue;
@@ -89,15 +90,12 @@ public class TimeFlyManager {
                     flyTimes.put(playerUUID, timeRemaining);
                 }
             } else if (decrementMethod.equals("PLAYER_FLY_MODE")) {
-                if (this.isFlying.getOrDefault(playerUUID, false)) {
+                if (this.isFlying.get(playerUUID)) {
                     timeRemaining--;
                     flyTimes.put(playerUUID, timeRemaining);
                 }
             }
-            if (timeRemaining <= 0) {
-                plugin.getFlyManager().manageFly(playerUUID, false);
-                plugin.getFlyManager().upsertFlyStatus(player, false);
-            }
+
         }
     }
 
@@ -113,7 +111,7 @@ public class TimeFlyManager {
         int currentFlyTime = flyTimes.getOrDefault(playerUUID, 0);
 
         if (time > currentFlyTime) {
-            player.sendMessage("§cYou can't remove too much time");
+            MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-remove-too-high"));
             return false;
         }
 

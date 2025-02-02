@@ -49,6 +49,7 @@ public class FlyManager {
             plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), true);
         } else {
             player1.setFlying(false);
+            plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
 
             flyTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
                 if (player1.isFlying()) {

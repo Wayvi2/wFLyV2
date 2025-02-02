@@ -10,6 +10,7 @@ message:
   fly-time-removed: "<red>You have been taken <yellow>%time% <red>timefly!"
   fly-time-reset: "<green>You have been given <yellow>0 <green>timefly!"
   no-fly-in-world: "<red>You cannot fly in this world!"
+  fly-remove-too-high: "<red>You cannot remove too much timefly!"
 
 
 
