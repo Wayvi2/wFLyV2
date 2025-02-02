@@ -3,7 +3,7 @@ package com.wayvi.wfly.wflyV2.managers.fly;
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -13,7 +13,6 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -73,19 +72,19 @@ public class FlyManager {
         speed = speed / 10.0;
 
         if (speed > 1.0) {
-            MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-speed-too-high"));
+            ColorSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-speed-too-high"));
             return;
         }
 
         for (int i = (int) (speed * 10); i >= 1; i--) {
             if (player.hasPermission("wfly.fly.speed." + i)) {
                 player.setFlySpeed((float) i / 10.0f);
-                MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-speed").replace("%speed%", String.valueOf(i)));
+                ColorSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-speed").replace("%speed%", String.valueOf(i)));
                 return;
             }
         }
 
-        MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-speed-no-permission"));
+        ColorSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-speed-no-permission"));
     }
 
     // ACCESS DATABASE METHODS

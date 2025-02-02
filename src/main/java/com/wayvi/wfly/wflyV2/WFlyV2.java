@@ -8,7 +8,8 @@ import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
 import com.wayvi.wfly.wflyV2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyV2.managers.fly.TimeFlyManager;
 import com.wayvi.wfly.wflyV2.services.DatabaseService;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.HexaColorSupportUtil;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyV2.util.TimeFormatTranslatorUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import fr.traqueur.commands.api.CommandManager;
@@ -40,12 +41,11 @@ public final class WFlyV2 extends JavaPlugin {
         configUtil.createCustomConfig();
 
         //INIT miniMessageSupport
-        MiniMessageSupportUtil miniMessageSupportUtil = new MiniMessageSupportUtil();
+        ColorSupportUtil miniMessageSupportUtil = new ColorSupportUtil();
 
         PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this, configUtil);
         placeholerapiManager.checkPlaceholderAPI();
         placeholerapiManager.initialize();
-
 
         //INIT RequestHelper
         RequestHelper requestHelper = new RequestHelper(databaseService.getConnection(), this.getLogger()::info);

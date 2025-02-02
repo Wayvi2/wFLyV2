@@ -5,7 +5,7 @@ import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.managers.ConditionManager;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
 import org.bukkit.command.CommandSender;
@@ -44,23 +44,23 @@ public class FlyCommand extends Command<JavaPlugin> {
             String message = playersInFly.isinFly() ? configUtil.getCustomMessage().getString("message.fly-deactivated") : configUtil.getCustomMessage().getString("message.fly-activated");
 
             if (conditionWorldManager.canFly(player)) {
-                MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-fly-here"));
+                ColorSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-fly-here"));
                 return;
             }
 
             if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                MiniMessageSupportUtil.sendMiniMessageFormat(player,message);
+                ColorSupportUtil.sendMiniMessageFormat(player,message);
                 plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
                 return;
             }
 
             if(playersInFly.FlyTimeRemaining() == 0){
-                MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
+                ColorSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
                 return;
             }
 
             plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
-            MiniMessageSupportUtil.sendMiniMessageFormat(player,message);
+            ColorSupportUtil.sendMiniMessageFormat(player,message);
 
             } catch (SQLException e) {
                 throw new RuntimeException(e);

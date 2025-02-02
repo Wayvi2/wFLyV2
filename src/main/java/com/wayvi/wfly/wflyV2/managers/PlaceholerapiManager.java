@@ -3,7 +3,6 @@ package com.wayvi.wfly.wflyV2.managers;
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.placeholders.WFlyPlaceholder;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import org.bukkit.Bukkit;
 
 import java.util.logging.Level;

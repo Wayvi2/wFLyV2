@@ -4,7 +4,7 @@ import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -118,7 +118,7 @@ public class TimeFlyManager {
         int currentFlyTime = flyTimes.getOrDefault(playerUUID, 0);
 
         if (time > currentFlyTime) {
-            MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-remove-too-high"));
+            ColorSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-remove-too-high"));
             return false;
         }
 

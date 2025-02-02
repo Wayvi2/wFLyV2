@@ -3,7 +3,7 @@ package com.wayvi.wfly.wflyV2.commands;
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
 import org.bukkit.command.CommandSender;
@@ -41,7 +41,7 @@ public class AddTimeCommand extends Command<JavaPlugin> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        MiniMessageSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time)));
+        ColorSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time)));
 
     }
 }

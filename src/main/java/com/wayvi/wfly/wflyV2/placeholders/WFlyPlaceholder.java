@@ -4,7 +4,7 @@ import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -49,7 +49,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
             if (params.equals("fly_remaining")) {
                 int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
                 if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                    return (String) MiniMessageSupportUtil.convertMiniMessageFormat(configUtil.getCustomConfig().getString("format-placeholder.unlimited"));
+                    return (String) ColorSupportUtil.convertMiniMessageFormat(configUtil.getCustomConfig().getString("format-placeholder.unlimited"));
                 }
                 return formatTime(timeRemaining);
             }
@@ -122,7 +122,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
             format = format.replace("%minutes_suffixe%", minutesSuffix);
             format = format.replace("%hours_suffixe%", hoursSuffix);
             format = format.replace("%days_suffixe%", daysSuffix);
-            return (String) MiniMessageSupportUtil.convertMiniMessageFormat(format);
+            return (String) ColorSupportUtil.convertMiniMessageFormat(format);
         }
 
         format = format.replace("%seconds%", enabledFormats.get("seconds") ? sec + "" : "");
@@ -137,6 +137,6 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
 
         format = format.replaceAll("\\s+", " ").trim();
 
-        return (String) MiniMessageSupportUtil.convertMiniMessageFormat(format);
+        return (String) ColorSupportUtil.convertMiniMessageFormat(format);
     }
 }

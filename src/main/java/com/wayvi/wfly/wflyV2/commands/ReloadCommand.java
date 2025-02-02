@@ -2,11 +2,9 @@ package com.wayvi.wfly.wflyV2.commands;
 
 
 import com.wayvi.wfly.wflyV2.constants.Permissions;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -36,7 +34,7 @@ public class ReloadCommand extends Command<JavaPlugin>  {
         plugin.getLogger().info("Plugin reloaded");
 
         if (commandSender instanceof Player) {
-            MiniMessageSupportUtil.sendMiniMessageFormat((Player) commandSender,message);
+            ColorSupportUtil.sendMiniMessageFormat((Player) commandSender,message);
         }
 
 
