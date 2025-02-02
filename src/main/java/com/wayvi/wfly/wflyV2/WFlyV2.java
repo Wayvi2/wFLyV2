@@ -2,8 +2,7 @@ package com.wayvi.wfly.wflyV2;
 
 import com.wayvi.wfly.wflyV2.commands.*;
 import com.wayvi.wfly.wflyV2.handlers.CustomMessagehandler;
-import com.wayvi.wfly.wflyV2.listeners.PlayerJoinListener;
-import com.wayvi.wfly.wflyV2.listeners.PlayerLeaveListener;
+import com.wayvi.wfly.wflyV2.listeners.FlyListener;
 import com.wayvi.wfly.wflyV2.managers.ConditionManager;
 import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
 import com.wayvi.wfly.wflyV2.managers.PlaceholerapiManager;
@@ -81,8 +80,8 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.setMessageHandler(new CustomMessagehandler(configUtil));
 
         //LISTENER
-        getServer().getPluginManager().registerEvents(new PlayerJoinListener(this.flyManager), this);
-        getServer().getPluginManager().registerEvents(new PlayerLeaveListener(this), this);
+        //getServer().getPluginManager().registerEvents(new PlayerJoinListener(this, this.flyManager, requestHelper), this);
+        getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, requestHelper), this);
 
 
         getLogger().info("Plugin enabled");
@@ -92,6 +91,10 @@ public final class WFlyV2 extends JavaPlugin {
     public void onDisable() {
         getLogger().info("Plugin disabled");
     }
+
+
+
+
 
     public TimeFlyManager getTimeFlyManager() {
         return timeFlyManager;

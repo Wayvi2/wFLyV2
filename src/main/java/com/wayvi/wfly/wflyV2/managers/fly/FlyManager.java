@@ -111,4 +111,12 @@ public class FlyManager {
             });
         });
     }
+
+    public void createNewPlayer(UUID player) throws SQLException {
+        this.requestHelper.insert("fly", table -> {
+            table.uuid("uniqueId", player).primary();
+            table.bool("isinFly", false);
+            table.bigInt("FlyTimeRemaining", 0);
+        });
+    }
 }

@@ -36,7 +36,11 @@ public class AddTimeCommand extends Command<JavaPlugin> {
         Player target = args.get("player");
 
         int time = args.get("time");
-        plugin.getTimeFlyManager().addFlytime(target, time);
+        try {
+            plugin.getTimeFlyManager().addFlytime(target, time);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         MiniMessageSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time)));
 
     }

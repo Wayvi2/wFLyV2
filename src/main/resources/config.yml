@@ -29,8 +29,8 @@ format-placeholder:
 #mean if condition is valid, players will can't activate her fly
 conditions:
   my-first-conditions:
-    placeholder: "%player_name%"
-    equals: "Wayvi2" #player with name "Wayvi2" can't fly
+    placeholder: "%multiverse_world_alias%"
+    equals: "world" #player can't fly in this world
 
 
 

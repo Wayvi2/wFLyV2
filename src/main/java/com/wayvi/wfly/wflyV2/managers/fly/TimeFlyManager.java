@@ -22,7 +22,7 @@ public class TimeFlyManager {
     private final RequestHelper requestHelper;
     private final ConfigUtil configUtil;
     private final Map<UUID, Integer> flyTimes = new ConcurrentHashMap<>();
-    private final Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
+    private Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> lastNotifiedTime = new ConcurrentHashMap<>();
 
     private static final ExecutorService sqlExecutor = Executors.newSingleThreadExecutor();
@@ -35,11 +35,12 @@ public class TimeFlyManager {
         startDecrementTask();
     }
 
-    private void loadFlyTimes() {
+    public void loadFlyTimes() {
         List<AccessPlayerDTO> flyData = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
             flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             isFlying.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.isinFly());
+            //isFlying.put(UUID.fromString("f4cef720-d43b-4f2b-a3a0-71b77bfbbd47"), true);
         }
     }
 
@@ -77,7 +78,8 @@ public class TimeFlyManager {
                 return;
             }
 
-            int timeRemaining = flyTimes.get(playerUUID);
+
+            int timeRemaining = this.flyTimes.getOrDefault(playerUUID, 0);
             boolean isFlying = this.isFlying.getOrDefault(playerUUID, false);
 
             if (timeRemaining == 0 && isFlying) {
@@ -96,16 +98,15 @@ public class TimeFlyManager {
                     flyTimes.put(playerUUID, timeRemaining);
                 }
             } else if (decrementMethod.equals("PLAYER_FLY_MODE")) {
-                if (this.isFlying.get(playerUUID)) {
+                if (this.isFlying.getOrDefault(playerUUID, false)) {
                     timeRemaining--;
                     flyTimes.put(playerUUID, timeRemaining);
                 }
             }
-
         }
     }
 
-    public void addFlytime(Player player, int time) {
+    public void addFlytime(Player player, int time) throws SQLException {
         UUID playerUUID = player.getUniqueId();
         int newTime = flyTimes.getOrDefault(playerUUID, 0) + time;
         flyTimes.put(playerUUID, newTime);
@@ -124,18 +125,21 @@ public class TimeFlyManager {
         int newTime = currentFlyTime - time;
         flyTimes.put(playerUUID, newTime);
         upsertTimeFly(playerUUID, newTime);
+        plugin.getTimeFlyManager().loadFlyTimes();
         return true;
     }
 
     public void resetFlytime(Player player) {
         flyTimes.put(player.getUniqueId(), 0);
         upsertTimeFly(player.getUniqueId(), 0);
+        plugin.getTimeFlyManager().loadFlyTimes();
     }
 
     private void manageCommandMessageOnTimeLeft() throws SQLException {
         FileConfiguration config = configUtil.getCustomMessage();
         ConfigurationSection conditionsSection = config.getConfigurationSection("commands-time-remaining");
         if (conditionsSection == null) return;
+
 
         for (String key : conditionsSection.getKeys(false)) {
             int targetTime;
@@ -184,5 +188,10 @@ public class TimeFlyManager {
 
     public void updateFlyStatus(UUID playerUUID, boolean isFlying) {
         this.isFlying.put(playerUUID, isFlying);
+    }
+
+    public Boolean putDefaultFlyStatus(UUID playerUUID) {
+        return this.isFlying.putIfAbsent(playerUUID, false);
+
     }
 }
