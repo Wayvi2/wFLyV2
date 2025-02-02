@@ -118,7 +118,7 @@ public class TimeFlyManager {
         int currentFlyTime = flyTimes.getOrDefault(playerUUID, 0);
 
         if (time > currentFlyTime) {
-            ColorSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-remove-too-high"));
+            ColorSupportUtil.sendColorFormat(player,configUtil.getCustomMessage().getString("message.fly-remove-too-high"));
             return false;
         }
 

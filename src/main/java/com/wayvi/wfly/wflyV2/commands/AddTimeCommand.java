@@ -41,7 +41,7 @@ public class AddTimeCommand extends Command<JavaPlugin> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        ColorSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time)));
+        ColorSupportUtil.sendColorFormat(target,configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time)));
 
     }
 }

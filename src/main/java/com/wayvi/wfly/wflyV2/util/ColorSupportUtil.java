@@ -19,7 +19,7 @@ public class ColorSupportUtil {
         return LegacyComponentSerializer.legacySection().serialize(component);
     }
 
-    public static void sendMiniMessageFormat(Player player, String minimessage) {
+    public static void sendColorFormat(Player player, String minimessage) {
         if (getPaperOrSpigot()) {
             String paperMessage = translateToSpigot(minimessage);
             player.sendMessage(paperMessage);
@@ -29,7 +29,7 @@ public class ColorSupportUtil {
         player.sendMessage(spigotMessage);
     }
 
-    public static Object convertMiniMessageFormat(String minimessage) {
+    public static Object convertColorFormat(String minimessage) {
         if (getPaperOrSpigot()){
             return translateToSpigot(minimessage);
         }

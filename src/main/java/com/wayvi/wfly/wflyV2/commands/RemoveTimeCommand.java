@@ -34,7 +34,7 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
 
         int time = args.get("time");
         if (plugin.getTimeFlyManager().removeFlyTime(target, time)){
-            ColorSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time)));
+            ColorSupportUtil.sendColorFormat(target,configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time)));
         }
 
 

@@ -16,26 +16,26 @@ public class CustomMessagehandler implements MessageHandler {
     @Override
     public String getNoPermissionMessage() {
 
-        return (String) ColorSupportUtil.convertMiniMessageFormat(configUtil.getCustomMessage().getString("message.no-permission"));
+        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomMessage().getString("message.no-permission"));
     }
 
     @Override
     public String getOnlyInGameMessage() {
-        return (String) ColorSupportUtil.convertMiniMessageFormat(configUtil.getCustomMessage().getString("message.only-in-game"));
+        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomMessage().getString("message.only-in-game"));
     }
 
     @Override
     public String getMissingArgsMessage() {
-        return (String) ColorSupportUtil.convertMiniMessageFormat(configUtil.getCustomMessage().getString("message.missing-args"));
+        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomMessage().getString("message.missing-args"));
     }
 
     @Override
     public String getArgNotRecognized() {
-        return (String) ColorSupportUtil.convertMiniMessageFormat(configUtil.getCustomMessage().getString("message.arg-not-recognized"));
+        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomMessage().getString("message.arg-not-recognized"));
     }
 
     @Override
     public String getRequirementMessage() {
-        return (String) ColorSupportUtil.convertMiniMessageFormat(configUtil.getCustomMessage().getString("message.message-requirement"));
+        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomMessage().getString("message.message-requirement"));
     }
 }

@@ -49,7 +49,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
             if (params.equals("fly_remaining")) {
                 int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
                 if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                    return (String) ColorSupportUtil.convertMiniMessageFormat(configUtil.getCustomConfig().getString("format-placeholder.unlimited"));
+                    return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomConfig().getString("format-placeholder.unlimited"));
                 }
                 return formatTime(timeRemaining);
             }
@@ -122,7 +122,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
             format = format.replace("%minutes_suffixe%", minutesSuffix);
             format = format.replace("%hours_suffixe%", hoursSuffix);
             format = format.replace("%days_suffixe%", daysSuffix);
-            return (String) ColorSupportUtil.convertMiniMessageFormat(format);
+            return (String) ColorSupportUtil.convertColorFormat(format);
         }
 
         format = format.replace("%seconds%", enabledFormats.get("seconds") ? sec + "" : "");
@@ -137,6 +137,6 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
 
         format = format.replaceAll("\\s+", " ").trim();
 
-        return (String) ColorSupportUtil.convertMiniMessageFormat(format);
+        return (String) ColorSupportUtil.convertColorFormat(format);
     }
 }

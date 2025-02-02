@@ -44,23 +44,23 @@ public class FlyCommand extends Command<JavaPlugin> {
             String message = playersInFly.isinFly() ? configUtil.getCustomMessage().getString("message.fly-deactivated") : configUtil.getCustomMessage().getString("message.fly-activated");
 
             if (conditionWorldManager.canFly(player)) {
-                ColorSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-fly-here"));
+                ColorSupportUtil.sendColorFormat(player,configUtil.getCustomMessage().getString("message.no-fly-here"));
                 return;
             }
 
             if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                ColorSupportUtil.sendMiniMessageFormat(player,message);
+                ColorSupportUtil.sendColorFormat(player,message);
                 plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
                 return;
             }
 
             if(playersInFly.FlyTimeRemaining() == 0){
-                ColorSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
+                ColorSupportUtil.sendColorFormat(player,configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
                 return;
             }
 
             plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
-            ColorSupportUtil.sendMiniMessageFormat(player,message);
+            ColorSupportUtil.sendColorFormat(player,message);
 
             } catch (SQLException e) {
                 throw new RuntimeException(e);

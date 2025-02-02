@@ -34,7 +34,7 @@ public class ReloadCommand extends Command<JavaPlugin>  {
         plugin.getLogger().info("Plugin reloaded");
 
         if (commandSender instanceof Player) {
-            ColorSupportUtil.sendMiniMessageFormat((Player) commandSender,message);
+            ColorSupportUtil.sendColorFormat((Player) commandSender,message);
         }
 
 
