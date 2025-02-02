@@ -38,11 +38,16 @@ public class FlyListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event)  {
+    public void onPlayerJoin(PlayerJoinEvent event) throws SQLException {
 
-        plugin.getLogger().severe("Player joined: " + event.getPlayer().getName());
 
         Player player = event.getPlayer();
+
+        AccessPlayerDTO playerFlyData = flyManager.getPlayerFlyData(player.getUniqueId());
+
+        if (playerFlyData.isinFly()) {
+            flyManager.manageFly(player.getUniqueId(), true);
+        }
 
         List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {
             table.where("uniqueId", player.getUniqueId());
