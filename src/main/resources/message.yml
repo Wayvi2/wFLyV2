@@ -9,16 +9,24 @@ message:
   fly-time-added: "<green>You have been given <yellow>%time% <green>timefly!"
   fly-time-removed: "<red>You have been taken <yellow>%time% <red>timefly!"
   fly-time-reset: "<green>You have been given <yellow>0 <green>timefly!"
-  no-fly-in-world: "<red>You cannot fly in this world!"
+  no-fly-here: "<red>You cannot fly here!"
+  fly-remove-too-high: "<red>You cannot remove too much timefly!"
+  no-permission: "<red>You do not have permission to use this command!"
+  only-in-game: "<red>This command can only be used in game!"
+  missing-args: "<red>Missing arguments!"
+  arg-not-recognized: "<red>Argument not recognized!"
+  message-requirement: "<red>You do not meet the requirements to use this command!"
 
 
 
 commands-time-remaining:
+  0:
+    commands: 'title %player% title {"text":"You have 0 seconds fly left!","bold":true,"color":"gold"}'
   1:
-    commands: "title %player% title {"text":"You have 1 seconds fly left!","bold":true,"color":"gold"}"
+    commands: 'title %player% title {"text":"You have 1 seconds fly left!","bold":true,"color":"gold"}'
   2:
-    commands: "title %player% title {"text":"You have 2 seconds fly left!","bold":true,"color":"gold"}"
+    commands: 'title %player% title {"text":"You have 2 seconds fly left!","bold":true,"color":"gold"}'
   3:
-    commands: "title %player% title {"text":"You have 3 seconds fly left!","bold":true,"color":"gold"}"
+    commands: 'title %player% title {"text":"You have 3 seconds fly left!","bold":true,"color":"gold"}'
   5:
-    commands: "title %player% title {"text":"You have 5 seconds fly left!","bold":true,"color":"gold"}"
+    commands: 'title %player% title {"text":"You have 5 seconds fly left!","bold":true,"color":"gold"}'

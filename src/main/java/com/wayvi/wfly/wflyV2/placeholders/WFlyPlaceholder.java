@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyV2.placeholders;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
@@ -46,12 +47,11 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
 
 
             if (params.equals("fly_remaining")) {
-                try {
-                    int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
-                    return formatTime(timeRemaining);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
+                if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
+                    return (String) MiniMessageSupportUtil.convertMiniMessageFormat(configUtil.getCustomConfig().getString("format-placeholder.unlimited"));
                 }
+                return formatTime(timeRemaining);
             }
 
             if (params.equals("fly_activate")) {
@@ -63,8 +63,6 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                     throw new RuntimeException(e);
                 }
             }
-
-
         }
         return null;
     }
@@ -73,6 +71,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
         Map<String, Boolean> enabledFormats = plugin.getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
         String format = plugin.getTimeFormatTranslatorUtil().getPlaceholderFormat();
         boolean autoFormat = configUtil.getCustomConfig().getBoolean("format-placeholder.auto-format");
+
 
         String secondsSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.seconds_suffixe");
         String minutesSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.minutes_suffixe");

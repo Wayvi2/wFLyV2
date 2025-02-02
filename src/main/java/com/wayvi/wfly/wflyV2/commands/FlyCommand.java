@@ -37,11 +37,20 @@ public class FlyCommand extends Command<JavaPlugin> {
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = (Player) commandSender;
 
+
         try {
             AccessPlayerDTO playersInFly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
 
+            String message = playersInFly.isinFly() ? configUtil.getCustomMessage().getString("message.fly-deactivated") : configUtil.getCustomMessage().getString("message.fly-activated");
+
             if (conditionWorldManager.canFly(player)) {
-                MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-fly-in-world"));
+                MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.no-fly-here"));
+                return;
+            }
+
+            if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
+                MiniMessageSupportUtil.sendMiniMessageFormat(player,message);
+                plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
                 return;
             }
 
@@ -50,7 +59,6 @@ public class FlyCommand extends Command<JavaPlugin> {
                 return;
             }
 
-            String message = playersInFly.isinFly() ? configUtil.getCustomMessage().getString("message.fly-deactivated") : configUtil.getCustomMessage().getString("message.fly-activated");
             plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
             MiniMessageSupportUtil.sendMiniMessageFormat(player,message);
 

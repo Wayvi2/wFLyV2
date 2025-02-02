@@ -47,7 +47,7 @@ public class DatabaseService {
     }
 
     public DatabaseConnection getConnection() {
-        return connection;
+        return this.connection;
     }
 }
 
