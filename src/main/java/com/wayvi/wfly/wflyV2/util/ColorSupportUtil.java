@@ -8,11 +8,6 @@ import org.bukkit.entity.Player;
 
 public class ColorSupportUtil {
 
-
-
-
-
-
     public static String translateToSpigot(String minimessage) {
 
         Component component = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(minimessage);

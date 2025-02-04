@@ -34,7 +34,7 @@ public class DatabaseService {
                 }
             }
 
-            DatabaseConfiguration configuration = DatabaseConfiguration.sqlite(false);
+            DatabaseConfiguration configuration = DatabaseConfiguration.sqlite(true);
             this.connection = new SqliteConnection(configuration, plugin.getDataFolder());
 
 

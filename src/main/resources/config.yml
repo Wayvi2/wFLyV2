@@ -32,9 +32,12 @@ format-placeholder:
 
 #mean if condition is valid, players will can't activate her fly
 conditions:
-  my-first-conditions:
-    placeholder: "%multiverse_world_alias%"
-    equals: "world" #player can't fly in this world
-
-
+  not-authorized: # refer if matched, player can't fly
+    my-first-conditions:
+      placeholder: "%multiverse_world_alias%"
+      equals: "world" #player can't fly in this world
+  authorized: # refer if matched, player can't fly
+    my-seconds-conditions:
+      placeholder: "%multiverse_world_alias%"
+      equals: "world_nether" #player can't fly in this world
 
