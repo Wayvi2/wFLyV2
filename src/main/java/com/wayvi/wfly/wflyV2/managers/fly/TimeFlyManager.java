@@ -94,11 +94,17 @@ public class TimeFlyManager {
             assert decrementMethod != null;
             if (decrementMethod.equals("PLAYER_FLYING_MODE")) {
                 if (isFlying && player.isFlying()) {
+                    if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
+                        return;
+                    }
                     timeRemaining--;
                     flyTimes.put(playerUUID, timeRemaining);
                 }
             } else if (decrementMethod.equals("PLAYER_FLY_MODE")) {
                 if (this.isFlying.getOrDefault(playerUUID, false)) {
+                    if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
+                        return;
+                    }
                     timeRemaining--;
                     flyTimes.put(playerUUID, timeRemaining);
                 }

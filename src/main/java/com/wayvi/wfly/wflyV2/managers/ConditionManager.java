@@ -21,7 +21,7 @@ public class ConditionManager {
     private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
     private final RequestHelper requestHelper;
-    private final Map<UUID, Boolean> flyCache = new HashMap<>();
+    private final Map<UUID, Boolean> flyStateCache = new HashMap<>();
 
     public ConditionManager(WFlyV2 plugin, ConfigUtil configUtil, RequestHelper requestHelper) {
         this.plugin = plugin;
@@ -113,8 +113,11 @@ public class ConditionManager {
                                 continue;
                             }
 
-                            if (cannotFly(player)  && !canFly(player)) {
-                                plugin.getFlyManager().manageFly(player.getUniqueId(), false);
+                            boolean shouldDisable = cannotFly(player) && !canFly(player);
+
+                            if (!flyStateCache.containsKey(accessPlayerDTO.uniqueId()) || flyStateCache.get(accessPlayerDTO.uniqueId()) != shouldDisable) {
+                                flyStateCache.put(accessPlayerDTO.uniqueId(), shouldDisable);
+                                plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), !shouldDisable);
                             }
                         }
                     }
@@ -125,5 +128,4 @@ public class ConditionManager {
             }
         }, 20L, 20L);
     }
-
 }
