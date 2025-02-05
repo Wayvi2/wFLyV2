@@ -19,7 +19,7 @@ import java.util.concurrent.Executors;
 
 public class FlyManager {
 
-    public static ExecutorService service = Executors.newSingleThreadExecutor();
+    public static ExecutorService service = (ExecutorService) Executors.newSingleThreadExecutor();
 
     private WFlyV2 plugin;
     private final RequestHelper requestHelper;
@@ -36,8 +36,9 @@ public class FlyManager {
     public void manageFly(UUID player, boolean fly) throws SQLException {
         Player player1 = Bukkit.getPlayer(player);
 
-        if (flyTask != null && !flyTask.isCancelled()) {
+        if (flyTask != null) {
             flyTask.cancel();
+            flyTask = null;
         }
 
         assert player1 != null;
@@ -72,7 +73,7 @@ public class FlyManager {
         speed = speed / 10.0;
 
         if (speed > 1.0) {
-            ColorSupportUtil.sendColorFormat(player,configUtil.getCustomMessage().getString("message.fly-speed-too-high"));
+            ColorSupportUtil.sendColorFormat(player,configUtil.getCustomMessage().getString("message.fly-speed-too-high").replace("%speed%", String.valueOf(speed*10)));
             return;
         }
 
@@ -84,7 +85,7 @@ public class FlyManager {
             }
         }
 
-        ColorSupportUtil.sendColorFormat(player,configUtil.getCustomMessage().getString("message.fly-speed-no-permission"));
+        ColorSupportUtil.sendColorFormat(player,configUtil.getCustomMessage().getString("message.fly-speed-no-permission").replace("%speed%", String.valueOf(speed*10)));
     }
 
     // ACCESS DATABASE METHODS
@@ -104,7 +105,6 @@ public class FlyManager {
             this.requestHelper.upsert("fly", table -> {
                 table.uuid("uniqueId", player.getUniqueId()).primary();
                 table.bool("isinFly", isFlying);
-
                 table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
 
             });
