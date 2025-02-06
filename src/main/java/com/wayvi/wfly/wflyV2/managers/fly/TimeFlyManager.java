@@ -36,7 +36,8 @@ public class TimeFlyManager {
     }
 
     public void loadFlyTimes() {
-        List<AccessPlayerDTO> flyData = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
+        List<AccessPlayerDTO> flyData = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {
+        });
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
             flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             isFlying.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.isinFly());
@@ -52,7 +53,7 @@ public class TimeFlyManager {
                 upsertTimeFly(entry.getKey(), entry.getValue());
                 plugin.getLogger().info("Fly time saved");
             }
-        }, 0L, 20L*seconds);
+        }, 0L, 20L * seconds);
     }
 
     private void startDecrementTask() {
@@ -121,24 +122,22 @@ public class TimeFlyManager {
 
     public boolean removeFlyTime(Player player, int time) {
         UUID playerUUID = player.getUniqueId();
-        int currentFlyTime = flyTimes.getOrDefault(playerUUID, 0);
+        int currentFlyTime = getTimeRemaining(player);
 
         if (time > currentFlyTime) {
-            ColorSupportUtil.sendColorFormat(player,configUtil.getCustomMessage().getString("message.fly-remove-too-high"));
+            ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-remove-too-high"));
             return false;
         }
 
-        int newTime = currentFlyTime - time;
+        int newTime = flyTimes.getOrDefault(playerUUID, 0) - time;
         flyTimes.put(playerUUID, newTime);
         upsertTimeFly(playerUUID, newTime);
-        plugin.getTimeFlyManager().loadFlyTimes();
         return true;
     }
 
     public void resetFlytime(Player player) {
         flyTimes.put(player.getUniqueId(), 0);
         upsertTimeFly(player.getUniqueId(), 0);
-        plugin.getTimeFlyManager().loadFlyTimes();
     }
 
     private void manageCommandMessageOnTimeLeft() throws SQLException {
@@ -175,18 +174,30 @@ public class TimeFlyManager {
 
     public void upsertTimeFly(@NotNull UUID playerUUID, int newTimeRemaining) {
         sqlExecutor.execute(() -> {
-            this.requestHelper.upsert("fly", table -> {
-                table.uuid("uniqueId", playerUUID).primary();
-                try {
-                    AccessPlayerDTO playerFlyData = plugin.getFlyManager().getPlayerFlyData(playerUUID);
-                    table.bool("isinFly", playerFlyData.isinFly());
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-                table.bigInt("FlyTimeRemaining", newTimeRemaining);
-            });
+            List<AccessPlayerDTO> existingRecords = this.requestHelper.select("fly", AccessPlayerDTO.class,
+                    table -> table.where("uniqueId", playerUUID));
+
+            if (existingRecords.isEmpty()) {
+                this.requestHelper.insert("fly", table -> {
+                    table.uuid("uniqueId", playerUUID).primary();
+                    try {
+                        AccessPlayerDTO playerFlyData = plugin.getFlyManager().getPlayerFlyData(playerUUID);
+                        table.bool("isinFly", playerFlyData.isinFly());
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                    table.bigInt("FlyTimeRemaining", newTimeRemaining);
+                });
+            } else {
+                this.requestHelper.update("fly", table -> {
+                    table.where("uniqueId", playerUUID);
+                    table.bool("isinFly", existingRecords.get(0).isinFly());
+                    table.bigInt("FlyTimeRemaining", newTimeRemaining);
+                });
+            }
         });
     }
+
 
     public int getTimeRemaining(Player player) {
         return flyTimes.getOrDefault(player.getUniqueId(), 0);

@@ -8,6 +8,7 @@ import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,6 +27,7 @@ public class FlyCommand extends Command<JavaPlugin> {
         super(plugin, "fly");
         setDescription("Fly command");
         setUsage("/fly");
+        addAlias("wfly.fly");
         setPermission(Permissions.FLY.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
@@ -36,8 +38,6 @@ public class FlyCommand extends Command<JavaPlugin> {
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = (Player) commandSender;
-
-
         try {
             AccessPlayerDTO playersInFly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
 
@@ -63,6 +63,11 @@ public class FlyCommand extends Command<JavaPlugin> {
                 plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
                 ColorSupportUtil.sendColorFormat(player, message);
             }
+
+            plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
+            ColorSupportUtil.sendColorFormat(player, message);
+
+
 
             } catch (SQLException e) {
                 throw new RuntimeException(e);

@@ -15,7 +15,7 @@ import java.util.List;
 
 public class FlyListener implements Listener {
 
-    WFlyV2 plugin;
+    private final WFlyV2 plugin;
     private final FlyManager flyManager;
     private final RequestHelper requestHelper;
 
@@ -30,8 +30,6 @@ public class FlyListener implements Listener {
     public void onPlayerLeave(PlayerQuitEvent event) throws SQLException {
         Player player = event.getPlayer();
         int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
-
-
         AccessPlayerDTO playerData = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
 
         plugin.getTimeFlyManager().upsertTimeFly(playerData.uniqueId(), timeRemaining);
