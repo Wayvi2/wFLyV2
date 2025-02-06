@@ -102,19 +102,16 @@ public class FlyManager {
 
     public void upsertFlyStatus(Player player, boolean isFlying) {
         service.execute(() -> {
-            // Vérifier si l'enregistrement existe déjà
             List<AccessPlayerDTO> existingRecords = this.requestHelper.select("fly", AccessPlayerDTO.class,
                     table -> table.where("uniqueId", player.getUniqueId()));
 
             if (existingRecords.isEmpty()) {
-                // Si l'enregistrement n'existe pas, insérer un nouveau
                 this.requestHelper.insert("fly", table -> {
                     table.uuid("uniqueId", player.getUniqueId()).primary();
                     table.bool("isinFly", isFlying);
                     table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
                 });
             } else {
-                // Si l'enregistrement existe, mettre à jour
                 this.requestHelper.update("fly", table -> {
                     table.where("uniqueId", player.getUniqueId());
                     table.bool("isinFly", isFlying);

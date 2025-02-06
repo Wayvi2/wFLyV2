@@ -37,8 +37,10 @@ conditions:
     my-first-conditions:
       placeholder: "%multiverse_world_alias%"
       equals: "world" #player can't fly in this world
-  authorized: # refer if matched, player can't fly
+  authorized: # refer if matched, player can fly
     my-seconds-conditions:
       placeholder: "%multiverse_world_alias%"
-      equals: "world_nether" #player can't fly in this world
+      equals: "world_nether" #player can fly in this world
 
+#NOTE : authorized section override not-authorized section
+# If authorized section is true for player(just 1), player can fly

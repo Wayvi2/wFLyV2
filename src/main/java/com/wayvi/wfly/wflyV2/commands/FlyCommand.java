@@ -27,6 +27,7 @@ public class FlyCommand extends Command<JavaPlugin> {
         super(plugin, "fly");
         setDescription("Fly command");
         setUsage("/fly");
+        addAlias("wfly.fly");
         setPermission(Permissions.FLY.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
@@ -37,10 +38,6 @@ public class FlyCommand extends Command<JavaPlugin> {
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = (Player) commandSender;
-
-        Bukkit.broadcastMessage("dans le execute");
-
-
         try {
             AccessPlayerDTO playersInFly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
 

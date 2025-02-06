@@ -138,7 +138,6 @@ public class TimeFlyManager {
     public void resetFlytime(Player player) {
         flyTimes.put(player.getUniqueId(), 0);
         upsertTimeFly(player.getUniqueId(), 0);
-        plugin.getTimeFlyManager().loadFlyTimes();
     }
 
     private void manageCommandMessageOnTimeLeft() throws SQLException {
@@ -175,12 +174,10 @@ public class TimeFlyManager {
 
     public void upsertTimeFly(@NotNull UUID playerUUID, int newTimeRemaining) {
         sqlExecutor.execute(() -> {
-            // Vérifier si l'enregistrement existe déjà
             List<AccessPlayerDTO> existingRecords = this.requestHelper.select("fly", AccessPlayerDTO.class,
                     table -> table.where("uniqueId", playerUUID));
 
             if (existingRecords.isEmpty()) {
-                // Si l'enregistrement n'existe pas, insérer un nouveau
                 this.requestHelper.insert("fly", table -> {
                     table.uuid("uniqueId", playerUUID).primary();
                     try {
@@ -192,7 +189,6 @@ public class TimeFlyManager {
                     table.bigInt("FlyTimeRemaining", newTimeRemaining);
                 });
             } else {
-                // Si l'enregistrement existe, mettre à jour
                 this.requestHelper.update("fly", table -> {
                     table.where("uniqueId", playerUUID);
                     table.bool("isinFly", existingRecords.get(0).isinFly());
