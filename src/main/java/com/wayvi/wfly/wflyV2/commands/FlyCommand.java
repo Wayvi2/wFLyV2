@@ -8,7 +8,6 @@ import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,7 +18,7 @@ public class FlyCommand extends Command<JavaPlugin> {
 
     private final WFlyV2 plugin;
 
-    private ConfigUtil configUtil;
+    private final ConfigUtil configUtil;
 
     ConditionManager conditionWorldManager;
 
@@ -62,6 +61,7 @@ public class FlyCommand extends Command<JavaPlugin> {
             if (conditionWorldManager.canFly(player)) {
                 plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
                 ColorSupportUtil.sendColorFormat(player, message);
+                return;
             }
 
             plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());

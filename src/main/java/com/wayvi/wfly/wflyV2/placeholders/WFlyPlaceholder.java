@@ -12,6 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -71,72 +73,75 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
         Map<String, Boolean> enabledFormats = plugin.getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
         String format = plugin.getTimeFormatTranslatorUtil().getPlaceholderFormat();
         boolean autoFormat = configUtil.getCustomConfig().getBoolean("format-placeholder.auto-format");
+        boolean removeNullValues = configUtil.getCustomConfig().getBoolean("format-placeholder.remove-null-values");
 
-
-        String secondsSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.seconds_suffixe");
-        String minutesSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.minutes_suffixe");
-        String hoursSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.hours_suffixe");
-        String daysSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.days_suffixe");
+        String secondsSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.seconds_suffixe", "s");
+        String minutesSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.minutes_suffixe", "m");
+        String hoursSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.hours_suffixe", "h");
+        String daysSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.days_suffixe", "j");
 
         int days = seconds / 86400;
         int hours = (seconds % 86400) / 3600;
         int minutes = (seconds % 3600) / 60;
         int sec = seconds % 60;
 
+        // Regroupement des unités selon les formats activés
         if (!enabledFormats.get("days")) {
             hours += days * 24;
             days = 0;
         }
-
         if (!enabledFormats.get("hours")) {
             minutes += hours * 60;
             hours = 0;
         }
-
         if (!enabledFormats.get("minutes")) {
             sec += minutes * 60;
             minutes = 0;
         }
-
         if (enabledFormats.get("minutes")) {
             minutes += sec / 60;
-            sec = sec % 60;
+            sec %= 60;
         }
-
         if (enabledFormats.get("hours")) {
             hours += minutes / 60;
-            minutes = minutes % 60;
+            minutes %= 60;
         }
-
         if (enabledFormats.get("days")) {
             days += hours / 24;
-            hours = hours % 24;
+            hours %= 24;
         }
 
-        if (!autoFormat) {
-            format = format.replace("%seconds%", sec + "");
-            format = format.replace("%minutes%", minutes + "");
-            format = format.replace("%hours%", hours + "");
-            format = format.replace("%days%", days + "");
-            format = format.replace("%seconds_suffixe%", secondsSuffix);
-            format = format.replace("%minutes_suffixe%", minutesSuffix);
-            format = format.replace("%hours_suffixe%", hoursSuffix);
-            format = format.replace("%days_suffixe%", daysSuffix);
-            return (String) ColorSupportUtil.convertColorFormat(format);
+        if (autoFormat) {
+            if (!enabledFormats.getOrDefault("days", false)) {
+                format = format.replace("%days%", "").replace("%days_suffixe%", "");
+            }
+            if (!enabledFormats.getOrDefault("hours", false)) {
+                format = format.replace("%hours%", "").replace("%hours_suffixe%", "");
+            }
+            if (!enabledFormats.getOrDefault("minutes", false)) {
+                format = format.replace("%minutes%", "").replace("%minutes_suffixe%", "");
+            }
+            if (!enabledFormats.getOrDefault("seconds", false)) {
+                format = format.replace("%seconds%", "").replace("%seconds_suffixe%", "");
+            }
         }
 
-        format = format.replace("%seconds%", enabledFormats.get("seconds") ? sec + "" : "");
-        format = format.replace("%minutes%", enabledFormats.get("minutes") ? minutes + "" : "");
-        format = format.replace("%hours%", enabledFormats.get("hours") ? hours + "" : "");
-        format = format.replace("%days%", enabledFormats.get("days") ? days + "" : "");
-
-        format = format.replace("%seconds_suffixe%", enabledFormats.get("seconds") ? secondsSuffix : "");
-        format = format.replace("%minutes_suffixe%", enabledFormats.get("minutes") ? minutesSuffix : "");
-        format = format.replace("%hours_suffixe%", enabledFormats.get("hours") ? hoursSuffix : "");
-        format = format.replace("%days_suffixe%", enabledFormats.get("days") ? daysSuffix : "");
+        format = format.replace("%seconds%", (removeNullValues && sec == 0) ? "" : String.valueOf(sec))
+                .replace("%minutes%", (removeNullValues && minutes == 0) ? "" : String.valueOf(minutes))
+                .replace("%hours%", (removeNullValues && hours == 0) ? "" : String.valueOf(hours))
+                .replace("%days%", (removeNullValues && days == 0) ? "" : String.valueOf(days))
+                .replace("%seconds_suffixe%", (removeNullValues && sec == 0) ? "" : secondsSuffix)
+                .replace("%minutes_suffixe%", (removeNullValues && minutes == 0) ? "" : minutesSuffix)
+                .replace("%hours_suffixe%", (removeNullValues && hours == 0) ? "" : hoursSuffix)
+                .replace("%days_suffixe%", (removeNullValues && days == 0) ? "" : daysSuffix);
 
         format = format.replaceAll("\\s+", " ").trim();
 
+        if (format.isEmpty()) {
+            format = "0" + secondsSuffix;
+        }
+
         return (String) ColorSupportUtil.convertColorFormat(format);
     }
+
 }

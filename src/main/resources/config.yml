@@ -8,7 +8,7 @@
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
 
-version: '1.01'
+version: '1.02'
 
 save-database-delay: 60 # in seconds
 
@@ -22,6 +22,7 @@ format-placeholder:
   days: true
   unlimited: "Unlimited" #need permission wfly.infinite.fly
   auto-format: true
+   - remove-null-values: true
   format: "#FFC77A%seconds%#FF9D00%seconds_suffixe%#FFC77A%minutes%#FF9D00%minutes_suffixe% #FFC77A%hours%#FF9D00%hours_suffixe% #FFC77A%days%#FF9D00%days_suffixe%"
   other-format:
     seconds_suffixe: "seconds"

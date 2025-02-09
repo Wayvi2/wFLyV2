@@ -1,5 +1,6 @@
 package com.wayvi.wfly.wflyV2;
 
+import com.wayvi.wfly.wflyV2.bentobox.FlagsManager;
 import com.wayvi.wfly.wflyV2.commands.*;
 import com.wayvi.wfly.wflyV2.handlers.CustomMessagehandler;
 import com.wayvi.wfly.wflyV2.listeners.FlyListener;
@@ -25,6 +26,8 @@ public final class WFlyV2 extends JavaPlugin {
     private TimeFlyManager timeFlyManager;
 
     private TimeFormatTranslatorUtil timeFormatTranslatorUtil;
+
+    private FlagsManager flagsManager;
 
     @Override
     public void onEnable() {
@@ -54,6 +57,17 @@ public final class WFlyV2 extends JavaPlugin {
 
         ConditionManager conditionWorldManager = new ConditionManager(this, configUtil, requestHelper);
         conditionWorldManager.checkCanFly();
+
+        //INIT bentox
+        try {
+            Class.forName("world.bentobox.bentobox.api.flags.Flag");
+            this.flagsManager = new FlagsManager(this);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        //INIT BentoBox
+        this.flagsManager = new FlagsManager(this);
 
 
         //INIT FlyManager
@@ -108,4 +122,9 @@ public final class WFlyV2 extends JavaPlugin {
     public TimeFormatTranslatorUtil getTimeFormatTranslatorUtil() {
         return timeFormatTranslatorUtil;
     }
+
+    public FlagsManager getFlagsManager() {
+        return flagsManager;
+    }
+
 }
