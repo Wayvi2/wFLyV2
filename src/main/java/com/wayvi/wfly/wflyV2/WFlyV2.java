@@ -8,14 +8,11 @@ import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
 import com.wayvi.wfly.wflyV2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyV2.managers.fly.TimeFlyManager;
 import com.wayvi.wfly.wflyV2.services.DatabaseService;
-import com.wayvi.wfly.wflyV2.util.HexaColorSupportUtil;
-import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
-import com.wayvi.wfly.wflyV2.util.TimeFormatTranslatorUtil;
+import com.wayvi.wfly.wflyV2.util.*;
 import fr.maxlego08.sarah.RequestHelper;
 import fr.traqueur.commands.api.CommandManager;
-import org.bukkit.Bukkit;
+
 import org.bukkit.plugin.java.JavaPlugin;
-import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 
 import java.sql.SQLException;
 
@@ -88,6 +85,13 @@ public final class WFlyV2 extends JavaPlugin {
         //getServer().getPluginManager().registerEvents(new PlayerJoinListener(this, this.flyManager, requestHelper), this);
         getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, requestHelper), this);
 
+        new VersionCheckerUtil(this, 118465).getLatestVersion(version -> {
+            if (this.getDescription().getVersion().equalsIgnoreCase(version)) {
+                this.getLogger().info("Plugin is up to date");
+            } else {
+                this.getLogger().info("Plugin has an update");
+            }
+        });
 
         getLogger().info("Plugin enabled");
 

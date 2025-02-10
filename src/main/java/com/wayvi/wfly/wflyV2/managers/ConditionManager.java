@@ -109,28 +109,31 @@ public class ConditionManager {
 
                     if (shouldDisable && player.isFlying()) {
                         flyStateCache.put(accessPlayerDTO.uniqueId(), false);
-                        plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
+
+                        if (!player.hasPermission(Permissions.BYPASS_FLY.getPermission()) && !player.isOp()) {
+                            plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
+                        }
 
                         Location playerLocation = player.getLocation();
                         int highestY = player.getWorld().getHighestBlockYAt(playerLocation);
                         Location safeLocation = new Location(player.getWorld(), playerLocation.getX(), highestY + 1, playerLocation.getZ());
 
-                        if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
-                            ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
-                            if (!player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || !player.isOp()){
+                        if (!player.hasPermission(Permissions.BYPASS_FLY.getPermission()) && !player.isOp()) {
+                            if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
+                                ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
+
                                 player.teleport(safeLocation);
                                 lastSafeLocation.put(player.getUniqueId(), safeLocation);
-                            }
 
-                            // POUR LA SECTION NOT AUTHORIZED
-                            if (config.isConfigurationSection("conditions.not-authorized")) {
-                                ConfigurationSection conditionsSection = config.getConfigurationSection("conditions.not-authorized");
-                                for (String key : conditionsSection.getKeys(false)) {
-                                    List<String> commands = conditionsSection.getStringList(key + ".commands");
-                                    if (commands != null) {
-                                        for (String command : commands) {
-                                            command = command.replace("%player%", player.getName());
-                                            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                                if (config.isConfigurationSection("conditions.not-authorized")) {
+                                    ConfigurationSection conditionsSection = config.getConfigurationSection("conditions.not-authorized");
+                                    for (String key : conditionsSection.getKeys(false)) {
+                                        List<String> commands = conditionsSection.getStringList(key + ".commands");
+                                        if (commands != null) {
+                                            for (String command : commands) {
+                                                command = command.replace("%player%", player.getName());
+                                                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                                            }
                                         }
                                     }
                                 }
