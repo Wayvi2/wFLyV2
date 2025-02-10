@@ -9,6 +9,8 @@ import fr.maxlego08.sarah.RequestHelper;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
@@ -60,9 +62,8 @@ public class ConditionManager {
                 }
             }
         }
-        return false;
+        return player.isOp() || player.hasPermission(Permissions.BYPASS_FLY.getPermission());
     }
-
 
     public boolean canFly(Player player) {
 
@@ -90,9 +91,8 @@ public class ConditionManager {
                 }
             }
         }
-        return false;
+        return player.isOp() || player.hasPermission(Permissions.BYPASS_FLY.getPermission());
     }
-
 
     public void checkCanFly() {
         FileConfiguration config = configUtil.getCustomConfig();
@@ -107,44 +107,52 @@ public class ConditionManager {
                     boolean shouldEnable = canFly(player);
                     boolean shouldDisable = cannotFly(player) && !shouldEnable;
 
-                    if (shouldDisable && player.isFlying()) {
-                        flyStateCache.put(accessPlayerDTO.uniqueId(), false);
+                    if (!shouldDisable || !player.isFlying()) return;
 
-                        if (!player.hasPermission(Permissions.BYPASS_FLY.getPermission()) && !player.isOp()) {
-                            plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
-                        }
+                    flyStateCache.put(accessPlayerDTO.uniqueId(), false);
 
-                        Location playerLocation = player.getLocation();
-                        int highestY = player.getWorld().getHighestBlockYAt(playerLocation);
-                        Location safeLocation = new Location(player.getWorld(), playerLocation.getX(), highestY + 1, playerLocation.getZ());
+                    plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
 
-                        if (!player.hasPermission(Permissions.BYPASS_FLY.getPermission()) && !player.isOp()) {
-                            if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
-                                ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
+                    Location safeLocation = getSafeLocation(player);
+                    if (safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) return;
 
-                                player.teleport(safeLocation);
-                                lastSafeLocation.put(player.getUniqueId(), safeLocation);
+                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
 
-                                if (config.isConfigurationSection("conditions.not-authorized")) {
-                                    ConfigurationSection conditionsSection = config.getConfigurationSection("conditions.not-authorized");
-                                    for (String key : conditionsSection.getKeys(false)) {
-                                        List<String> commands = conditionsSection.getStringList(key + ".commands");
-                                        if (commands != null) {
-                                            for (String command : commands) {
-                                                command = command.replace("%player%", player.getName());
-                                                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                    if (player.getWorld().getEnvironment() != World.Environment.NETHER) {
+                        player.teleport(safeLocation);
+                        lastSafeLocation.put(player.getUniqueId(), safeLocation);
+                    }
+
+                    if (!config.isConfigurationSection("conditions.not-authorized")) return;
+
+                    ConfigurationSection conditionsSection = config.getConfigurationSection("conditions.not-authorized");
+                    for (String key : conditionsSection.getKeys(false)) {
+                        List<String> commands = conditionsSection.getStringList(key + ".commands");
+
+                        for (String command : commands) {
+                            command = command.replace("%player%", player.getName());
+                            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
                         }
                     }
+
                 } catch (Exception e) {
                     plugin.getLogger().severe("Error in checkCanFly: " + e.getMessage());
                     e.printStackTrace();
                 }
             }
         }, 20L, 20L);
+    }
+
+    private Location getSafeLocation(Player player) {
+
+        Location loc = player.getLocation();
+        World world = player.getWorld();
+        int y = loc.getBlockY();
+
+        while (y > 0 && world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType() == Material.AIR) {
+            y--;
+        }
+
+        return new Location(world, loc.getX(), y + 1, loc.getZ());
     }
 }

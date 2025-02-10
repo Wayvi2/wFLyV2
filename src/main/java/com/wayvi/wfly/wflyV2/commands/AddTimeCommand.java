@@ -32,18 +32,27 @@ public class AddTimeCommand extends Command<JavaPlugin> {
 
     @Override
     public void execute(CommandSender sender, Arguments args) {
-
         Player target = args.get("player");
-
         int time = args.get("time");
+
         try {
             plugin.getTimeFlyManager().addFlytime(target, time);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        ColorSupportUtil.sendColorFormat(target,configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time)));
-        ColorSupportUtil.sendColorFormat((Player) sender, configUtil.getCustomMessage().getString("message.fly-time-added-to-player").replace("%time%", String.valueOf(time)).replace("%player%", target.getName())
-        );
-        plugin.getLogger().info("You have been given %time% timefly to " + target.getName());
+
+        ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
+                .getString("message.fly-time-added")
+                .replace("%time%", String.valueOf(time)));
+
+        if (sender instanceof Player) {
+            Player playerSender = (Player) sender;
+            ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage()
+                    .getString("message.fly-time-added-to-player")
+                    .replace("%time%", String.valueOf(time))
+                    .replace("%player%", target.getName()));
+        } else {
+            plugin.getLogger().info("You have given " + time + " fly time to " + target.getName());
+        }
     }
 }

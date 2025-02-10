@@ -24,7 +24,7 @@ format-placeholder:
   auto-format: true
   remove-null-values:
     enabled: true
-    value: "0"
+    value: "#FFC77A0seconds"
   format: "#FFC77A%seconds%#FF9D00%seconds_suffixe%#FFC77A%minutes%#FF9D00%minutes_suffixe% #FFC77A%hours%#FF9D00%hours_suffixe% #FFC77A%days%#FF9D00%days_suffixe%"
   other-format:
     seconds_suffixe: "seconds"
@@ -40,7 +40,7 @@ conditions:
     my-first-conditions:
       placeholder: "%multiverse_world_alias%"
       equals: "world" #player can't fly in this world
-      command: ""
+      command: "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000"
   authorized: # refer if matched, player can fly
     my-seconds-conditions:
       placeholder: "%multiverse_world_alias%"

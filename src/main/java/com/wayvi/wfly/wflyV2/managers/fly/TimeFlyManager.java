@@ -8,6 +8,10 @@ import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -85,14 +89,14 @@ public class TimeFlyManager {
                 plugin.getFlyManager().manageFly(playerUUID, false);
                 this.isFlying.put(playerUUID, false);
 
-                Location playerLocation = player.getLocation();
-                int highestY = player.getWorld().getHighestBlockYAt(playerLocation);
-                Location safeLocation = new Location(player.getWorld(), playerLocation.getX(), highestY + 1, playerLocation.getZ());
+                Location safeLocation = getSafeLocation(player);
 
                 if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
                     ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
-                    player.teleport(safeLocation);
-                    lastSafeLocation.put(player.getUniqueId(), safeLocation);
+                    if (!(player.getWorld().getEnvironment() == World.Environment.NETHER)) {
+                        player.teleport(safeLocation);
+                        lastSafeLocation.put(player.getUniqueId(), safeLocation);
+                    }
                 }
             }
 
@@ -215,9 +219,21 @@ public class TimeFlyManager {
         this.isFlying.put(playerUUID, isFlying);
     }
 
+    public boolean getFlyStatus(Player player) {
+        return getFlyStatus(player);
+    }
 
-    public Boolean putDefaultFlyStatus(UUID playerUUID) {
-        return this.isFlying.putIfAbsent(playerUUID, false);
 
+    private Location getSafeLocation(Player player) {
+
+        Location loc = player.getLocation();
+        World world = player.getWorld();
+        int y = loc.getBlockY();
+
+        while (y > 0 && world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType() == Material.AIR) {
+            y--;
+        }
+
+        return new Location(world, loc.getX(), y + 1, loc.getZ());
     }
 }

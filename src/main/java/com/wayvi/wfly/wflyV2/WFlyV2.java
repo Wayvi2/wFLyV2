@@ -30,7 +30,6 @@ public final class WFlyV2 extends JavaPlugin {
 
         Metrics metrics = new Metrics(this, 24609);
 
-
         //INIT DATABASE
         DatabaseService databaseService = new DatabaseService(this);
         databaseService.initializeDatabase();
@@ -54,7 +53,8 @@ public final class WFlyV2 extends JavaPlugin {
         ConditionManager conditionWorldManager = new ConditionManager(this, configUtil, requestHelper);
         conditionWorldManager.checkCanFly();
 
-
+        //INIT
+        ConditionManager conditionManager = new ConditionManager(this, configUtil, requestHelper);
 
 
         //INIT FlyManager
@@ -83,7 +83,7 @@ public final class WFlyV2 extends JavaPlugin {
 
         //LISTENER
         //getServer().getPluginManager().registerEvents(new PlayerJoinListener(this, this.flyManager, requestHelper), this);
-        getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, requestHelper), this);
+        getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, requestHelper, conditionManager, configUtil), this);
 
         new VersionCheckerUtil(this, 118465).getLatestVersion(version -> {
             if (this.getDescription().getVersion().equalsIgnoreCase(version)) {
