@@ -26,6 +26,7 @@ public class FlyListener implements Listener {
     }
 
 
+
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) throws SQLException {
         Player player = event.getPlayer();

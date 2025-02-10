@@ -1,7 +1,6 @@
 package com.wayvi.wfly.wflyV2.managers.fly;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
-import com.wayvi.wfly.wflyV2.bentobox.FlagsManager;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
@@ -50,21 +49,8 @@ public class FlyManager {
             plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), true);
         } else {
             player1.setFlying(false);
+            player1.setAllowFlight(false);
             plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
-
-            flyTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-                if (player1.isFlying()) {
-                    player1.setFlying(false);
-                    plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
-                }
-                if (player1.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR) {
-                    player1.setAllowFlight(false);
-                    upsertFlyStatus(player1, false);
-                    plugin.getTimeFlyManager().upsertTimeFly(player1.getUniqueId(), plugin.getTimeFlyManager().getTimeRemaining(player1));
-                    player1.setFlySpeed(0.1F);
-                    flyTask.cancel();
-                }
-            }, 20L, 20L);
 
             upsertFlyStatus(player1, false);
         }

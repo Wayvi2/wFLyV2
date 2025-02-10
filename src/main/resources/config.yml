@@ -22,7 +22,9 @@ format-placeholder:
   days: true
   unlimited: "Unlimited" #need permission wfly.infinite.fly
   auto-format: true
-   - remove-null-values: true
+  remove-null-values:
+    enabled: true
+    value: "0"
   format: "#FFC77A%seconds%#FF9D00%seconds_suffixe%#FFC77A%minutes%#FF9D00%minutes_suffixe% #FFC77A%hours%#FF9D00%hours_suffixe% #FFC77A%days%#FF9D00%days_suffixe%"
   other-format:
     seconds_suffixe: "seconds"
@@ -38,10 +40,12 @@ conditions:
     my-first-conditions:
       placeholder: "%multiverse_world_alias%"
       equals: "world" #player can't fly in this world
+      command: ""
   authorized: # refer if matched, player can fly
     my-seconds-conditions:
       placeholder: "%multiverse_world_alias%"
       equals: "world_nether" #player can fly in this world
+
 
 #NOTE : authorized section override not-authorized section
 # If authorized section is true for player(just 1), player can fly

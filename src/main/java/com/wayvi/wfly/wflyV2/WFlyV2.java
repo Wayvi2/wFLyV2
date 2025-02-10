@@ -1,6 +1,5 @@
 package com.wayvi.wfly.wflyV2;
 
-import com.wayvi.wfly.wflyV2.bentobox.FlagsManager;
 import com.wayvi.wfly.wflyV2.commands.*;
 import com.wayvi.wfly.wflyV2.handlers.CustomMessagehandler;
 import com.wayvi.wfly.wflyV2.listeners.FlyListener;
@@ -14,6 +13,7 @@ import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyV2.util.TimeFormatTranslatorUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import fr.traqueur.commands.api.CommandManager;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 
@@ -27,7 +27,6 @@ public final class WFlyV2 extends JavaPlugin {
 
     private TimeFormatTranslatorUtil timeFormatTranslatorUtil;
 
-    private FlagsManager flagsManager;
 
     @Override
     public void onEnable() {
@@ -58,16 +57,7 @@ public final class WFlyV2 extends JavaPlugin {
         ConditionManager conditionWorldManager = new ConditionManager(this, configUtil, requestHelper);
         conditionWorldManager.checkCanFly();
 
-        //INIT bentox
-        try {
-            Class.forName("world.bentobox.bentobox.api.flags.Flag");
-            this.flagsManager = new FlagsManager(this);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
 
-        //INIT BentoBox
-        this.flagsManager = new FlagsManager(this);
 
 
         //INIT FlyManager
@@ -100,11 +90,16 @@ public final class WFlyV2 extends JavaPlugin {
 
 
         getLogger().info("Plugin enabled");
+
+
+
     }
 
     @Override
     public void onDisable() {
         getLogger().info("Plugin disabled");
+        timeFlyManager.saveFlyTimes();
+
     }
 
 
@@ -123,8 +118,5 @@ public final class WFlyV2 extends JavaPlugin {
         return timeFormatTranslatorUtil;
     }
 
-    public FlagsManager getFlagsManager() {
-        return flagsManager;
-    }
 
 }

@@ -42,6 +42,12 @@ public class FlyCommand extends Command<JavaPlugin> {
 
             String message = playersInFly.isinFly() ? configUtil.getCustomMessage().getString("message.fly-deactivated") : configUtil.getCustomMessage().getString("message.fly-activated");
 
+            if (player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || player.isOp()) {
+                plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
+                ColorSupportUtil.sendColorFormat(player, message);
+                return;
+            }
+
             if (playersInFly.FlyTimeRemaining() == 0) {
                 ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
                 return;

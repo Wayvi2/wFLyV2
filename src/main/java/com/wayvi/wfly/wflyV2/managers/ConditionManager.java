@@ -1,11 +1,16 @@
 package com.wayvi.wfly.wflyV2.managers;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -22,6 +27,7 @@ public class ConditionManager {
     private final ConfigUtil configUtil;
     private final RequestHelper requestHelper;
     private final Map<UUID, Boolean> flyStateCache = new HashMap<>();
+    Map<UUID, Location> lastSafeLocation = new HashMap<>();
 
     public ConditionManager(WFlyV2 plugin, ConfigUtil configUtil, RequestHelper requestHelper) {
         this.plugin = plugin;
@@ -89,40 +95,50 @@ public class ConditionManager {
 
 
     public void checkCanFly() {
+        FileConfiguration config = configUtil.getCustomConfig();
+
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             List<AccessPlayerDTO> flyPlayers = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
             for (AccessPlayerDTO accessPlayerDTO : flyPlayers) {
                 Player player = Bukkit.getPlayer(accessPlayerDTO.uniqueId());
                 if (player == null) continue;
 
-                //DEBUG IF NEEDED
-                //Bukkit.broadcastMessage(String.valueOf(cannotFly(player)));
-                //Bukkit.broadcastMessage(String.valueOf(canFly(player)));
-
                 try {
-                    FileConfiguration config = configUtil.getCustomConfig();
-                    ConfigurationSection notAuthorizedSection = config.getConfigurationSection("conditions.not-authorized");
+                    boolean shouldEnable = canFly(player);
+                    boolean shouldDisable = cannotFly(player) && !shouldEnable;
 
-                    if (notAuthorizedSection != null) {
-                        for (String key : notAuthorizedSection.getKeys(false)) {
-                            String placeholder = notAuthorizedSection.getString(key + ".placeholder");
-                            String value = notAuthorizedSection.getString(key + ".equals");
+                    if (shouldDisable && player.isFlying()) {
+                        flyStateCache.put(accessPlayerDTO.uniqueId(), false);
+                        plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
 
-                            if (placeholder == null || value == null) {
-                                plugin.getLogger().warning("Invalid condition configuration for key: " + key + " Skipping...");
-                                continue;
+                        Location playerLocation = player.getLocation();
+                        int highestY = player.getWorld().getHighestBlockYAt(playerLocation);
+                        Location safeLocation = new Location(player.getWorld(), playerLocation.getX(), highestY + 1, playerLocation.getZ());
+
+                        if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
+                            ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
+                            if (!player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || !player.isOp()){
+                                player.teleport(safeLocation);
+                                lastSafeLocation.put(player.getUniqueId(), safeLocation);
                             }
 
-                            boolean shouldDisable = cannotFly(player) && !canFly(player);
-
-                            if (!flyStateCache.containsKey(accessPlayerDTO.uniqueId()) || flyStateCache.get(accessPlayerDTO.uniqueId()) != shouldDisable) {
-                                flyStateCache.put(accessPlayerDTO.uniqueId(), shouldDisable);
-                                plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), !shouldDisable);
+                            // POUR LA SECTION NOT AUTHORIZED
+                            if (config.isConfigurationSection("conditions.not-authorized")) {
+                                ConfigurationSection conditionsSection = config.getConfigurationSection("conditions.not-authorized");
+                                for (String key : conditionsSection.getKeys(false)) {
+                                    List<String> commands = conditionsSection.getStringList(key + ".commands");
+                                    if (commands != null) {
+                                        for (String command : commands) {
+                                            command = command.replace("%player%", player.getName());
+                                            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 } catch (Exception e) {
-                    plugin.getLogger().severe(e.getMessage());
+                    plugin.getLogger().severe("Error in checkCanFly: " + e.getMessage());
                     e.printStackTrace();
                 }
             }

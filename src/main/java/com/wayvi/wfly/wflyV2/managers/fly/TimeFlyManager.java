@@ -7,6 +7,7 @@ import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -24,6 +25,7 @@ public class TimeFlyManager {
     private final Map<UUID, Integer> flyTimes = new ConcurrentHashMap<>();
     private Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> lastNotifiedTime = new ConcurrentHashMap<>();
+    Map<UUID, Location> lastSafeLocation = new HashMap<>();
 
     private static final ExecutorService sqlExecutor = Executors.newSingleThreadExecutor();
 
@@ -39,9 +41,10 @@ public class TimeFlyManager {
         List<AccessPlayerDTO> flyData = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {
         });
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
+            upsertTimeFly(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             isFlying.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.isinFly());
-            //isFlying.put(UUID.fromString("f4cef720-d43b-4f2b-a3a0-71b77bfbbd47"), true);
+
         }
     }
 
@@ -75,17 +78,22 @@ public class TimeFlyManager {
 
             if (player == null || !player.isOnline()) continue;
 
-            if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                return;
-            }
-
-
             int timeRemaining = this.flyTimes.getOrDefault(playerUUID, 0);
             boolean isFlying = this.isFlying.getOrDefault(playerUUID, false);
 
             if (timeRemaining == 0 && isFlying) {
                 plugin.getFlyManager().manageFly(playerUUID, false);
                 this.isFlying.put(playerUUID, false);
+
+                Location playerLocation = player.getLocation();
+                int highestY = player.getWorld().getHighestBlockYAt(playerLocation);
+                Location safeLocation = new Location(player.getWorld(), playerLocation.getX(), highestY + 1, playerLocation.getZ());
+
+                if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
+                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
+                    player.teleport(safeLocation);
+                    lastSafeLocation.put(player.getUniqueId(), safeLocation);
+                }
             }
 
             if (timeRemaining <= 0) continue;
@@ -206,6 +214,7 @@ public class TimeFlyManager {
     public void updateFlyStatus(UUID playerUUID, boolean isFlying) {
         this.isFlying.put(playerUUID, isFlying);
     }
+
 
     public Boolean putDefaultFlyStatus(UUID playerUUID) {
         return this.isFlying.putIfAbsent(playerUUID, false);

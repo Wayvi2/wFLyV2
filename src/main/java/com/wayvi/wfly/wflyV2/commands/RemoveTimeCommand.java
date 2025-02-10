@@ -33,9 +33,13 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
         Player target = args.get("player");
 
         int time = args.get("time");
-        if (plugin.getTimeFlyManager().removeFlyTime(target, time)){
-            ColorSupportUtil.sendColorFormat(target,configUtil.getCustomMessage().getString("message.fly-time-removed").replace("%time%", String.valueOf(time)));
+        if (plugin.getTimeFlyManager().removeFlyTime(target, time)) {
+            ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage().getString("message.fly-time-removed").replace("%time%", String.valueOf(time)));
+            ColorSupportUtil.sendColorFormat((Player) sender, configUtil.getCustomMessage().getString("message.fly-time-remove-to-player").replace("%time%", String.valueOf(time)).replace("%player%", target.getName()));
+            plugin.getLogger().info("You have been taken %time% timefly from " + target.getName());
+
         }
+
 
 
     }

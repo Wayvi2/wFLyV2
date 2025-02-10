@@ -35,8 +35,8 @@ public void execute(CommandSender sender, Arguments args) {
 
     plugin.getTimeFlyManager().resetFlytime(target);
     ColorSupportUtil.sendColorFormat(target,configUtil.getCustomMessage().getString("message.fly-time-reset"));
-
-}
+    ColorSupportUtil.sendColorFormat((Player) sender,configUtil.getCustomMessage().getString("message.fly-time-reset-to-player").replace("%player%", target.getName()));
+    }
 }
 
 

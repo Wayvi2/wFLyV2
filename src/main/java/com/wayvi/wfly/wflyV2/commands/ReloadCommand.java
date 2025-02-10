@@ -36,7 +36,5 @@ public class ReloadCommand extends Command<JavaPlugin>  {
         if (commandSender instanceof Player) {
             ColorSupportUtil.sendColorFormat((Player) commandSender,message);
         }
-
-
     }
 }

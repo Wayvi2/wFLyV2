@@ -42,6 +42,8 @@ public class AddTimeCommand extends Command<JavaPlugin> {
             throw new RuntimeException(e);
         }
         ColorSupportUtil.sendColorFormat(target,configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time)));
-
+        ColorSupportUtil.sendColorFormat((Player) sender, configUtil.getCustomMessage().getString("message.fly-time-added-to-player").replace("%time%", String.valueOf(time)).replace("%player%", target.getName())
+        );
+        plugin.getLogger().info("You have been given %time% timefly to " + target.getName());
     }
 }

@@ -6,6 +6,7 @@ import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -65,6 +66,11 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                     throw new RuntimeException(e);
                 }
             }
+
+            if (params.equals("fly_remaining_seconds")) {
+                UUID player1 = offlinePlayer.getUniqueId();
+                return String.valueOf(plugin.getTimeFlyManager().getTimeRemaining(Bukkit.getPlayer(player1)));
+            }
         }
         return null;
     }
@@ -73,7 +79,8 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
         Map<String, Boolean> enabledFormats = plugin.getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
         String format = plugin.getTimeFormatTranslatorUtil().getPlaceholderFormat();
         boolean autoFormat = configUtil.getCustomConfig().getBoolean("format-placeholder.auto-format");
-        boolean removeNullValues = configUtil.getCustomConfig().getBoolean("format-placeholder.remove-null-values");
+        boolean removeNullValues = configUtil.getCustomConfig().getBoolean("format-placeholder.remove-null-values.enabled");
+        String nullValue = configUtil.getCustomConfig().getString("format-placeholder.remove-null-values.value", "0");
 
         String secondsSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.seconds_suffixe", "s");
         String minutesSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.minutes_suffixe", "m");
@@ -85,7 +92,6 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
         int minutes = (seconds % 3600) / 60;
         int sec = seconds % 60;
 
-        // Regroupement des unités selon les formats activés
         if (!enabledFormats.get("days")) {
             hours += days * 24;
             days = 0;
@@ -126,22 +132,30 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
             }
         }
 
-        format = format.replace("%seconds%", (removeNullValues && sec == 0) ? "" : String.valueOf(sec))
-                .replace("%minutes%", (removeNullValues && minutes == 0) ? "" : String.valueOf(minutes))
-                .replace("%hours%", (removeNullValues && hours == 0) ? "" : String.valueOf(hours))
-                .replace("%days%", (removeNullValues && days == 0) ? "" : String.valueOf(days))
-                .replace("%seconds_suffixe%", (removeNullValues && sec == 0) ? "" : secondsSuffix)
-                .replace("%minutes_suffixe%", (removeNullValues && minutes == 0) ? "" : minutesSuffix)
-                .replace("%hours_suffixe%", (removeNullValues && hours == 0) ? "" : hoursSuffix)
-                .replace("%days_suffixe%", (removeNullValues && days == 0) ? "" : daysSuffix);
+        String finalDays = (removeNullValues && days == 0) ? "" : String.valueOf(days);
+        String finalHours = (removeNullValues && hours == 0) ? "" : String.valueOf(hours);
+        String finalMinutes = (removeNullValues && minutes == 0) ? "" : String.valueOf(minutes);
+        String finalSeconds = (removeNullValues && sec == 0) ? "" : String.valueOf(sec);
 
-        format = format.replaceAll("\\s+", " ").trim();
+        String finalFormat = format
+                .replace("%seconds%", finalSeconds)
+                .replace("%minutes%", finalMinutes)
+                .replace("%hours%", finalHours)
+                .replace("%days%", finalDays)
+                .replace("%seconds_suffixe%", finalSeconds.isEmpty() ? "" : secondsSuffix)
+                .replace("%minutes_suffixe%", finalMinutes.isEmpty() ? "" : minutesSuffix)
+                .replace("%hours_suffixe%", finalHours.isEmpty() ? "" : hoursSuffix)
+                .replace("%days_suffixe%", finalDays.isEmpty() ? "" : daysSuffix);
 
-        if (format.isEmpty()) {
-            format = "0" + secondsSuffix;
+        if (finalDays.isEmpty() && finalHours.isEmpty() && finalMinutes.isEmpty() && finalSeconds.isEmpty()) {
+            finalFormat = nullValue;
         }
 
-        return (String) ColorSupportUtil.convertColorFormat(format);
+        finalFormat = finalFormat.replaceAll("\\s+", " ").trim();
+
+        return (String) ColorSupportUtil.convertColorFormat(finalFormat);
     }
+
+
 
 }

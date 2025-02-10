@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.wayvi.wfly'
-version = '1.01'
+version = '1.02'
 
 repositories {
     mavenCentral()
@@ -27,16 +27,16 @@ repositories {
         url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
     }
 
-    maven {
-        url = "https://repo.codemc.io/repository/bentoboxworld/"
-    }
+    //maven {
+    //     url = "https://repo.codemc.io/repository/bentoboxworld/"
+    //}
 }
 
 
 
 dependencies {
     compileOnly("org.bukkit:bukkit:1.8.8-R0.1-SNAPSHOT")
-    compileOnly('world.bentobox:bentobox:3.2.3-20250101.170024-4')
+    //compileOnly('world.bentobox:bentobox:3.2.3-20250101.170024-4')
     compileOnly('me.clip:placeholderapi:2.11.6')
     implementation 'com.github.Traqueur-dev:CommandsAPI:2.0.0'
     implementation 'com.github.Maxlego08:Sarah:1.14'
