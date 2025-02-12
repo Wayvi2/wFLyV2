@@ -28,9 +28,10 @@ public final class WFlyV2 extends JavaPlugin {
     @Override
     public void onEnable() {
 
+        // INIT METRICS FOR BSTATS
         Metrics metrics = new Metrics(this, 24609);
 
-        //INIT DATABASE
+        // INIT DATABASE
         DatabaseService databaseService = new DatabaseService(this);
         databaseService.initializeDatabase();
 
@@ -38,29 +39,29 @@ public final class WFlyV2 extends JavaPlugin {
         ConfigUtil configUtil = new ConfigUtil(this);
         configUtil.createCustomConfig();
 
-        //INIT miniMessageSupport
+        // INIT miniMessageSupport
         ColorSupportUtil miniMessageSupportUtil = new ColorSupportUtil();
 
         PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this, configUtil);
         placeholerapiManager.checkPlaceholderAPI();
         placeholerapiManager.initialize();
 
-        //INIT RequestHelper
+        // INIT RequestHelper
         RequestHelper requestHelper = new RequestHelper(databaseService.getConnection(), this.getLogger()::info);
 
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
 
+        // INIT ConditionsManager
         ConditionManager conditionWorldManager = new ConditionManager(this, configUtil, requestHelper);
         conditionWorldManager.checkCanFly();
 
-        //INIT
+        // INIT ConditionManager
         ConditionManager conditionManager = new ConditionManager(this, configUtil, requestHelper);
 
-
-        //INIT FlyManager
+        // INIT FlyManager
         this.flyManager = new FlyManager(this, requestHelper, configUtil);
 
-        //INIT TimeFlyManager
+        // INIT TimeFlyManager
         this.timeFlyManager = new TimeFlyManager(this, requestHelper, configUtil);
         try {
             timeFlyManager.decrementTimeRemaining();
@@ -68,7 +69,6 @@ public final class WFlyV2 extends JavaPlugin {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
 
         // COMMANDS
         CommandManager commandManager = new CommandManager(this);
@@ -81,8 +81,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.setMessageHandler(new CustomMessagehandler(configUtil));
         commandManager.registerCommand(new FlyHelpCommand(this));
 
-        //LISTENER
-        //getServer().getPluginManager().registerEvents(new PlayerJoinListener(this, this.flyManager, requestHelper), this);
+        // LISTENER
         getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, requestHelper, conditionManager, configUtil), this);
 
         new VersionCheckerUtil(this, 118465).getLatestVersion(version -> {
@@ -92,23 +91,14 @@ public final class WFlyV2 extends JavaPlugin {
                 this.getLogger().info("Plugin has an update");
             }
         });
-
         getLogger().info("Plugin enabled");
-
-
-
     }
 
     @Override
     public void onDisable() {
         getLogger().info("Plugin disabled");
         timeFlyManager.saveFlyTimes();
-
     }
-
-
-
-
 
     public TimeFlyManager getTimeFlyManager() {
         return timeFlyManager;
@@ -121,6 +111,4 @@ public final class WFlyV2 extends JavaPlugin {
     public TimeFormatTranslatorUtil getTimeFormatTranslatorUtil() {
         return timeFormatTranslatorUtil;
     }
-
-
 }

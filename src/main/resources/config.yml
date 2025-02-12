@@ -8,7 +8,7 @@
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
 
-version: '1.02'
+version: '1.0.0.2'
 
 save-database-delay: 60 # in seconds
 
@@ -40,11 +40,11 @@ conditions:
     my-first-conditions:
       placeholder: "%multiverse_world_alias%"
       equals: "world" #player can't fly in this world
-      command: "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000"
+      command: "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000" #optional
   authorized: # refer if matched, player can fly
     my-seconds-conditions:
-      placeholder: "%multiverse_world_alias%"
-      equals: "world_nether" #player can fly in this world
+      placeholder: "%lands_land_name_plain_here%"
+      equals: "%lands_lands%" #player can fly in his lands
 
 
 #NOTE : authorized section override not-authorized section

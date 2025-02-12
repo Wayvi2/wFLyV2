@@ -21,10 +21,10 @@ public class FlyManager {
 
     public static ExecutorService service = (ExecutorService) Executors.newSingleThreadExecutor();
 
-    private WFlyV2 plugin;
+    private final WFlyV2 plugin;
     private final RequestHelper requestHelper;
     private BukkitTask flyTask;
-    private ConfigUtil configUtil;
+    private final ConfigUtil configUtil;
 
 
     public FlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {

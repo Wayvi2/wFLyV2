@@ -8,8 +8,8 @@ import org.bukkit.Bukkit;
 import java.util.logging.Level;
 
 public class PlaceholerapiManager {
-    private WFlyV2 plugin;
-    private ConfigUtil configUtil;
+    private final WFlyV2 plugin;
+    private final ConfigUtil configUtil;
 
 
     public PlaceholerapiManager(WFlyV2 plugin, ConfigUtil configutil) {

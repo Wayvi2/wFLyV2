@@ -230,7 +230,7 @@ public class TimeFlyManager {
         World world = player.getWorld();
         int y = loc.getBlockY();
 
-        while (y > 0 && world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType() == Material.AIR) {
+        while (y > 0 && world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).isPassable()) {
             y--;
         }
 

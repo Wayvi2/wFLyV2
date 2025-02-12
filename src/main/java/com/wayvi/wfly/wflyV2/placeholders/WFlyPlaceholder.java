@@ -49,28 +49,26 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
             Player player = offlinePlayer.getPlayer();
 
 
-            if (params.equals("fly_remaining")) {
-                int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
-                if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                    return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomConfig().getString("format-placeholder.unlimited"));
-                }
-                return formatTime(timeRemaining);
-            }
-
-            if (params.equals("fly_activate")) {
-                try {
+            switch (params) {
+                case "fly_remaining":
+                    int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
+                    if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
+                        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomConfig().getString("format-placeholder.unlimited"));
+                    }
+                    return formatTime(timeRemaining);
+                case "fly_activate":
+                    try {
+                        UUID player1 = offlinePlayer.getUniqueId();
+                        AccessPlayerDTO isFlying = plugin.getFlyManager().getPlayerFlyData(player1);
+                        return String.valueOf(isFlying.isinFly());
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                case "fly_remaining_seconds":
                     UUID player1 = offlinePlayer.getUniqueId();
-                    AccessPlayerDTO isFlying = plugin.getFlyManager().getPlayerFlyData(player1);
-                    return String.valueOf(isFlying.isinFly());
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                    return String.valueOf(plugin.getTimeFlyManager().getTimeRemaining(Bukkit.getPlayer(player1)));
             }
 
-            if (params.equals("fly_remaining_seconds")) {
-                UUID player1 = offlinePlayer.getUniqueId();
-                return String.valueOf(plugin.getTimeFlyManager().getTimeRemaining(Bukkit.getPlayer(player1)));
-            }
         }
         return null;
     }
