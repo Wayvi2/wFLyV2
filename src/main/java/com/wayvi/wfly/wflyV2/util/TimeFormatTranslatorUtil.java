@@ -1,5 +1,6 @@
 package com.wayvi.wfly.wflyV2.util;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,11 +21,11 @@ public class TimeFormatTranslatorUtil {
     }
 
     public Map<String, Boolean> getTimeUnitsEnabled() {
-        return Map.of(
-                "seconds", configUtil.getCustomConfig().getBoolean("format-placeholder.seconds"),
-                "minutes", configUtil.getCustomConfig().getBoolean("format-placeholder.minutes"),
-                "hours", configUtil.getCustomConfig().getBoolean("format-placeholder.hours"),
-                "days", configUtil.getCustomConfig().getBoolean("format-placeholder.days")
-        );
+        Map<String, Boolean> timeUnits = new HashMap<>();
+        timeUnits.put("seconds", configUtil.getCustomConfig().getBoolean("format-placeholder.seconds"));
+        timeUnits.put("minutes", configUtil.getCustomConfig().getBoolean("format-placeholder.minutes"));
+        timeUnits.put("hours", configUtil.getCustomConfig().getBoolean("format-placeholder.hours"));
+        timeUnits.put("days", configUtil.getCustomConfig().getBoolean("format-placeholder.days"));
+        return timeUnits;
     }
 }

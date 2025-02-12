@@ -2,19 +2,17 @@ package com.wayvi.wfly.wflyV2;
 
 import com.wayvi.wfly.wflyV2.commands.*;
 import com.wayvi.wfly.wflyV2.handlers.CustomMessagehandler;
-import com.wayvi.wfly.wflyV2.listeners.PlayerJoinListener;
-import com.wayvi.wfly.wflyV2.listeners.PlayerLeaveListener;
+import com.wayvi.wfly.wflyV2.listeners.FlyListener;
 import com.wayvi.wfly.wflyV2.managers.ConditionManager;
 import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
 import com.wayvi.wfly.wflyV2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyV2.managers.fly.TimeFlyManager;
 import com.wayvi.wfly.wflyV2.services.DatabaseService;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
-import com.wayvi.wfly.wflyV2.util.TimeFormatTranslatorUtil;
+import com.wayvi.wfly.wflyV2.util.*;
 import fr.maxlego08.sarah.RequestHelper;
 import fr.traqueur.commands.api.CommandManager;
+
 import org.bukkit.plugin.java.JavaPlugin;
-import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 
 import java.sql.SQLException;
 
@@ -26,13 +24,14 @@ public final class WFlyV2 extends JavaPlugin {
 
     private TimeFormatTranslatorUtil timeFormatTranslatorUtil;
 
+
     @Override
     public void onEnable() {
 
+        // INIT METRICS FOR BSTATS
         Metrics metrics = new Metrics(this, 24609);
 
-
-        //INIT DATABASE
+        // INIT DATABASE
         DatabaseService databaseService = new DatabaseService(this);
         databaseService.initializeDatabase();
 
@@ -40,27 +39,29 @@ public final class WFlyV2 extends JavaPlugin {
         ConfigUtil configUtil = new ConfigUtil(this);
         configUtil.createCustomConfig();
 
-        //INIT miniMessageSupport
-        MiniMessageSupportUtil miniMessageSupportUtil = new MiniMessageSupportUtil();
+        // INIT miniMessageSupport
+        ColorSupportUtil miniMessageSupportUtil = new ColorSupportUtil();
 
         PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this, configUtil);
         placeholerapiManager.checkPlaceholderAPI();
         placeholerapiManager.initialize();
 
-
-        //INIT RequestHelper
+        // INIT RequestHelper
         RequestHelper requestHelper = new RequestHelper(databaseService.getConnection(), this.getLogger()::info);
 
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
 
+        // INIT ConditionsManager
         ConditionManager conditionWorldManager = new ConditionManager(this, configUtil, requestHelper);
         conditionWorldManager.checkCanFly();
 
+        // INIT ConditionManager
+        ConditionManager conditionManager = new ConditionManager(this, configUtil, requestHelper);
 
-        //INIT FlyManager
+        // INIT FlyManager
         this.flyManager = new FlyManager(this, requestHelper, configUtil);
 
-        //INIT TimeFlyManager
+        // INIT TimeFlyManager
         this.timeFlyManager = new TimeFlyManager(this, requestHelper, configUtil);
         try {
             timeFlyManager.decrementTimeRemaining();
@@ -68,7 +69,6 @@ public final class WFlyV2 extends JavaPlugin {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
 
         // COMMANDS
         CommandManager commandManager = new CommandManager(this);
@@ -79,18 +79,25 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new ResetTimeCommand(this, configUtil));
         commandManager.registerCommand(new RemoveTimeCommand(this, configUtil));
         commandManager.setMessageHandler(new CustomMessagehandler(configUtil));
+        commandManager.registerCommand(new FlyHelpCommand(this));
 
-        //LISTENER
-        getServer().getPluginManager().registerEvents(new PlayerJoinListener(this.flyManager), this);
-        getServer().getPluginManager().registerEvents(new PlayerLeaveListener(this), this);
+        // LISTENER
+        getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, requestHelper, conditionManager, configUtil), this);
 
-
+        new VersionCheckerUtil(this, 118465).getLatestVersion(version -> {
+            if (this.getDescription().getVersion().equalsIgnoreCase(version)) {
+                this.getLogger().info("Plugin is up to date");
+            } else {
+                this.getLogger().info("Plugin has an update");
+            }
+        });
         getLogger().info("Plugin enabled");
     }
 
     @Override
     public void onDisable() {
         getLogger().info("Plugin disabled");
+        timeFlyManager.saveFlyTimes();
     }
 
     public TimeFlyManager getTimeFlyManager() {

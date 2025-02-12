@@ -3,7 +3,7 @@ package com.wayvi.wfly.wflyV2.managers.fly;
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -13,19 +13,18 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class FlyManager {
 
-    public static ExecutorService service = Executors.newSingleThreadExecutor();
+    public static ExecutorService service = (ExecutorService) Executors.newSingleThreadExecutor();
 
-    private WFlyV2 plugin;
+    private final WFlyV2 plugin;
     private final RequestHelper requestHelper;
     private BukkitTask flyTask;
-    private ConfigUtil configUtil;
+    private final ConfigUtil configUtil;
 
 
     public FlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
@@ -37,8 +36,9 @@ public class FlyManager {
     public void manageFly(UUID player, boolean fly) throws SQLException {
         Player player1 = Bukkit.getPlayer(player);
 
-        if (flyTask != null && !flyTask.isCancelled()) {
+        if (flyTask != null) {
             flyTask.cancel();
+            flyTask = null;
         }
 
         assert player1 != null;
@@ -49,21 +49,8 @@ public class FlyManager {
             plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), true);
         } else {
             player1.setFlying(false);
+            player1.setAllowFlight(false);
             plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
-
-            flyTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-                if (player1.isFlying()) {
-                    player1.setFlying(false);
-                    plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
-                }
-                if (player1.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR) {
-                    player1.setAllowFlight(false);
-                    upsertFlyStatus(player1, false);
-                    plugin.getTimeFlyManager().upsertTimeFly(player1.getUniqueId(), plugin.getTimeFlyManager().getTimeRemaining(player1));
-                    player1.setFlySpeed(0.1F);
-                    flyTask.cancel();
-                }
-            }, 20L, 20L);
 
             upsertFlyStatus(player1, false);
         }
@@ -73,19 +60,19 @@ public class FlyManager {
         speed = speed / 10.0;
 
         if (speed > 1.0) {
-            MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-speed-too-high"));
+            ColorSupportUtil.sendColorFormat(player,configUtil.getCustomMessage().getString("message.fly-speed-too-high").replace("%speed%", String.valueOf(speed*10)));
             return;
         }
 
         for (int i = (int) (speed * 10); i >= 1; i--) {
             if (player.hasPermission("wfly.fly.speed." + i)) {
                 player.setFlySpeed((float) i / 10.0f);
-                MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-speed").replace("%speed%", String.valueOf(i)));
+                ColorSupportUtil.sendColorFormat(player,configUtil.getCustomMessage().getString("message.fly-speed").replace("%speed%", String.valueOf(i)));
                 return;
             }
         }
 
-        MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-speed-no-permission"));
+        ColorSupportUtil.sendColorFormat(player,configUtil.getCustomMessage().getString("message.fly-speed-no-permission").replace("%speed%", String.valueOf(speed*10)));
     }
 
     // ACCESS DATABASE METHODS
@@ -102,13 +89,32 @@ public class FlyManager {
 
     public void upsertFlyStatus(Player player, boolean isFlying) {
         service.execute(() -> {
-            this.requestHelper.upsert("fly", table -> {
-                table.uuid("uniqueId", player.getUniqueId()).primary();
-                table.bool("isinFly", isFlying);
+            List<AccessPlayerDTO> existingRecords = this.requestHelper.select("fly", AccessPlayerDTO.class,
+                    table -> table.where("uniqueId", player.getUniqueId()));
 
-                table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
+            if (existingRecords.isEmpty()) {
+                this.requestHelper.insert("fly", table -> {
+                    table.uuid("uniqueId", player.getUniqueId()).primary();
+                    table.bool("isinFly", isFlying);
+                    table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
+                });
+            } else {
+                this.requestHelper.update("fly", table -> {
+                    table.where("uniqueId", player.getUniqueId());
+                    table.bool("isinFly", isFlying);
+                    table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
+                });
+            }
+        });
+    }
 
-            });
+
+
+    public void createNewPlayer(UUID player) throws SQLException {
+        this.requestHelper.insert("fly", table -> {
+            table.uuid("uniqueId", player).primary();
+            table.bool("isinFly", false);
+            table.bigInt("FlyTimeRemaining", 0);
         });
     }
 }

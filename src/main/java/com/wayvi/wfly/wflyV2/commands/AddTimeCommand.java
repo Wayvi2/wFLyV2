@@ -3,7 +3,7 @@ package com.wayvi.wfly.wflyV2.commands;
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
 import org.bukkit.command.CommandSender;
@@ -32,12 +32,27 @@ public class AddTimeCommand extends Command<JavaPlugin> {
 
     @Override
     public void execute(CommandSender sender, Arguments args) {
-
         Player target = args.get("player");
-
         int time = args.get("time");
-        plugin.getTimeFlyManager().addFlytime(target, time);
-        MiniMessageSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-added").replace("%time%", String.valueOf(time)));
 
+        try {
+            plugin.getTimeFlyManager().addFlytime(target, time);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
+                .getString("message.fly-time-added")
+                .replace("%time%", String.valueOf(time)));
+
+        if (sender instanceof Player) {
+            Player playerSender = (Player) sender;
+            ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage()
+                    .getString("message.fly-time-added-to-player")
+                    .replace("%time%", String.valueOf(time))
+                    .replace("%player%", target.getName()));
+        } else {
+            plugin.getLogger().info("You have given " + time + " fly time to " + target.getName());
+        }
     }
 }

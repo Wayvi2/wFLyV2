@@ -4,7 +4,11 @@
 #   Documentation : https://app.gitbook.com/o/ew6PbMsQsqKjVC6kUf22/s/wnts7HZ5JI6Nxy4VSXbq/   #
 #                                                                                            #
 ##############################################################################################
-version: '1.0'
+
+# NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
+# Example : #FFC77AHello!
+
+version: '1.0.0.2'
 
 save-database-delay: 60 # in seconds
 
@@ -16,9 +20,12 @@ format-placeholder:
   minutes: false
   hours: true
   days: true
-  unlimited: "<blue>Unlimited" #need permission wfly.infinite.fly
+  unlimited: "Unlimited" #need permission wfly.infinite.fly
   auto-format: true
-  format: "<#FFC77A>%seconds%<#FF9D00>%seconds_suffixe% <#FFC77A>%minutes%<#FF9D00>%minutes_suffixe% <#FFC77A>%hours%<#FF9D00>%hours_suffixe% <#FFC77A>%days%<#FF9D00>%days_suffixe%"
+  remove-null-values:
+    enabled: true
+    value: "#FFC77A0seconds"
+  format: "#FFC77A%seconds%#FF9D00%seconds_suffixe%#FFC77A%minutes%#FF9D00%minutes_suffixe% #FFC77A%hours%#FF9D00%hours_suffixe% #FFC77A%days%#FF9D00%days_suffixe%"
   other-format:
     seconds_suffixe: "seconds"
     minutes_suffixe: "minutes"
@@ -26,11 +33,19 @@ format-placeholder:
     days_suffixe: "days"
 
 
+#EXAMPLE OF CONDITIONS
 #mean if condition is valid, players will can't activate her fly
 conditions:
-  my-first-conditions:
-    placeholder: "%player_name%"
-    equals: "Wayvi2" #player with name "Wayvi2" can't fly
+  not-authorized: # refer if matched, player can't fly
+    my-first-conditions:
+      placeholder: "%multiverse_world_alias%"
+      equals: "world" #player can't fly in this world
+      command: "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000" #optional
+  authorized: # refer if matched, player can fly
+    my-seconds-conditions:
+      placeholder: "%lands_land_name_plain_here%"
+      equals: "%lands_lands%" #player can fly in his lands
 
 
-
+#NOTE : authorized section override not-authorized section
+# If authorized section is true for player(just 1), player can fly

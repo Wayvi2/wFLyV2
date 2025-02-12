@@ -9,6 +9,7 @@ public enum Permissions {
     REMOVE_FLY_TIME("wfly.remove.time"),
     ADD_RESET_TIME("wfly.reset.time"),
     INFINITE_FLY("wfly.infinite.fly"),
+    BYPASS_FLY("wfly.bypass.fly"),
     ;
 
     private final String permission;

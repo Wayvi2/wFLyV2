@@ -3,14 +3,13 @@ package com.wayvi.wfly.wflyV2.managers;
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.placeholders.WFlyPlaceholder;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
 import org.bukkit.Bukkit;
 
 import java.util.logging.Level;
 
 public class PlaceholerapiManager {
-    private WFlyV2 plugin;
-    private ConfigUtil configUtil;
+    private final WFlyV2 plugin;
+    private final ConfigUtil configUtil;
 
 
     public PlaceholerapiManager(WFlyV2 plugin, ConfigUtil configutil) {

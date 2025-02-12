@@ -13,7 +13,7 @@ public class DatabaseService {
 
     private File databaseFile;
     private DatabaseConnection connection;
-    private WFlyV2 plugin;
+    private final WFlyV2 plugin;
 
 
     public DatabaseService(WFlyV2 plugin) {

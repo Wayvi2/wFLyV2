@@ -4,14 +4,17 @@ import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -46,23 +49,26 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
             Player player = offlinePlayer.getPlayer();
 
 
-            if (params.equals("fly_remaining")) {
-                int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
-                if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                    return (String) MiniMessageSupportUtil.convertMiniMessageFormat(configUtil.getCustomConfig().getString("format-placeholder.unlimited"));
-                }
-                return formatTime(timeRemaining);
+            switch (params) {
+                case "fly_remaining":
+                    int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
+                    if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
+                        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomConfig().getString("format-placeholder.unlimited"));
+                    }
+                    return formatTime(timeRemaining);
+                case "fly_activate":
+                    try {
+                        UUID player1 = offlinePlayer.getUniqueId();
+                        AccessPlayerDTO isFlying = plugin.getFlyManager().getPlayerFlyData(player1);
+                        return String.valueOf(isFlying.isinFly());
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                case "fly_remaining_seconds":
+                    UUID player1 = offlinePlayer.getUniqueId();
+                    return String.valueOf(plugin.getTimeFlyManager().getTimeRemaining(Bukkit.getPlayer(player1)));
             }
 
-            if (params.equals("fly_activate")) {
-                try {
-                    UUID player1 = offlinePlayer.getUniqueId();
-                    AccessPlayerDTO isFlying = plugin.getFlyManager().getPlayerFlyData(player1);
-                    return String.valueOf(isFlying.isinFly());
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
         }
         return null;
     }
@@ -71,12 +77,13 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
         Map<String, Boolean> enabledFormats = plugin.getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
         String format = plugin.getTimeFormatTranslatorUtil().getPlaceholderFormat();
         boolean autoFormat = configUtil.getCustomConfig().getBoolean("format-placeholder.auto-format");
+        boolean removeNullValues = configUtil.getCustomConfig().getBoolean("format-placeholder.remove-null-values.enabled");
+        String nullValue = configUtil.getCustomConfig().getString("format-placeholder.remove-null-values.value", "0");
 
-
-        String secondsSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.seconds_suffixe");
-        String minutesSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.minutes_suffixe");
-        String hoursSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.hours_suffixe");
-        String daysSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.days_suffixe");
+        String secondsSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.seconds_suffixe", "s");
+        String minutesSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.minutes_suffixe", "m");
+        String hoursSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.hours_suffixe", "h");
+        String daysSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.days_suffixe", "j");
 
         int days = seconds / 86400;
         int hours = (seconds % 86400) / 3600;
@@ -87,56 +94,66 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
             hours += days * 24;
             days = 0;
         }
-
         if (!enabledFormats.get("hours")) {
             minutes += hours * 60;
             hours = 0;
         }
-
         if (!enabledFormats.get("minutes")) {
             sec += minutes * 60;
             minutes = 0;
         }
-
         if (enabledFormats.get("minutes")) {
             minutes += sec / 60;
-            sec = sec % 60;
+            sec %= 60;
         }
-
         if (enabledFormats.get("hours")) {
             hours += minutes / 60;
-            minutes = minutes % 60;
+            minutes %= 60;
         }
-
         if (enabledFormats.get("days")) {
             days += hours / 24;
-            hours = hours % 24;
+            hours %= 24;
         }
 
-        if (!autoFormat) {
-            format = format.replace("%seconds%", sec + "");
-            format = format.replace("%minutes%", minutes + "");
-            format = format.replace("%hours%", hours + "");
-            format = format.replace("%days%", days + "");
-            format = format.replace("%seconds_suffixe%", secondsSuffix);
-            format = format.replace("%minutes_suffixe%", minutesSuffix);
-            format = format.replace("%hours_suffixe%", hoursSuffix);
-            format = format.replace("%days_suffixe%", daysSuffix);
-            return (String) MiniMessageSupportUtil.convertMiniMessageFormat(format);
+        if (autoFormat) {
+            if (!enabledFormats.getOrDefault("days", false)) {
+                format = format.replace("%days%", "").replace("%days_suffixe%", "");
+            }
+            if (!enabledFormats.getOrDefault("hours", false)) {
+                format = format.replace("%hours%", "").replace("%hours_suffixe%", "");
+            }
+            if (!enabledFormats.getOrDefault("minutes", false)) {
+                format = format.replace("%minutes%", "").replace("%minutes_suffixe%", "");
+            }
+            if (!enabledFormats.getOrDefault("seconds", false)) {
+                format = format.replace("%seconds%", "").replace("%seconds_suffixe%", "");
+            }
         }
 
-        format = format.replace("%seconds%", enabledFormats.get("seconds") ? sec + "" : "");
-        format = format.replace("%minutes%", enabledFormats.get("minutes") ? minutes + "" : "");
-        format = format.replace("%hours%", enabledFormats.get("hours") ? hours + "" : "");
-        format = format.replace("%days%", enabledFormats.get("days") ? days + "" : "");
+        String finalDays = (removeNullValues && days == 0) ? "" : String.valueOf(days);
+        String finalHours = (removeNullValues && hours == 0) ? "" : String.valueOf(hours);
+        String finalMinutes = (removeNullValues && minutes == 0) ? "" : String.valueOf(minutes);
+        String finalSeconds = (removeNullValues && sec == 0) ? "" : String.valueOf(sec);
 
-        format = format.replace("%seconds_suffixe%", enabledFormats.get("seconds") ? secondsSuffix : "");
-        format = format.replace("%minutes_suffixe%", enabledFormats.get("minutes") ? minutesSuffix : "");
-        format = format.replace("%hours_suffixe%", enabledFormats.get("hours") ? hoursSuffix : "");
-        format = format.replace("%days_suffixe%", enabledFormats.get("days") ? daysSuffix : "");
+        String finalFormat = format
+                .replace("%seconds%", finalSeconds)
+                .replace("%minutes%", finalMinutes)
+                .replace("%hours%", finalHours)
+                .replace("%days%", finalDays)
+                .replace("%seconds_suffixe%", finalSeconds.isEmpty() ? "" : secondsSuffix)
+                .replace("%minutes_suffixe%", finalMinutes.isEmpty() ? "" : minutesSuffix)
+                .replace("%hours_suffixe%", finalHours.isEmpty() ? "" : hoursSuffix)
+                .replace("%days_suffixe%", finalDays.isEmpty() ? "" : daysSuffix);
 
-        format = format.replaceAll("\\s+", " ").trim();
+        if (finalDays.isEmpty() && finalHours.isEmpty() && finalMinutes.isEmpty() && finalSeconds.isEmpty()) {
+            finalFormat = nullValue;
+        }
 
-        return (String) MiniMessageSupportUtil.convertMiniMessageFormat(format);
+        finalFormat = finalFormat.replaceAll("\\s+", " ").trim();
+
+        return (String) ColorSupportUtil.convertColorFormat(finalFormat);
     }
+
+
+
 }

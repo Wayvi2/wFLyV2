@@ -4,9 +4,14 @@ import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -22,8 +27,9 @@ public class TimeFlyManager {
     private final RequestHelper requestHelper;
     private final ConfigUtil configUtil;
     private final Map<UUID, Integer> flyTimes = new ConcurrentHashMap<>();
-    private final Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
+    private Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> lastNotifiedTime = new ConcurrentHashMap<>();
+    Map<UUID, Location> lastSafeLocation = new HashMap<>();
 
     private static final ExecutorService sqlExecutor = Executors.newSingleThreadExecutor();
 
@@ -35,11 +41,14 @@ public class TimeFlyManager {
         startDecrementTask();
     }
 
-    private void loadFlyTimes() {
-        List<AccessPlayerDTO> flyData = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
+    public void loadFlyTimes() {
+        List<AccessPlayerDTO> flyData = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {
+        });
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
+            upsertTimeFly(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             isFlying.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.isinFly());
+
         }
     }
 
@@ -51,7 +60,7 @@ public class TimeFlyManager {
                 upsertTimeFly(entry.getKey(), entry.getValue());
                 plugin.getLogger().info("Fly time saved");
             }
-        }, 0L, 20L*seconds);
+        }, 0L, 20L * seconds);
     }
 
     private void startDecrementTask() {
@@ -73,16 +82,22 @@ public class TimeFlyManager {
 
             if (player == null || !player.isOnline()) continue;
 
-            if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                return;
-            }
-
-            int timeRemaining = flyTimes.get(playerUUID);
+            int timeRemaining = this.flyTimes.getOrDefault(playerUUID, 0);
             boolean isFlying = this.isFlying.getOrDefault(playerUUID, false);
 
             if (timeRemaining == 0 && isFlying) {
                 plugin.getFlyManager().manageFly(playerUUID, false);
                 this.isFlying.put(playerUUID, false);
+
+                Location safeLocation = getSafeLocation(player);
+
+                if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
+                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
+                    if (!(player.getWorld().getEnvironment() == World.Environment.NETHER)) {
+                        player.teleport(safeLocation);
+                        lastSafeLocation.put(player.getUniqueId(), safeLocation);
+                    }
+                }
             }
 
             if (timeRemaining <= 0) continue;
@@ -92,20 +107,25 @@ public class TimeFlyManager {
             assert decrementMethod != null;
             if (decrementMethod.equals("PLAYER_FLYING_MODE")) {
                 if (isFlying && player.isFlying()) {
+                    if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
+                        return;
+                    }
                     timeRemaining--;
                     flyTimes.put(playerUUID, timeRemaining);
                 }
             } else if (decrementMethod.equals("PLAYER_FLY_MODE")) {
-                if (this.isFlying.get(playerUUID)) {
+                if (this.isFlying.getOrDefault(playerUUID, false)) {
+                    if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
+                        return;
+                    }
                     timeRemaining--;
                     flyTimes.put(playerUUID, timeRemaining);
                 }
             }
-
         }
     }
 
-    public void addFlytime(Player player, int time) {
+    public void addFlytime(Player player, int time) throws SQLException {
         UUID playerUUID = player.getUniqueId();
         int newTime = flyTimes.getOrDefault(playerUUID, 0) + time;
         flyTimes.put(playerUUID, newTime);
@@ -114,14 +134,14 @@ public class TimeFlyManager {
 
     public boolean removeFlyTime(Player player, int time) {
         UUID playerUUID = player.getUniqueId();
-        int currentFlyTime = flyTimes.getOrDefault(playerUUID, 0);
+        int currentFlyTime = getTimeRemaining(player);
 
         if (time > currentFlyTime) {
-            MiniMessageSupportUtil.sendMiniMessageFormat(player,configUtil.getCustomMessage().getString("message.fly-remove-too-high"));
+            ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-remove-too-high"));
             return false;
         }
 
-        int newTime = currentFlyTime - time;
+        int newTime = flyTimes.getOrDefault(playerUUID, 0) - time;
         flyTimes.put(playerUUID, newTime);
         upsertTimeFly(playerUUID, newTime);
         return true;
@@ -136,6 +156,7 @@ public class TimeFlyManager {
         FileConfiguration config = configUtil.getCustomMessage();
         ConfigurationSection conditionsSection = config.getConfigurationSection("commands-time-remaining");
         if (conditionsSection == null) return;
+
 
         for (String key : conditionsSection.getKeys(false)) {
             int targetTime;
@@ -165,18 +186,30 @@ public class TimeFlyManager {
 
     public void upsertTimeFly(@NotNull UUID playerUUID, int newTimeRemaining) {
         sqlExecutor.execute(() -> {
-            this.requestHelper.upsert("fly", table -> {
-                table.uuid("uniqueId", playerUUID).primary();
-                try {
-                    AccessPlayerDTO playerFlyData = plugin.getFlyManager().getPlayerFlyData(playerUUID);
-                    table.bool("isinFly", playerFlyData.isinFly());
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-                table.bigInt("FlyTimeRemaining", newTimeRemaining);
-            });
+            List<AccessPlayerDTO> existingRecords = this.requestHelper.select("fly", AccessPlayerDTO.class,
+                    table -> table.where("uniqueId", playerUUID));
+
+            if (existingRecords.isEmpty()) {
+                this.requestHelper.insert("fly", table -> {
+                    table.uuid("uniqueId", playerUUID).primary();
+                    try {
+                        AccessPlayerDTO playerFlyData = plugin.getFlyManager().getPlayerFlyData(playerUUID);
+                        table.bool("isinFly", playerFlyData.isinFly());
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                    table.bigInt("FlyTimeRemaining", newTimeRemaining);
+                });
+            } else {
+                this.requestHelper.update("fly", table -> {
+                    table.where("uniqueId", playerUUID);
+                    table.bool("isinFly", existingRecords.get(0).isinFly());
+                    table.bigInt("FlyTimeRemaining", newTimeRemaining);
+                });
+            }
         });
     }
+
 
     public int getTimeRemaining(Player player) {
         return flyTimes.getOrDefault(player.getUniqueId(), 0);
@@ -184,5 +217,23 @@ public class TimeFlyManager {
 
     public void updateFlyStatus(UUID playerUUID, boolean isFlying) {
         this.isFlying.put(playerUUID, isFlying);
+    }
+
+    public boolean getFlyStatus(Player player) {
+        return getFlyStatus(player);
+    }
+
+
+    private Location getSafeLocation(Player player) {
+
+        Location loc = player.getLocation();
+        World world = player.getWorld();
+        int y = loc.getBlockY();
+
+        while (y > 0 && world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).isPassable()) {
+            y--;
+        }
+
+        return new Location(world, loc.getX(), y + 1, loc.getZ());
     }
 }

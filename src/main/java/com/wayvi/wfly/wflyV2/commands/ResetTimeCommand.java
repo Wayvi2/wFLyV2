@@ -3,7 +3,7 @@ package com.wayvi.wfly.wflyV2.commands;
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import com.wayvi.wfly.wflyV2.util.MiniMessageSupportUtil;
+import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
 import org.bukkit.command.CommandSender;
@@ -34,9 +34,12 @@ public void execute(CommandSender sender, Arguments args) {
     Player target = args.get("player");
 
     plugin.getTimeFlyManager().resetFlytime(target);
-    MiniMessageSupportUtil.sendMiniMessageFormat(target,configUtil.getCustomMessage().getString("message.fly-time-reset"));
+    ColorSupportUtil.sendColorFormat(target,configUtil.getCustomMessage().getString("message.fly-time-reset"));
+    ColorSupportUtil.sendColorFormat((Player) sender,configUtil.getCustomMessage().getString("message.fly-time-reset-to-player").replace("%player%", target.getName()));
 
-}
+    plugin.getLogger().info("Fly time reset for " + target);
+
+    }
 }
 
 

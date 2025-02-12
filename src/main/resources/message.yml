@@ -1,24 +1,3 @@
-message:
-  reload: "<red>Plugin has been reloaded!"
-  fly-activated: "<green>You have been set to fly! Use /fly to disable fly."
-  fly-deactivated: "<red>You have been set to walk! Use /fly to enable fly."
-  fly-speed-too-high: "<red>Speed too high! Maximum speed is %speed%"
-  fly-speed: "<green>You have set your fly speed to <yellow>%speed%"
-  fly-speed-no-permission: "<red>You do not have permission to set your fly speed to <yellow>%speed%"
-  no-timefly-remaining: "<red>You have no timefly remaining!"
-  fly-time-added: "<green>You have been given <yellow>%time% <green>timefly!"
-  fly-time-removed: "<red>You have been taken <yellow>%time% <red>timefly!"
-  fly-time-reset: "<green>You have been given <yellow>0 <green>timefly!"
-  no-fly-here: "<red>You cannot fly here!"
-  fly-remove-too-high: "<red>You cannot remove too much timefly!"
-  no-permission: "<red>You do not have permission to use this command!"
-  only-in-game: "<red>This command can only be used in game!"
-  missing-args: "<red>Missing arguments!"
-  arg-not-recognized: "<red>Argument not recognized!"
-  message-requirement: "<red>You do not meet the requirements to use this command!"
-
-
-
 commands-time-remaining:
   0:
     commands: 'title %player% title {"text":"You have 0 seconds fly left!","bold":true,"color":"gold"}'
@@ -30,3 +9,29 @@ commands-time-remaining:
     commands: 'title %player% title {"text":"You have 3 seconds fly left!","bold":true,"color":"gold"}'
   5:
     commands: 'title %player% title {"text":"You have 5 seconds fly left!","bold":true,"color":"gold"}'
+
+message:
+  reload: "&cPlugin has been reloaded!"
+  fly-activated: "&aYou have been set to fly! Use /fly to disable fly."
+  fly-deactivated: "&cYou have been set to walk! Use /fly to enable fly."
+  fly-speed-too-high: "&cSpeed too high! Maximum speed is %speed%"
+  fly-speed: "&aYou have set your fly speed to &e%speed%"
+  fly-speed-no-permission: "&cYou do not have permission to set your fly speed to &e%speed%"
+  not-protected: "&cYou're not protected by auto-tp on floor."
+  no-timefly-remaining: "&cYou have no timefly remaining!"
+  fly-time-added: "&aYou have been given &e%time% &atimefly!"
+  fly-time-added-to-player: "&aYou have been given &e%time% &atimefly to &e%player%"
+  fly-time-remove-to-player: "&aYou have removed &e%time% &atimefly from &e%player%"
+  fly-time-reset-to-player: "&aYou have been given reset &atimefly to &e%player%"
+  fly-time-removed: "&cYou have been taken &e%time% &ctimefly!"
+  fly-time-reset: "&aYou have been given &e0 &atimefly!"
+  no-fly-here: "&cYou cannot fly here!"
+  fly-remove-too-high: "&cYou cannot remove too much timefly!"
+  no-permission: "&cYou do not have permission to use this command!"
+  only-in-game: "&cThis command can only be used in game!"
+  missing-args: "&cMissing arguments!"
+  arg-not-recognized: "&cArgument not recognized!"
+  message-requirement: "&cYou do not meet the requirements to use this command!"
+
+
+
