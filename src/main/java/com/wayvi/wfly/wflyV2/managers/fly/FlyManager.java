@@ -21,10 +21,10 @@ public class FlyManager {
 
     public static ExecutorService service = (ExecutorService) Executors.newSingleThreadExecutor();
 
-    private WFlyV2 plugin;
+    private final WFlyV2 plugin;
     private final RequestHelper requestHelper;
     private BukkitTask flyTask;
-    private ConfigUtil configUtil;
+    private final ConfigUtil configUtil;
 
 
     public FlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
@@ -49,21 +49,8 @@ public class FlyManager {
             plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), true);
         } else {
             player1.setFlying(false);
+            player1.setAllowFlight(false);
             plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
-
-            flyTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-                if (player1.isFlying()) {
-                    player1.setFlying(false);
-                    plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
-                }
-                if (player1.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR) {
-                    player1.setAllowFlight(false);
-                    upsertFlyStatus(player1, false);
-                    plugin.getTimeFlyManager().upsertTimeFly(player1.getUniqueId(), plugin.getTimeFlyManager().getTimeRemaining(player1));
-                    player1.setFlySpeed(0.1F);
-                    flyTask.cancel();
-                }
-            }, 20L, 20L);
 
             upsertFlyStatus(player1, false);
         }

@@ -29,15 +29,25 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
 
     @Override
     public void execute(CommandSender sender, Arguments args) {
-
         Player target = args.get("player");
-
         int time = args.get("time");
-        if (plugin.getTimeFlyManager().removeFlyTime(target, time)){
-            ColorSupportUtil.sendColorFormat(target,configUtil.getCustomMessage().getString("message.fly-time-removed").replace("%time%", String.valueOf(time)));
+
+        if (plugin.getTimeFlyManager().removeFlyTime(target, time)) {
+
+            ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
+                    .getString("message.fly-time-removed")
+                    .replace("%time%", String.valueOf(time)));
+
+            if (sender instanceof Player) {
+                Player playerSender = (Player) sender;
+                ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage()
+                        .getString("message.fly-time-remove-to-player")
+                        .replace("%time%", String.valueOf(time))
+                        .replace("%player%", target.getName()));
+            } else {
+                plugin.getLogger().info("You have removed " + time + " fly time from " + target.getName());
+            }
         }
-
-
     }
 }
 

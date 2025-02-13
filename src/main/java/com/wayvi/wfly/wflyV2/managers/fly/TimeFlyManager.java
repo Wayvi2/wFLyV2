@@ -7,6 +7,11 @@ import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -24,6 +29,7 @@ public class TimeFlyManager {
     private final Map<UUID, Integer> flyTimes = new ConcurrentHashMap<>();
     private Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> lastNotifiedTime = new ConcurrentHashMap<>();
+    Map<UUID, Location> lastSafeLocation = new HashMap<>();
 
     private static final ExecutorService sqlExecutor = Executors.newSingleThreadExecutor();
 
@@ -39,9 +45,10 @@ public class TimeFlyManager {
         List<AccessPlayerDTO> flyData = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {
         });
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
+            upsertTimeFly(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             isFlying.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.isinFly());
-            //isFlying.put(UUID.fromString("f4cef720-d43b-4f2b-a3a0-71b77bfbbd47"), true);
+
         }
     }
 
@@ -75,17 +82,25 @@ public class TimeFlyManager {
 
             if (player == null || !player.isOnline()) continue;
 
-            if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                return;
-            }
-
-
             int timeRemaining = this.flyTimes.getOrDefault(playerUUID, 0);
             boolean isFlying = this.isFlying.getOrDefault(playerUUID, false);
 
             if (timeRemaining == 0 && isFlying) {
+                if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {
+                    return;
+                }
                 plugin.getFlyManager().manageFly(playerUUID, false);
                 this.isFlying.put(playerUUID, false);
+
+                Location safeLocation = getSafeLocation(player);
+
+                if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
+                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
+                    if (!(player.getWorld().getEnvironment() == World.Environment.NETHER)) {
+                        player.teleport(safeLocation);
+                        lastSafeLocation.put(player.getUniqueId(), safeLocation);
+                    }
+                }
             }
 
             if (timeRemaining <= 0) continue;
@@ -165,6 +180,9 @@ public class TimeFlyManager {
 
                 Player player = Bukkit.getPlayer(playerUUID);
                 if (player != null) {
+                    if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())  || player.isOp()) {
+                        continue;
+                    }
                     lastNotifiedTime.put(playerUUID, targetTime);
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
                 }
@@ -207,8 +225,21 @@ public class TimeFlyManager {
         this.isFlying.put(playerUUID, isFlying);
     }
 
-    public Boolean putDefaultFlyStatus(UUID playerUUID) {
-        return this.isFlying.putIfAbsent(playerUUID, false);
+    public boolean getFlyStatus(Player player) {
+        return getFlyStatus(player);
+    }
 
+
+    private Location getSafeLocation(Player player) {
+
+        Location loc = player.getLocation();
+        World world = player.getWorld();
+        int y = loc.getBlockY();
+
+        while (y > 0 && world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).isPassable()) {
+            y--;
+        }
+
+        return new Location(world, loc.getX(), y + 1, loc.getZ());
     }
 }
