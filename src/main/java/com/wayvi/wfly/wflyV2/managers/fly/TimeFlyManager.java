@@ -86,6 +86,9 @@ public class TimeFlyManager {
             boolean isFlying = this.isFlying.getOrDefault(playerUUID, false);
 
             if (timeRemaining == 0 && isFlying) {
+                if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {
+                    return;
+                }
                 plugin.getFlyManager().manageFly(playerUUID, false);
                 this.isFlying.put(playerUUID, false);
 
@@ -177,6 +180,9 @@ public class TimeFlyManager {
 
                 Player player = Bukkit.getPlayer(playerUUID);
                 if (player != null) {
+                    if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())  || player.isOp()) {
+                        continue;
+                    }
                     lastNotifiedTime.put(playerUUID, targetTime);
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
                 }
