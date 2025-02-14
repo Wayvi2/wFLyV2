@@ -1,5 +1,7 @@
 package com.wayvi.wfly.wflyV2;
 
+import com.electro2560.dev.cluescrolls.api.ClueScrollsAPI;
+import com.wayvi.wfly.wflyV2.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyV2.commands.*;
 import com.wayvi.wfly.wflyV2.handlers.CustomMessagehandler;
 import com.wayvi.wfly.wflyV2.listeners.FlyListener;
@@ -60,6 +62,18 @@ public final class WFlyV2 extends JavaPlugin {
 
         // INIT FlyManager
         this.flyManager = new FlyManager(this, requestHelper, configUtil);
+
+        // INIT FlyQuest
+
+        if (getServer().getPluginManager().isPluginEnabled("ClueScrolls")) {
+            FlyQuest flyQuest = new FlyQuest(this);
+            flyQuest.initializeFlyClue();
+        } else {
+            getLogger().info("ClueScrolls is not enabled: Skipping ClueScrolls integration");
+        }
+
+
+
 
         // INIT TimeFlyManager
         this.timeFlyManager = new TimeFlyManager(this, requestHelper, configUtil);

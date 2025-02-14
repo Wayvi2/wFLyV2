@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.wayvi.wfly'
-version = '1.0.0.2'
+version = '1.0.0.4'
 
 repositories {
     mavenCentral()
@@ -41,6 +41,7 @@ dependencies {
     implementation 'com.github.Traqueur-dev:CommandsAPI:2.0.0'
     implementation 'com.github.Maxlego08:Sarah:1.14'
     //compileOnly("io.papermc.paper:paper-api:1.8.1-R0.1-SNAPSHOT")
+    compileOnly 'io.github.electro2560:ClueScrollsAPI:master-SNAPSHOT'
 
 }
 
