@@ -8,7 +8,7 @@
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
 
-version: '1.0.0.4'
+version: '1.0.0.5'
 
 save-database-delay: 60 # in seconds
 
