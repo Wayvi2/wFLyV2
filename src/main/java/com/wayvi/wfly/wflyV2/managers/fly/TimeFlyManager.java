@@ -63,6 +63,14 @@ public class TimeFlyManager {
         }, 0L, 20L * seconds);
     }
 
+    public void SaveFlyTimeOnDisable(){
+        for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
+
+            upsertTimeFly(entry.getKey(), entry.getValue());
+            plugin.getLogger().info("Fly time saved");
+        }
+    }
+
     private void startDecrementTask() {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             try {
