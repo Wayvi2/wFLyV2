@@ -22,7 +22,7 @@ public class ConfigUtil {
 
 
     private FileConfiguration customConfig;
-    private String version = "1.0.0.6";
+    private String version = "1.0.0.7";
     private final Plugin plugin;
 
     public ConfigUtil(Plugin plugin) {
