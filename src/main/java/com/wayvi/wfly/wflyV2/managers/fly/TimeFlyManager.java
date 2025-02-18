@@ -94,7 +94,7 @@ public class TimeFlyManager {
 
             if (timeRemaining == 0 && isFlying) {
                 if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {
-                    return;
+                    continue;
                 }
                 plugin.getFlyManager().manageFly(playerUUID, false);
                 this.isFlying.put(playerUUID, false);
@@ -118,7 +118,7 @@ public class TimeFlyManager {
             if (decrementMethod.equals("PLAYER_FLYING_MODE")) {
                 if (isFlying && player.isFlying()) {
                     if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                        return;
+                        continue;
                     }
                     timeRemaining--;
                     flyTimes.put(playerUUID, timeRemaining);
@@ -126,7 +126,7 @@ public class TimeFlyManager {
             } else if (decrementMethod.equals("PLAYER_FLY_MODE")) {
                 if (this.isFlying.getOrDefault(playerUUID, false)) {
                     if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                        return;
+                        continue;
                     }
                     timeRemaining--;
                     flyTimes.put(playerUUID, timeRemaining);
@@ -142,12 +142,12 @@ public class TimeFlyManager {
         upsertTimeFly(playerUUID, newTime);
     }
 
-    public boolean removeFlyTime(Player player, int time) {
+    public boolean removeFlyTime(Player sender , Player target, int time) {
         UUID playerUUID = player.getUniqueId();
-        int currentFlyTime = getTimeRemaining(player);
+        int currentFlyTime = getTimeRemaining(target);
 
         if (time > currentFlyTime) {
-            ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-remove-too-high"));
+            ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage().getString("message.fly-remove-too-high"));
             return false;
         }
 

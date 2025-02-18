@@ -104,7 +104,7 @@ public class ConditionManager {
                     boolean shouldEnable = canFly(player);
                     boolean shouldDisable = cannotFly(player) && !shouldEnable;
 
-                    if (!shouldDisable || !player.isFlying()) return;
+                    if (!shouldDisable || !player.isFlying()) continue;
 
                     flyStateCache.put(accessPlayerDTO.uniqueId(), false);
 

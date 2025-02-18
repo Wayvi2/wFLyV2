@@ -45,7 +45,7 @@ dependencies {
 
 }
 
-def targetJavaVersion = 8
+def targetJavaVersion = 21
 
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
