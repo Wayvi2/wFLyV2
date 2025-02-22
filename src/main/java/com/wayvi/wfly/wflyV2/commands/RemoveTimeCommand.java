@@ -32,7 +32,7 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
         Player target = args.get("player");
         int time = args.get("time");
 
-        if (plugin.getTimeFlyManager().removeFlyTime(target, time)) {
+        if (plugin.getTimeFlyManager().removeFlyTime((Player) sender,target, time)) {
 
             ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
                     .getString("message.fly-time-removed")
