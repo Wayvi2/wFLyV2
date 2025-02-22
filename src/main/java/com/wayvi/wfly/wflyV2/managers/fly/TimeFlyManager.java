@@ -143,7 +143,7 @@ public class TimeFlyManager {
     }
 
     public boolean removeFlyTime(Player sender , Player target, int time) {
-        UUID playerUUID = player.getUniqueId();
+        UUID playerUUID = sender.getUniqueId();
         int currentFlyTime = getTimeRemaining(target);
 
         if (time > currentFlyTime) {
