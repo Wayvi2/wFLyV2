@@ -35,12 +35,17 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getAuthor() {
-        return "wPlugin";
+        return "Wayvi2";
     }
 
     @Override
     public @NotNull String getVersion() {
-        return "1.0.0";
+        return "1.0.8";
+    }
+
+    @Override
+    public boolean persist() {
+        return true;
     }
 
     @Override
