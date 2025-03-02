@@ -22,12 +22,13 @@ public class ConfigUtil {
 
 
     private FileConfiguration customConfig;
-    private String version = "1.0.0.8";
+    private String version = "1.0.1.0";
     private final Plugin plugin;
 
     public ConfigUtil(Plugin plugin) {
         this.plugin = plugin;
         createCustomConfig();
+        checkAndAddMissingLines();
     }
 
 
@@ -72,6 +73,20 @@ public class ConfigUtil {
             e.printStackTrace();
         }
     }
+
+    public void checkAndAddMissingLines() {
+        if (!configConfig.contains("pvp.enabled-permission-range")) {
+            configConfig.set("pvp.enabled-permission-range", false);
+        }
+
+        if (!configConfig.contains("pvp.fly-disable-radius")) {
+            configConfig.set("pvp.fly-disable-radius", 5);
+        }
+
+        saveCustomConfig();
+    }
+
+
 
     public String getVersion() {
         return version;

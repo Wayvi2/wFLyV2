@@ -111,7 +111,7 @@ public class ConditionManager {
                     plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
 
                     Location safeLocation = getSafeLocation(player);
-                    if (safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) return;
+                    if (safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) continue;
 
                     ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
 
@@ -120,7 +120,7 @@ public class ConditionManager {
                         lastSafeLocation.put(player.getUniqueId(), safeLocation);
                     }
 
-                    if (!config.isConfigurationSection("conditions.not-authorized")) return;
+                    if (!config.isConfigurationSection("conditions.not-authorized")) continue;
 
                     ConfigurationSection conditionsSection = config.getConfigurationSection("conditions.not-authorized");
                     for (String key : conditionsSection.getKeys(false)) {
@@ -146,10 +146,12 @@ public class ConditionManager {
         World world = player.getWorld();
         int y = loc.getBlockY();
 
-        while (y > 0 && world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType() == Material.AIR) {
+        while (world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType().isSolid()) {
             y--;
         }
 
         return new Location(world, loc.getX(), y + 1, loc.getZ());
     }
+
+
 }

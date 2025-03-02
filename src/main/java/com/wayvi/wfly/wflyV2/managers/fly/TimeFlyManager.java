@@ -243,7 +243,7 @@ public class TimeFlyManager {
         World world = player.getWorld();
         int y = loc.getBlockY();
 
-        while (y > 0 && world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).isPassable()) {
+        while (world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType().isSolid()) {
             y--;
         }
 

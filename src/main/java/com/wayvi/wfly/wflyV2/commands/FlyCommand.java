@@ -2,6 +2,7 @@ package com.wayvi.wfly.wflyV2.commands;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
+import com.wayvi.wfly.wflyV2.listeners.PvPListener;
 import com.wayvi.wfly.wflyV2.managers.ConditionManager;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
@@ -20,9 +21,11 @@ public class FlyCommand extends Command<JavaPlugin> {
 
     private final ConfigUtil configUtil;
 
-    ConditionManager conditionWorldManager;
+    private ConditionManager conditionWorldManager;
 
-    public FlyCommand(WFlyV2 plugin, ConfigUtil configUtil, ConditionManager conditionWorldManager) {
+    private PvPListener pvpListener;
+
+    public FlyCommand(WFlyV2 plugin, ConfigUtil configUtil, ConditionManager conditionWorldManager, PvPListener pvpListener) {
         super(plugin, "fly");
         setDescription("Fly command");
         setUsage("/fly");
@@ -31,6 +34,7 @@ public class FlyCommand extends Command<JavaPlugin> {
         this.plugin = plugin;
         this.configUtil = configUtil;
         this.conditionWorldManager = conditionWorldManager;
+        this.pvpListener = pvpListener;
 
     }
 
@@ -45,6 +49,11 @@ public class FlyCommand extends Command<JavaPlugin> {
             if (player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || player.isOp()) {
                 plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
                 ColorSupportUtil.sendColorFormat(player, message);
+                return;
+            }
+
+            if (pvpListener.HasNearbyPlayers(player)) {
+                ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.player-in-range"));
                 return;
             }
 

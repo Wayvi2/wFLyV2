@@ -1,6 +1,6 @@
 name: wFlyV2
-version: '1.0.0.8'
+version: '1.0.1.0'
 main: com.wayvi.wfly.wflyV2.WFlyV2
-api-version: '1.8'
+api-version: 1.13
 depend: [PlaceholderAPI]
 softdepend: [ClueScrolls]

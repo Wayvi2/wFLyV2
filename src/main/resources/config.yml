@@ -8,7 +8,7 @@
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
 
-version: '1.0.0.7'
+version: '1.0.1.0'
 
 save-database-delay: 60 # in seconds
 
@@ -45,7 +45,26 @@ conditions:
     my-seconds-conditions:
       placeholder: "%lands_land_name_plain_here%"
       equals: "%lands_lands%" #player can fly in his lands
-
-
 #NOTE : authorized section override not-authorized section
 # If authorized section is true for player(just 1), player can fly
+
+
+
+#This feature is heavily focused on faction servers
+#(and if you have any ideas to make this feature more powerful, let me know on my discord)
+pvp:
+  enabled-permission-range: false
+  fly-disable-radius: 5
+  bypass:
+    placeholders:
+      - "%lands_land_name_plain%"  # For example : The plugin checks if the land name around a player is the same.
+      # If there are a player that return different of all player(in 10 block around), fly will disable.
+      #- "%otherPlaceholder%"  # You can put other placeholder if needed.
+
+
+
+
+
+
+
+

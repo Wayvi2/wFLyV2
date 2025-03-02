@@ -5,6 +5,7 @@ import com.wayvi.wfly.wflyV2.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyV2.commands.*;
 import com.wayvi.wfly.wflyV2.handlers.CustomMessagehandler;
 import com.wayvi.wfly.wflyV2.listeners.FlyListener;
+import com.wayvi.wfly.wflyV2.listeners.PvPListener;
 import com.wayvi.wfly.wflyV2.managers.ConditionManager;
 import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
 import com.wayvi.wfly.wflyV2.managers.PlaceholerapiManager;
@@ -60,6 +61,9 @@ public final class WFlyV2 extends JavaPlugin {
         // INIT ConditionManager
         ConditionManager conditionManager = new ConditionManager(this, configUtil, requestHelper);
 
+        //INIT PvPListener
+        PvPListener pvpListener = new PvPListener(this, configUtil);
+
         // INIT FlyManager
         this.flyManager = new FlyManager(this, requestHelper, configUtil);
 
@@ -86,8 +90,8 @@ public final class WFlyV2 extends JavaPlugin {
 
         // COMMANDS
         CommandManager commandManager = new CommandManager(this);
-        commandManager.registerCommand(new ReloadCommand(this, configUtil));
-        commandManager.registerCommand(new FlyCommand(this, configUtil, conditionWorldManager));
+        commandManager.registerCommand(new ReloadCommand(this, configUtil, pvpListener));
+        commandManager.registerCommand(new FlyCommand(this, configUtil, conditionWorldManager, pvpListener));
         commandManager.registerCommand(new FlySpeedCommand(this, this.flyManager));
         commandManager.registerCommand(new AddTimeCommand(this, configUtil));
         commandManager.registerCommand(new ResetTimeCommand(this, configUtil));
@@ -97,6 +101,7 @@ public final class WFlyV2 extends JavaPlugin {
 
         // LISTENER
         getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, requestHelper, conditionManager, configUtil), this);
+        getServer().getPluginManager().registerEvents(new PvPListener(this, configUtil), this);
 
         new VersionCheckerUtil(this, 118465).getLatestVersion(version -> {
             if (this.getDescription().getVersion().equalsIgnoreCase(version)) {
