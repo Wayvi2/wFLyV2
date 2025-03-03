@@ -146,12 +146,10 @@ public class ConditionManager {
         World world = player.getWorld();
         int y = loc.getBlockY();
 
-        while (world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType().isSolid()) {
+        while (world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType() == Material.AIR) {
             y--;
         }
 
         return new Location(world, loc.getX(), y + 1, loc.getZ());
     }
-
-
 }
