@@ -94,7 +94,7 @@ public class ConditionManager {
     public void checkCanFly() {
         FileConfiguration config = configUtil.getCustomConfig();
 
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             List<AccessPlayerDTO> flyPlayers = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
             for (AccessPlayerDTO accessPlayerDTO : flyPlayers) {
                 Player player = Bukkit.getPlayer(accessPlayerDTO.uniqueId());

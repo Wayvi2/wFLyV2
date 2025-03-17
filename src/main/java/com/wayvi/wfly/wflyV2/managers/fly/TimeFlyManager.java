@@ -31,7 +31,7 @@ public class TimeFlyManager {
     private final Map<UUID, Integer> lastNotifiedTime = new ConcurrentHashMap<>();
     Map<UUID, Location> lastSafeLocation = new HashMap<>();
 
-    private static final ExecutorService sqlExecutor = Executors.newSingleThreadExecutor();
+    private static final ExecutorService sqlExecutor = Executors.newFixedThreadPool(3);
 
     public TimeFlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
         this.plugin = plugin;
@@ -71,7 +71,7 @@ public class TimeFlyManager {
     }
 
     private void startDecrementTask() {
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             try {
                 decrementTimeRemaining();
                 manageCommandMessageOnTimeLeft();
