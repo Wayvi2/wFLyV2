@@ -71,7 +71,7 @@ public class TimeFlyManager {
     }
 
     private void startDecrementTask() {
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             try {
                 decrementTimeRemaining();
                 manageCommandMessageOnTimeLeft();
