@@ -17,7 +17,6 @@ message:
   fly-speed-too-high: "&cSpeed too high! Maximum speed is %speed%"
   fly-speed: "&aYou have set your fly speed to &e%speed%"
   fly-speed-no-permission: "&cYou do not have permission to set your fly speed to &e%speed%"
-  not-protected: "&cYou're not protected by auto-tp on floor."
   no-timefly-remaining: "&cYou have no timefly remaining!"
   fly-time-added: "&aYou have been given &e%time% &atimefly!"
   fly-time-added-to-player: "&aYou have been given &e%time% &atimefly to &e%player%"

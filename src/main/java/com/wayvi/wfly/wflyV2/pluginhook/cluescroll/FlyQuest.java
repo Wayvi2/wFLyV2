@@ -1,4 +1,4 @@
-package com.wayvi.wfly.wflyV2.cluescroll;
+package com.wayvi.wfly.wflyV2.pluginhook.cluescroll;
 
 import com.electro2560.dev.cluescrolls.api.*;
 import com.wayvi.wfly.wflyV2.WFlyV2;

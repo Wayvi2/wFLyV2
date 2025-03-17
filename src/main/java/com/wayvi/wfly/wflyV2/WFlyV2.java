@@ -1,7 +1,6 @@
 package com.wayvi.wfly.wflyV2;
 
-import com.electro2560.dev.cluescrolls.api.ClueScrollsAPI;
-import com.wayvi.wfly.wflyV2.cluescroll.FlyQuest;
+import com.wayvi.wfly.wflyV2.pluginhook.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyV2.commands.*;
 import com.wayvi.wfly.wflyV2.handlers.CustomMessagehandler;
 import com.wayvi.wfly.wflyV2.listeners.FlyListener;

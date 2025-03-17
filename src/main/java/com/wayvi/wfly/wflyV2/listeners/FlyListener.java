@@ -77,19 +77,20 @@ public class FlyListener implements Listener {
 
         Player player = event.getPlayer();
 
-        if (player.getWorld().getEnvironment() == World.Environment.NETHER) {
-            ColorSupportUtil.sendColorFormat( player,configUtil.getCustomMessage().getString("message.not-protected"));
-        }
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (conditionManager.cannotFly(player)) {
                 try {
+                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
                     plugin.getFlyManager().manageFly(player.getUniqueId(), false);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-            } else if (conditionManager.canFly(player)) {
+            }
+            if (conditionManager.canFly(player)) {
                 try {
+
+                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-activated"));
                     plugin.getFlyManager().manageFly(player.getUniqueId(), true);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
