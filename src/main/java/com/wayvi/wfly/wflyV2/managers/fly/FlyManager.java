@@ -6,8 +6,6 @@ import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -41,18 +39,18 @@ public class FlyManager {
             flyTask = null;
         }
 
-        assert player1 != null;
-        if (fly) {
-            player1.setAllowFlight(true);
-            player1.setFlying(true);
-            upsertFlyStatus(player1, true);
-            plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), true);
-        } else {
-            player1.setFlying(false);
-            player1.setAllowFlight(false);
-            plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
-
-            upsertFlyStatus(player1, false);
+        if (player1 != null) {
+            if (fly) {
+                player1.setAllowFlight(true);
+                player1.setFlying(true);
+                upsertFlyStatus(player1, true);
+                plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), true);
+            } else {
+                player1.setFlying(false);
+                player1.setAllowFlight(false);
+                plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
+                upsertFlyStatus(player1, false);
+            }
         }
     }
 
