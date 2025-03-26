@@ -2,6 +2,7 @@ package com.wayvi.wfly.wflyV2.constants;
 
 public enum Permissions {
 
+
     RELOAD("wfly.reload"),
     FLY("wfly.fly"),
     FLY_SPEED("wfly.fly.speed"),
