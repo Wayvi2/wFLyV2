@@ -41,7 +41,11 @@ public class FlyManager {
             flyTask = null;
         }
 
-        assert player1 != null;
+        if (player1 == null) {
+            return;
+        }
+
+
         if (fly) {
             player1.setAllowFlight(true);
             player1.setFlying(true);
