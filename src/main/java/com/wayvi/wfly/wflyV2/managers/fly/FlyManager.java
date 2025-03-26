@@ -81,6 +81,7 @@ public class FlyManager {
     }
 
     // ACCESS DATABASE METHODS
+
     public AccessPlayerDTO getPlayerFlyData(UUID player) throws SQLException {
         List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class,
                 table -> table.where("uniqueId", player));
@@ -91,6 +92,8 @@ public class FlyManager {
             return fly.get(0);
         }
     }
+
+
 
     public void upsertFlyStatus(Player player, boolean isFlying) {
         service.execute(() -> {

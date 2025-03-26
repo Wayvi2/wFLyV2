@@ -87,16 +87,6 @@ public class ConditionManager {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
 
-                AccessPlayerDTO accessPlayerDTO = null;
-                try {
-                    accessPlayerDTO = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-                if (accessPlayerDTO == null) {
-                    continue;
-                }
-
                 boolean isAuthorized = isFlyAuthorized(player);
                 boolean isCurrentlyFlying = player.isFlying();
 
