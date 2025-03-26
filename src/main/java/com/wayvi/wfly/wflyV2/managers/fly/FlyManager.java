@@ -19,7 +19,8 @@ import java.util.concurrent.Executors;
 
 public class FlyManager {
 
-    public static ExecutorService service = Executors.newFixedThreadPool(5);
+    static int threads = Runtime.getRuntime().availableProcessors();
+    public static ExecutorService service = Executors.newFixedThreadPool(threads);
 
     private final WFlyV2 plugin;
     private final RequestHelper requestHelper;

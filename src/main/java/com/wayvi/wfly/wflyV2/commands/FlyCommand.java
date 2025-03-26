@@ -62,18 +62,12 @@ public class FlyCommand extends Command<JavaPlugin> {
                 return;
             }
 
-            if (conditionWorldManager.cannotFly(player) && conditionWorldManager.canFly(player)) {
-                plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
-                ColorSupportUtil.sendColorFormat(player, message);
-                return;
-            }
-
-            if (conditionWorldManager.cannotFly(player)) {
+            if (!conditionWorldManager.isFlyAuthorized(player)) {
                 ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-fly-here"));
                 return;
             }
 
-            if (conditionWorldManager.canFly(player)) {
+            if (conditionWorldManager.isFlyAuthorized(player)) {
                 plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
                 ColorSupportUtil.sendColorFormat(player, message);
                 return;

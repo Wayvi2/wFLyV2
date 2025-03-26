@@ -47,56 +47,38 @@ public class FlyListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) throws SQLException {
-
-
+    public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-
-        AccessPlayerDTO playerFlyData = flyManager.getPlayerFlyData(player.getUniqueId());
-
-        if (playerFlyData.isinFly()) {
-            flyManager.manageFly(player.getUniqueId(), true);
-        }
-
-        List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {
-            table.where("uniqueId", player.getUniqueId());
-        });
-
-        if (fly.isEmpty()) {
-            try {
-                plugin.getFlyManager().createNewPlayer(player.getUniqueId());
-
-            } catch (SQLException e) {
-                plugin.getLogger().severe("Error creating new player: " + e.getMessage());
+        try {
+            AccessPlayerDTO playerFlyData = flyManager.getPlayerFlyData(player.getUniqueId());
+            if (playerFlyData == null) {
+                flyManager.createNewPlayer(player.getUniqueId());
+            } else if (playerFlyData.isinFly()) {
+                flyManager.manageFly(player.getUniqueId(), true);
             }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error managing fly: " + e.getMessage());
+            e.printStackTrace();
         }
     }
+
 
     @EventHandler
     public void onWorldChange(PlayerChangedWorldEvent event) {
-
         Player player = event.getPlayer();
 
-
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (conditionManager.cannotFly(player)) {
-                try {
-                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
-                    plugin.getFlyManager().manageFly(player.getUniqueId(), false);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            if (conditionManager.canFly(player)) {
-                try {
+            boolean authorized = conditionManager.isFlyAuthorized(player);
+            String messageKey = authorized ? "message.fly-activated" : "message.fly-deactivated";
+            ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString(messageKey));
 
-                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-activated"));
-                    plugin.getFlyManager().manageFly(player.getUniqueId(), true);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+            try {
+                plugin.getFlyManager().manageFly(player.getUniqueId(), authorized);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
         }, 15L);
     }
+
 
 }

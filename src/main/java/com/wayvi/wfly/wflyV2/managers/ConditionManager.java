@@ -2,6 +2,7 @@ package com.wayvi.wfly.wflyV2.managers;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
+import com.wayvi.wfly.wflyV2.models.Condition;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
@@ -15,12 +16,13 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.sql.SQLException;
+import java.util.*;
 
 public class ConditionManager {
+
+    private List<Condition> authorizedConditions;
+    private List<Condition> notAuthorizedConditions;
 
     private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
@@ -32,109 +34,99 @@ public class ConditionManager {
         this.plugin = plugin;
         this.configUtil = configUtil;
         this.requestHelper = requestHelper;
+        loadConditions();
     }
 
-    public boolean cannotFly(Player player) {
+    public void loadConditions() {
+        authorizedConditions = loadConditionsFromConfig("conditions.authorized");
+        notAuthorizedConditions = loadConditionsFromConfig("conditions.not-authorized");
+    }
 
-        FileConfiguration config = configUtil.getCustomConfig();
-
-        if (config.isConfigurationSection("conditions")) {
-            ConfigurationSection conditionsSection = config.getConfigurationSection("conditions.not-authorized");
-            if (conditionsSection != null) {
-                for (String key : conditionsSection.getKeys(false)) {
-                    String placeholder = conditionsSection.getString(key + ".placeholder");
-                    String value = conditionsSection.getString(key + ".equals");
-
-                    if (placeholder == null || value == null) {
-                        plugin.getLogger().warning("Invalid condition configuration for key: " + key + " Skipping...");
-                        continue;
-                    }
-
-                    String actualPlaceholder = PlaceholderAPI.setPlaceholders(player, placeholder);
-                    String actualValue = PlaceholderAPI.setPlaceholders(player, value);
-
-                    if (actualValue.equalsIgnoreCase(actualPlaceholder)) {
-                        return true;
-                    }
+    private List<Condition> loadConditionsFromConfig(String path) {
+        List<Condition> result = new ArrayList<>();
+        ConfigurationSection section = configUtil.getCustomConfig().getConfigurationSection(path);
+        if (section != null) {
+            for (String key : section.getKeys(false)) {
+                String placeholder = section.getString(key + ".placeholder");
+                String equalsValue = section.getString(key + ".equals");
+                List<String> commands = section.getStringList(key + ".commands");
+                if (placeholder != null && equalsValue != null) {
+                    result.add(new Condition(placeholder, equalsValue, commands));
                 }
             }
         }
-        return player.isOp() || player.hasPermission(Permissions.BYPASS_FLY.getPermission());
+        return result;
     }
 
-    public boolean canFly(Player player) {
+    public boolean isFlyAuthorized(Player player) {
 
-        FileConfiguration config = configUtil.getCustomConfig();
+        if (player.isOp() || player.hasPermission(Permissions.BYPASS_FLY.getPermission())) {
+            return true;
+        }
 
-        if (config.isConfigurationSection("conditions")) {
-            ConfigurationSection conditionsSection = config.getConfigurationSection("conditions.authorized");
-            if (conditionsSection != null) {
-                for (String key : conditionsSection.getKeys(false)) {
-                    String placeholder = conditionsSection.getString(  key + ".placeholder");
-                    String value = conditionsSection.getString( key + ".equals");
-
-                    if (placeholder == null || value == null) {
-                        plugin.getLogger().warning("Invalid condition configuration for key: " + key+ " Skipping..."); ;
-                        continue;
-                    }
-
-                    String actualPlaceholder = PlaceholderAPI.setPlaceholders(player, placeholder);
-                    String actualValue = PlaceholderAPI.setPlaceholders(player, value);
-
-
-                    if (actualValue.equalsIgnoreCase(actualPlaceholder)) {
-                        return true;
-                    }
-                }
+        for (Condition c : authorizedConditions) {
+            String placeholderValue = PlaceholderAPI.setPlaceholders(player, c.getPlaceholder());
+            String equalsValue = PlaceholderAPI.setPlaceholders(player, c.getEqualsValue());
+            if (placeholderValue.equalsIgnoreCase(equalsValue)) {
+                return true;
             }
         }
-        return player.isOp() || player.hasPermission(Permissions.BYPASS_FLY.getPermission());
+
+        for (Condition c : notAuthorizedConditions) {
+            String placeholderValue = PlaceholderAPI.setPlaceholders(player, c.getPlaceholder());
+            String equalsValue = PlaceholderAPI.setPlaceholders(player, c.getEqualsValue());
+
+            if (placeholderValue.equalsIgnoreCase(equalsValue)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void checkCanFly() {
-        FileConfiguration config = configUtil.getCustomConfig();
-
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            List<AccessPlayerDTO> flyPlayers = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {});
-            for (AccessPlayerDTO accessPlayerDTO : flyPlayers) {
-                Player player = Bukkit.getPlayer(accessPlayerDTO.uniqueId());
-                if (player == null) continue;
+            for (Player player : Bukkit.getOnlinePlayers()) {
 
+                AccessPlayerDTO accessPlayerDTO = null;
                 try {
-                    boolean shouldEnable = canFly(player);
-                    boolean shouldDisable = cannotFly(player) && !shouldEnable;
+                    accessPlayerDTO = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                if (accessPlayerDTO == null) {
+                    continue;
+                }
 
-                    if (!shouldDisable || !player.isFlying()) continue;
+                boolean isAuthorized = isFlyAuthorized(player);
+                boolean isCurrentlyFlying = player.isFlying();
 
-                    flyStateCache.put(accessPlayerDTO.uniqueId(), false);
-
-                    plugin.getFlyManager().manageFly(accessPlayerDTO.uniqueId(), false);
-
-                    Location safeLocation = getSafeLocation(player);
-                    if (safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) continue;
-
-                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
-
-                    if (player.getWorld().getEnvironment() != World.Environment.NETHER) {
-                        player.teleport(safeLocation);
-                        lastSafeLocation.put(player.getUniqueId(), safeLocation);
+                if (!isAuthorized && isCurrentlyFlying) {
+                    try {
+                        plugin.getFlyManager().manageFly(player.getUniqueId(), false);
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
                     }
 
-                    if (!config.isConfigurationSection("conditions.not-authorized")) continue;
+                    Location safeLocation = getSafeLocation(player);
+                    if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
+                        ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
 
-                    ConfigurationSection conditionsSection = config.getConfigurationSection("conditions.not-authorized");
-                    for (String key : conditionsSection.getKeys(false)) {
-                        List<String> commands = conditionsSection.getStringList(key + ".commands");
-
-                        for (String command : commands) {
-                            command = command.replace("%player%", player.getName());
-                            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                        if (player.getWorld().getEnvironment() != World.Environment.NETHER) {
+                            player.teleport(safeLocation);
+                            lastSafeLocation.put(player.getUniqueId(), safeLocation);
                         }
                     }
 
-                } catch (Exception e) {
-                    plugin.getLogger().severe("Error in checkCanFly: " + e.getMessage());
-                    e.printStackTrace();
+                    for (Condition c : notAuthorizedConditions) {
+                        String placeholderValue = PlaceholderAPI.setPlaceholders(player, c.getPlaceholder());
+                        String equalsValue = PlaceholderAPI.setPlaceholders(player, c.getEqualsValue());
+                        if (placeholderValue.equalsIgnoreCase(equalsValue)) {
+                            for (String command : c.getCommands()) {
+                                command = command.replace("%player%", player.getName());
+                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                            }
+                        }
+                    }
                 }
             }
         }, 20L, 20L);

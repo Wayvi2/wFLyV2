@@ -32,7 +32,8 @@ public class TimeFlyManager {
     private final Set<UUID> needsUpdate = ConcurrentHashMap.newKeySet();
     Map<UUID, Location> lastSafeLocation = new HashMap<>();
 
-    private static final ExecutorService sqlExecutor = Executors.newFixedThreadPool(5);
+    static int threads = Runtime.getRuntime().availableProcessors();
+    public static ExecutorService sqlExecutor = Executors.newFixedThreadPool(threads);
 
     public TimeFlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
         this.plugin = plugin;
@@ -88,50 +89,50 @@ public class TimeFlyManager {
         for (UUID playerUUID : flyTimes.keySet()) {
             Player player = Bukkit.getPlayer(playerUUID);
 
-
-            if (player == null || !player.isOnline()) continue;
-
-            int timeRemaining = this.flyTimes.getOrDefault(playerUUID, 0);
-            boolean isFlying = this.isFlying.getOrDefault(playerUUID, false);
-
-            if (timeRemaining == 0 && isFlying) {
-                if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {
-                    continue;
-                }
-                plugin.getFlyManager().manageFly(playerUUID, false);
-                this.isFlying.put(playerUUID, false);
-
-                Location safeLocation = getSafeLocation(player);
-
-                if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
-                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
-                    if (!(player.getWorld().getEnvironment() == World.Environment.NETHER)) {
-                        player.teleport(safeLocation);
-                        lastSafeLocation.put(player.getUniqueId(), safeLocation);
-                    }
-                }
+            if (player == null || !player.isOnline()) {
+                continue;
+            }
+            if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {
+                continue;
             }
 
-            if (timeRemaining <= 0) continue;
+            int timeRemaining = flyTimes.getOrDefault(playerUUID, 0);
+            boolean currentlyFlying = isFlying.getOrDefault(playerUUID, false);
 
-            String decrementMethod = configUtil.getCustomConfig().getString("fly-decrement-method");
+            if (timeRemaining <= 0 && currentlyFlying) {
+                plugin.getFlyManager().manageFly(playerUUID, false);
+                isFlying.put(playerUUID, false);
 
-            assert decrementMethod != null;
-            if (decrementMethod.equals("PLAYER_FLYING_MODE")) {
-                if (isFlying && player.isFlying()) {
-                    if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                        continue;
+                Location safeLocation = getSafeLocation(player);
+                if (!safeLocation.equals(lastSafeLocation.get(playerUUID))) {
+                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
+                    if (player.getWorld().getEnvironment() != World.Environment.NETHER) {
+                        player.teleport(safeLocation);
+                        lastSafeLocation.put(playerUUID, safeLocation);
                     }
-                    timeRemaining--;
-                    flyTimes.put(playerUUID, timeRemaining);
                 }
-            } else if (decrementMethod.equals("PLAYER_FLY_MODE")) {
-                if (this.isFlying.getOrDefault(playerUUID, false)) {
-                    if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                        continue;
-                    }
+                continue;
+            }
+
+
+            if (timeRemaining <= 0) {
+                continue;
+            }
+
+            String decrementMethod = configUtil.getCustomConfig().getString("fly-decrement-method", "PLAYER_FLY_MODE");
+
+            if (decrementMethod.equalsIgnoreCase("PLAYER_FLYING_MODE")) {
+
+                if (currentlyFlying && player.isFlying()) {
                     timeRemaining--;
                     flyTimes.put(playerUUID, timeRemaining);
+                    needsUpdate.add(playerUUID);
+                }
+            } else {
+                if (currentlyFlying) {
+                    timeRemaining--;
+                    flyTimes.put(playerUUID, timeRemaining);
+                    needsUpdate.add(playerUUID);
                 }
             }
         }
@@ -164,40 +165,56 @@ public class TimeFlyManager {
         needsUpdate.add(player.getUniqueId());
     }
 
-    private void manageCommandMessageOnTimeLeft() throws SQLException {
+    public void manageCommandMessageOnTimeLeft() throws SQLException {
         FileConfiguration config = configUtil.getCustomMessage();
         ConfigurationSection conditionsSection = config.getConfigurationSection("commands-time-remaining");
-        if (conditionsSection == null) return;
+        if (conditionsSection == null) {
+            return;
+        }
 
 
+
+        Map<Integer, String> timeCommandMap = new HashMap<>();
         for (String key : conditionsSection.getKeys(false)) {
-            int targetTime;
             try {
-                targetTime = Integer.parseInt(key);
-            } catch (NumberFormatException e) {
+                int timeKey = Integer.parseInt(key);
+                String command = conditionsSection.getString(key + ".commands");
+                if (command != null) {
+                    timeCommandMap.put(timeKey, command);
+                }
+            } catch (NumberFormatException ignored) {
+
+            }
+        }
+
+
+        for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
+            UUID playerUUID = entry.getKey();
+            int playerTimeRemaining = entry.getValue();
+
+            if (lastNotifiedTime.getOrDefault(playerUUID, -1) == playerTimeRemaining) {
                 continue;
             }
 
-            String command = conditionsSection.getString(key + ".commands");
-            if (command == null) continue;
-
-            for (UUID playerUUID : flyTimes.keySet()) {
-                int playerTimeRemaining = flyTimes.get(playerUUID);
-                if (playerTimeRemaining != targetTime || lastNotifiedTime.getOrDefault(playerUUID, -1) == targetTime) {
-                    continue;
-                }
-
-                Player player = Bukkit.getPlayer(playerUUID);
-                if (player != null) {
-                    if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())  || player.isOp()) {
-                        continue;
-                    }
-                    lastNotifiedTime.put(playerUUID, targetTime);
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
-                }
+            String command = timeCommandMap.get(playerTimeRemaining);
+            if (command == null) {
+                continue;
             }
+
+            Player player = Bukkit.getPlayer(playerUUID);
+            if (player == null || !player.isOnline()) {
+                continue;
+            }
+
+            if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {
+                continue;
+            }
+
+            lastNotifiedTime.put(playerUUID, playerTimeRemaining);
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
         }
     }
+
 
     public void upsertTimeFly(@NotNull UUID playerUUID, int newTimeRemaining) {
         sqlExecutor.execute(() -> {
