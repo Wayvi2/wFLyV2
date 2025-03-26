@@ -10,16 +10,24 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+/**
+ * Command to remove fly time from a player.
+ */
 public class RemoveTimeCommand extends Command<JavaPlugin> {
 
     private final WFlyV2 plugin;
+    private final ConfigUtil configUtil;
 
-    ConfigUtil configUtil;
-
+    /**
+     * Constructs the RemoveTimeCommand.
+     *
+     * @param plugin     The main plugin instance.
+     * @param configUtil Utility class for managing configuration files.
+     */
     public RemoveTimeCommand(WFlyV2 plugin, ConfigUtil configUtil) {
         super(plugin, "wfly.removetime");
-        setDescription("Manage fly time for players");
-        setUsage("/fly addtime <player> <time>");
+        setDescription("Manage fly time for players.");
+        setUsage("/fly removetime <player> <time>");
         addArgs("player", Player.class);
         addArgs("time:int");
         setPermission(Permissions.REMOVE_FLY_TIME.getPermission());
@@ -27,13 +35,18 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
         this.configUtil = configUtil;
     }
 
+    /**
+     * Executes the remove fly time command.
+     *
+     * @param sender The sender of the command.
+     * @param args   The command arguments: player and time.
+     */
     @Override
     public void execute(CommandSender sender, Arguments args) {
         Player target = args.get("player");
         int time = args.get("time");
 
-        if (plugin.getTimeFlyManager().removeFlyTime((Player) sender,target, time)) {
-
+        if (plugin.getTimeFlyManager().removeFlyTime((Player) sender, target, time)) {
             ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
                     .getString("message.fly-time-removed")
                     .replace("%time%", String.valueOf(time)));
@@ -50,6 +63,3 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
         }
     }
 }
-
-
-

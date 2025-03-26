@@ -10,8 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -21,6 +19,10 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
 
+/**
+ * This class manages the fly time for players and coordinates the decrement of fly time, as well as handling the
+ * fly status of players based on remaining time. It also manages saving and loading fly time to/from a database.
+ */
 public class TimeFlyManager {
 
     private final WFlyV2 plugin;
@@ -30,11 +32,18 @@ public class TimeFlyManager {
     private Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> lastNotifiedTime = new ConcurrentHashMap<>();
     private final Set<UUID> needsUpdate = ConcurrentHashMap.newKeySet();
-    Map<UUID, Location> lastSafeLocation = new HashMap<>();
+    private Map<UUID, Location> lastSafeLocation = new HashMap<>();
 
     static int threads = Runtime.getRuntime().availableProcessors();
     public static ExecutorService sqlExecutor = Executors.newFixedThreadPool(threads);
 
+    /**
+     * Constructor to initialize the TimeFlyManager with plugin dependencies and load existing fly times from the database.
+     *
+     * @param plugin         The main plugin instance.
+     * @param requestHelper  Helper for database requests.
+     * @param configUtil     Configuration utility for custom messages and settings.
+     */
     public TimeFlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
         this.plugin = plugin;
         this.requestHelper = requestHelper;
@@ -43,6 +52,9 @@ public class TimeFlyManager {
         startDecrementTask();
     }
 
+    /**
+     * Loads fly time data from the database into memory.
+     */
     public void loadFlyTimes() {
         List<AccessPlayerDTO> flyData = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {
         });
@@ -50,10 +62,12 @@ public class TimeFlyManager {
             upsertTimeFly(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             isFlying.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.isinFly());
-
         }
     }
 
+    /**
+     * Saves all updated fly times to the database periodically based on the configured delay.
+     */
     public void saveFlyTimes() {
         int seconds = configUtil.getCustomConfig().getInt("save-database-delay");
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
@@ -65,14 +79,19 @@ public class TimeFlyManager {
         }, 0L, 20L * seconds);
     }
 
-    public void SaveFlyTimeOnDisable(){
+    /**
+     * Saves fly times to the database when the server is disabled.
+     */
+    public void SaveFlyTimeOnDisable() {
         for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
-
             upsertTimeFly(entry.getKey(), entry.getValue());
             plugin.getLogger().info("Fly time saved");
         }
     }
 
+    /**
+     * Starts a task to decrement the fly time of players who are flying and have a time limit.
+     */
     private void startDecrementTask() {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             try {
@@ -85,6 +104,11 @@ public class TimeFlyManager {
         }, 0, 20);
     }
 
+    /**
+     * Decrements the remaining fly time for each player and handles fly status accordingly.
+     *
+     * @throws SQLException If there is an issue with the database.
+     */
     public void decrementTimeRemaining() throws SQLException {
         for (UUID playerUUID : flyTimes.keySet()) {
             Player player = Bukkit.getPlayer(playerUUID);
@@ -114,7 +138,6 @@ public class TimeFlyManager {
                 continue;
             }
 
-
             if (timeRemaining <= 0) {
                 continue;
             }
@@ -122,7 +145,6 @@ public class TimeFlyManager {
             String decrementMethod = configUtil.getCustomConfig().getString("fly-decrement-method", "PLAYER_FLY_MODE");
 
             if (decrementMethod.equalsIgnoreCase("PLAYER_FLYING_MODE")) {
-
                 if (currentlyFlying && player.isFlying()) {
                     timeRemaining--;
                     flyTimes.put(playerUUID, timeRemaining);
@@ -138,6 +160,13 @@ public class TimeFlyManager {
         }
     }
 
+    /**
+     * Adds fly time to a player's remaining time.
+     *
+     * @param player The player to add time for.
+     * @param time   The amount of time to add (in seconds).
+     * @throws SQLException If there is an issue with the database.
+     */
     public void addFlytime(Player player, int time) throws SQLException {
         UUID playerUUID = player.getUniqueId();
         int newTime = flyTimes.getOrDefault(playerUUID, 0) + time;
@@ -145,7 +174,15 @@ public class TimeFlyManager {
         needsUpdate.add(playerUUID);
     }
 
-    public boolean removeFlyTime(Player sender , Player target, int time) {
+    /**
+     * Removes fly time from a player's remaining time.
+     *
+     * @param sender The player removing time.
+     * @param target The target player whose time is being removed.
+     * @param time   The amount of time to remove (in seconds).
+     * @return True if time was successfully removed, false otherwise.
+     */
+    public boolean removeFlyTime(Player sender, Player target, int time) {
         UUID playerUUID = sender.getUniqueId();
         int currentFlyTime = getTimeRemaining(target);
 
@@ -160,19 +197,27 @@ public class TimeFlyManager {
         return true;
     }
 
+    /**
+     * Resets the fly time for a player to 0.
+     *
+     * @param player The player whose fly time is being reset.
+     */
     public void resetFlytime(Player player) {
         flyTimes.put(player.getUniqueId(), 0);
         needsUpdate.add(player.getUniqueId());
     }
 
+    /**
+     * Manages and executes commands based on the remaining fly time for each player.
+     *
+     * @throws SQLException If there is an issue with the database.
+     */
     public void manageCommandMessageOnTimeLeft() throws SQLException {
         FileConfiguration config = configUtil.getCustomMessage();
         ConfigurationSection conditionsSection = config.getConfigurationSection("commands-time-remaining");
         if (conditionsSection == null) {
             return;
         }
-
-
 
         Map<Integer, String> timeCommandMap = new HashMap<>();
         for (String key : conditionsSection.getKeys(false)) {
@@ -183,10 +228,8 @@ public class TimeFlyManager {
                     timeCommandMap.put(timeKey, command);
                 }
             } catch (NumberFormatException ignored) {
-
             }
         }
-
 
         for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
             UUID playerUUID = entry.getKey();
@@ -215,7 +258,12 @@ public class TimeFlyManager {
         }
     }
 
-
+    /**
+     * Upserts the fly time for a player in the database.
+     *
+     * @param playerUUID      The player's UUID.
+     * @param newTimeRemaining The new fly time remaining (in seconds).
+     */
     public void upsertTimeFly(@NotNull UUID playerUUID, int newTimeRemaining) {
         sqlExecutor.execute(() -> {
             List<AccessPlayerDTO> existingRecords = this.requestHelper.select("fly", AccessPlayerDTO.class,
@@ -242,17 +290,33 @@ public class TimeFlyManager {
         });
     }
 
-
+    /**
+     * Gets the remaining fly time for a player.
+     *
+     * @param player The player to check.
+     * @return The remaining fly time (in seconds).
+     */
     public int getTimeRemaining(Player player) {
         return flyTimes.getOrDefault(player.getUniqueId(), 0);
     }
 
+    /**
+     * Updates the flying status of a player.
+     *
+     * @param playerUUID The player's UUID.
+     * @param isFlying   Whether the player is currently flying.
+     */
     public void updateFlyStatus(UUID playerUUID, boolean isFlying) {
         this.isFlying.put(playerUUID, isFlying);
     }
 
+    /**
+     * Returns a safe location for the player to teleport to when their fly time expires.
+     *
+     * @param player The player to check.
+     * @return A safe location for the player.
+     */
     private Location getSafeLocation(Player player) {
-
         Location loc = player.getLocation();
         World world = player.getWorld();
         int y = loc.getBlockY();

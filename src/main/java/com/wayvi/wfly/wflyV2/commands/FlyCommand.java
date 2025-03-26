@@ -15,16 +15,24 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
 
+/**
+ * Command to toggle flight for a player.
+ */
 public class FlyCommand extends Command<JavaPlugin> {
 
     private final WFlyV2 plugin;
-
     private final ConfigUtil configUtil;
+    private final ConditionManager conditionWorldManager;
+    private final PvPListener pvpListener;
 
-    private ConditionManager conditionWorldManager;
-
-    private PvPListener pvpListener;
-
+    /**
+     * Constructs the FlyCommand.
+     *
+     * @param plugin                 The main plugin instance.
+     * @param configUtil              Configuration utility for custom messages.
+     * @param conditionWorldManager   Manager for world-based fly restrictions.
+     * @param pvpListener             Listener to check for nearby players in PvP.
+     */
     public FlyCommand(WFlyV2 plugin, ConfigUtil configUtil, ConditionManager conditionWorldManager, PvPListener pvpListener) {
         super(plugin, "fly");
         setDescription("Fly command");
@@ -35,51 +43,56 @@ public class FlyCommand extends Command<JavaPlugin> {
         this.configUtil = configUtil;
         this.conditionWorldManager = conditionWorldManager;
         this.pvpListener = pvpListener;
-
     }
 
+    /**
+     * Executes the fly command logic.
+     *
+     * @param commandSender The command sender (must be a player).
+     * @param arguments     The command arguments (none required).
+     */
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = (Player) commandSender;
         try {
             AccessPlayerDTO playersInFly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
 
-            String message = playersInFly.isinFly() ? configUtil.getCustomMessage().getString("message.fly-deactivated") : configUtil.getCustomMessage().getString("message.fly-activated");
+            // Determine the message based on the current flight status
+            String message = playersInFly.isinFly() ?
+                    configUtil.getCustomMessage().getString("message.fly-deactivated") :
+                    configUtil.getCustomMessage().getString("message.fly-activated");
 
+            // Bypass permission check
             if (player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || player.isOp()) {
                 plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
                 ColorSupportUtil.sendColorFormat(player, message);
                 return;
             }
 
+            // Check if player is near other players in PvP
             if (pvpListener.HasNearbyPlayers(player)) {
                 ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.player-in-range"));
                 return;
             }
 
+            // Check if player has remaining fly time
             if (plugin.getTimeFlyManager().getTimeRemaining(player) == 0) {
                 ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
                 return;
             }
 
+            // Check if fly is allowed in the current world
             if (!conditionWorldManager.isFlyAuthorized(player)) {
                 ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-fly-here"));
                 return;
             }
 
-            if (conditionWorldManager.isFlyAuthorized(player)) {
-                plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
-                ColorSupportUtil.sendColorFormat(player, message);
-                return;
-            }
-
+            // Toggle flight mode
             plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
             ColorSupportUtil.sendColorFormat(player, message);
 
-
-
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

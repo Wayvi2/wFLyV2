@@ -1,6 +1,5 @@
 package com.wayvi.wfly.wflyV2.commands;
 
-
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.listeners.PvPListener;
 import com.wayvi.wfly.wflyV2.managers.ConditionManager;
@@ -13,14 +12,24 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 
-
-public class ReloadCommand extends Command<JavaPlugin>  {
+/**
+ * Command to reload the plugin configuration files.
+ */
+public class ReloadCommand extends Command<JavaPlugin> {
 
     private final ConfigUtil configUtil;
     private final Plugin plugin;
     private final PvPListener pvpListener;
-    private ConditionManager conditionManager;
+    private final ConditionManager conditionManager;
 
+    /**
+     * Constructs the ReloadCommand.
+     *
+     * @param plugin            The main plugin instance.
+     * @param configUtil        Utility class for managing configuration files.
+     * @param pvPListener       PvP listener to reload its configuration values.
+     * @param conditionManager  Manager handling fly conditions.
+     */
     public ReloadCommand(JavaPlugin plugin, ConfigUtil configUtil, PvPListener pvPListener, ConditionManager conditionManager) {
         super(plugin, "wfly.reload");
         setDescription("Reload file of the plugin.");
@@ -32,17 +41,26 @@ public class ReloadCommand extends Command<JavaPlugin>  {
         this.conditionManager = conditionManager;
     }
 
+    /**
+     * Executes the reload command, reloading configuration files and notifying the sender.
+     *
+     * @param commandSender The sender of the command.
+     * @param arguments     The command arguments (not used).
+     */
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
-
+        // Reload configurations
         configUtil.reloadCustomConfig();
         pvpListener.reloadConfigValues();
         conditionManager.loadConditions();
+
+        // Log reload message
         String message = configUtil.getCustomMessage().getString("message.reload");
         plugin.getLogger().info("Plugin reloaded");
 
+        // Notify player if applicable
         if (commandSender instanceof Player) {
-            ColorSupportUtil.sendColorFormat((Player) commandSender,message);
+            ColorSupportUtil.sendColorFormat((Player) commandSender, message);
         }
     }
 }

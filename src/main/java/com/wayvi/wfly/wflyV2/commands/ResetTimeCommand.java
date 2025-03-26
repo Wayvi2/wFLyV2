@@ -10,27 +10,38 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.sql.SQLException;
-
+/**
+ * Command to reset a player's fly time.
+ */
 public class ResetTimeCommand extends Command<JavaPlugin> {
 
     private final WFlyV2 plugin;
+    private final ConfigUtil configUtil;
 
-    ConfigUtil configUtil;
-
+    /**
+     * Constructs the ResetTimeCommand.
+     *
+     * @param plugin     The main plugin instance.
+     * @param configUtil Utility class for managing configuration files.
+     */
     public ResetTimeCommand(WFlyV2 plugin, ConfigUtil configUtil) {
         super(plugin, "wfly.resettime");
-        setDescription("Manage fly time for players");
-        setUsage("/fly addtime <player> <time>");
+        setDescription("Reset a player's fly time.");
+        setUsage("/fly resettime <player>");
         addArgs("player", Player.class);
         setPermission(Permissions.ADD_RESET_TIME.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
     }
 
+    /**
+     * Executes the reset fly time command.
+     *
+     * @param sender The sender of the command.
+     * @param args   The command arguments: player.
+     */
     @Override
     public void execute(CommandSender sender, Arguments args) {
-
         Player target = args.get("player");
 
         if (target == null) {
@@ -43,7 +54,9 @@ public class ResetTimeCommand extends Command<JavaPlugin> {
 
         if (sender instanceof Player) {
             Player playerSender = (Player) sender;
-            ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage().getString("message.fly-time-reset-to-player").replace("%player%", target.getName()));
+            ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage()
+                    .getString("message.fly-time-reset-to-player")
+                    .replace("%player%", target.getName()));
         } else {
             sender.sendMessage("Vous avez réinitialisé le temps de vol de " + target.getName());
         }
@@ -51,9 +64,3 @@ public class ResetTimeCommand extends Command<JavaPlugin> {
         plugin.getLogger().info("Fly time reset for " + target.getName());
     }
 }
-
-
-
-
-
-

@@ -8,7 +8,6 @@ import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,16 +16,27 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.sql.SQLException;
-import java.util.List;
 
+/**
+ * Listener class to handle fly-related events for players.
+ */
 public class FlyListener implements Listener {
 
     private final WFlyV2 plugin;
     private final FlyManager flyManager;
     private final RequestHelper requestHelper;
-    private ConditionManager conditionManager;
+    private final ConditionManager conditionManager;
     private final ConfigUtil configUtil;
 
+    /**
+     * Constructs the FlyListener.
+     *
+     * @param plugin           The main plugin instance.
+     * @param flyManager       The fly manager handling flight mechanics.
+     * @param requestHelper    The request helper for managing data requests.
+     * @param conditionManager The condition manager for flight authorization.
+     * @param configUtil       The configuration utility for retrieving messages.
+     */
     public FlyListener(WFlyV2 plugin, FlyManager flyManager, RequestHelper requestHelper, ConditionManager conditionManager, ConfigUtil configUtil) {
         this.plugin = plugin;
         this.flyManager = flyManager;
@@ -35,8 +45,13 @@ public class FlyListener implements Listener {
         this.configUtil = configUtil;
     }
 
-
-
+    /**
+     * Handles the event when a player quits the server.
+     * Saves the remaining fly time to the database.
+     *
+     * @param event The PlayerQuitEvent.
+     * @throws SQLException If an SQL error occurs.
+     */
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) throws SQLException {
         Player player = event.getPlayer();
@@ -46,6 +61,12 @@ public class FlyListener implements Listener {
         plugin.getTimeFlyManager().upsertTimeFly(playerData.uniqueId(), timeRemaining);
     }
 
+    /**
+     * Handles the event when a player joins the server.
+     * Restores their previous fly state.
+     *
+     * @param event The PlayerJoinEvent.
+     */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
@@ -62,7 +83,12 @@ public class FlyListener implements Listener {
         }
     }
 
-
+    /**
+     * Handles the event when a player changes worlds.
+     * Adjusts their flight permission accordingly.
+     *
+     * @param event The PlayerChangedWorldEvent.
+     */
     @EventHandler
     public void onWorldChange(PlayerChangedWorldEvent event) {
         Player player = event.getPlayer();
@@ -79,6 +105,4 @@ public class FlyListener implements Listener {
             }
         }, 15L);
     }
-
-
 }

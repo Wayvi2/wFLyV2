@@ -12,13 +12,20 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
 
+/**
+ * Command to add fly time to a player.
+ */
 public class AddTimeCommand extends Command<JavaPlugin> {
 
     private final WFlyV2 plugin;
+    private ConfigUtil configUtil;
 
-
-    ConfigUtil configUtil;
-
+    /**
+     * Constructs the AddTimeCommand.
+     *
+     * @param plugin     The main plugin instance.
+     * @param configUtil Configuration utility to manage custom messages.
+     */
     public AddTimeCommand(WFlyV2 plugin, ConfigUtil configUtil) {
         super(plugin, "wfly.addtime");
         setDescription("Manage fly time for players");
@@ -30,6 +37,12 @@ public class AddTimeCommand extends Command<JavaPlugin> {
         this.configUtil = configUtil;
     }
 
+    /**
+     * Executes the command logic to add fly time to a player.
+     *
+     * @param sender The command sender (player or console).
+     * @param args   The command arguments (player and time).
+     */
     @Override
     public void execute(CommandSender sender, Arguments args) {
         Player target = args.get("player");

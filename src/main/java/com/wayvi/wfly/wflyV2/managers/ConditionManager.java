@@ -19,6 +19,11 @@ import org.bukkit.entity.Player;
 import java.sql.SQLException;
 import java.util.*;
 
+/**
+ * Manages the conditions under which players are authorized or not to fly.
+ * This class handles the loading and checking of conditions for fly authorization,
+ * and manages the actions related to fly deactivation and teleportation to safe locations.
+ */
 public class ConditionManager {
 
     private List<Condition> authorizedConditions;
@@ -28,8 +33,15 @@ public class ConditionManager {
     private final ConfigUtil configUtil;
     private final RequestHelper requestHelper;
     private final Map<UUID, Boolean> flyStateCache = new HashMap<>();
-    Map<UUID, Location> lastSafeLocation = new HashMap<>();
+    private Map<UUID, Location> lastSafeLocation = new HashMap<>();
 
+    /**
+     * Initializes the ConditionManager with the provided plugin, config utility, and request helper.
+     *
+     * @param plugin        the plugin instance
+     * @param configUtil    the configuration utility for loading custom configurations
+     * @param requestHelper the request helper instance
+     */
     public ConditionManager(WFlyV2 plugin, ConfigUtil configUtil, RequestHelper requestHelper) {
         this.plugin = plugin;
         this.configUtil = configUtil;
@@ -37,11 +49,20 @@ public class ConditionManager {
         loadConditions();
     }
 
+    /**
+     * Loads the conditions from the configuration for both authorized and not authorized conditions.
+     */
     public void loadConditions() {
         authorizedConditions = loadConditionsFromConfig("conditions.authorized");
         notAuthorizedConditions = loadConditionsFromConfig("conditions.not-authorized");
     }
 
+    /**
+     * Loads the conditions from the configuration file based on the specified path.
+     *
+     * @param path the path in the configuration file to load conditions from
+     * @return a list of conditions
+     */
     private List<Condition> loadConditionsFromConfig(String path) {
         List<Condition> result = new ArrayList<>();
         ConfigurationSection section = configUtil.getCustomConfig().getConfigurationSection(path);
@@ -58,8 +79,13 @@ public class ConditionManager {
         return result;
     }
 
+    /**
+     * Checks if a player is authorized to fly based on their conditions and permissions.
+     *
+     * @param player the player to check
+     * @return true if the player is authorized to fly, false otherwise
+     */
     public boolean isFlyAuthorized(Player player) {
-
         if (player.isOp() || player.hasPermission(Permissions.BYPASS_FLY.getPermission())) {
             return true;
         }
@@ -75,7 +101,6 @@ public class ConditionManager {
         for (Condition c : notAuthorizedConditions) {
             String placeholderValue = PlaceholderAPI.setPlaceholders(player, c.getPlaceholder());
             String equalsValue = PlaceholderAPI.setPlaceholders(player, c.getEqualsValue());
-
             if (placeholderValue.equalsIgnoreCase(equalsValue)) {
                 return false;
             }
@@ -83,6 +108,10 @@ public class ConditionManager {
         return true;
     }
 
+    /**
+     * Periodically checks the fly status of all players and deactivates fly if they are not authorized.
+     * Also teleports the player to a safe location if necessary and executes commands if required.
+     */
     public void checkCanFly() {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
@@ -122,8 +151,14 @@ public class ConditionManager {
         }, 20L, 20L);
     }
 
+    /**
+     * Gets a safe location for the player to teleport to if they are not authorized to fly.
+     * The location will be the highest block in the world that is not AIR.
+     *
+     * @param player the player to check
+     * @return the safe location for the player
+     */
     private Location getSafeLocation(Player player) {
-
         Location loc = player.getLocation();
         World world = player.getWorld();
         int y = loc.getBlockY();

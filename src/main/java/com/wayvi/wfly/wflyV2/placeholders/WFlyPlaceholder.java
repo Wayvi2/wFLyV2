@@ -13,46 +13,73 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Custom placeholder expansion for the WFlyV2 plugin that allows retrieving flying-related data
+ * through PlaceholderAPI.
+ */
 public class WFlyPlaceholder extends PlaceholderExpansion {
 
     private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
 
+    /**
+     * Constructs a new WFlyPlaceholder instance.
+     *
+     * @param plugin The main plugin instance.
+     * @param configUtil The configuration utility.
+     */
     public WFlyPlaceholder(WFlyV2 plugin, ConfigUtil configUtil) {
         this.plugin = plugin;
         this.configUtil = configUtil;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public @NotNull String getIdentifier() {
         return "wfly";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public @NotNull String getAuthor() {
         return "Wayvi2";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public @NotNull String getVersion() {
         return "1.0.8";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean persist() {
         return true;
     }
 
+    /**
+     * Handles the request for a specific placeholder. This method will return the corresponding
+     * value for the placeholder request related to the fly state of the player.
+     *
+     * @param offlinePlayer The offline player whose placeholder is requested.
+     * @param params The placeholder parameters.
+     * @return The value for the placeholder, or null if not handled.
+     */
     @Override
     public @Nullable String onRequest(OfflinePlayer offlinePlayer, @NotNull String params) {
         if (offlinePlayer.isOnline() && offlinePlayer.getPlayer() != null) {
             Player player = offlinePlayer.getPlayer();
-
 
             switch (params) {
                 case "fly_remaining":
@@ -73,11 +100,17 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                     UUID player1 = offlinePlayer.getUniqueId();
                     return String.valueOf(plugin.getTimeFlyManager().getTimeRemaining(Bukkit.getPlayer(player1)));
             }
-
         }
         return null;
     }
 
+    /**
+     * Formats the given time in seconds into a readable format, taking into account the enabled
+     * time units (days, hours, minutes, seconds) and applying the specified format.
+     *
+     * @param seconds The time in seconds to be formatted.
+     * @return A formatted string representing the time.
+     */
     private String formatTime(int seconds) {
         Map<String, Boolean> enabledFormats = plugin.getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
         String format = plugin.getTimeFormatTranslatorUtil().getPlaceholderFormat();
@@ -158,7 +191,5 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
 
         return (String) ColorSupportUtil.convertColorFormat(finalFormat);
     }
-
-
 
 }
