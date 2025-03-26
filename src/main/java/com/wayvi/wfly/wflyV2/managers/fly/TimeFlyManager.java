@@ -29,9 +29,10 @@ public class TimeFlyManager {
     private final Map<UUID, Integer> flyTimes = new ConcurrentHashMap<>();
     private Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> lastNotifiedTime = new ConcurrentHashMap<>();
+    private final Set<UUID> needsUpdate = ConcurrentHashMap.newKeySet();
     Map<UUID, Location> lastSafeLocation = new HashMap<>();
 
-    private static final ExecutorService sqlExecutor = Executors.newFixedThreadPool(3);
+    private static final ExecutorService sqlExecutor = Executors.newFixedThreadPool(5);
 
     public TimeFlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
         this.plugin = plugin;
@@ -55,10 +56,11 @@ public class TimeFlyManager {
     public void saveFlyTimes() {
         int seconds = configUtil.getCustomConfig().getInt("save-database-delay");
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
-
-                upsertTimeFly(entry.getKey(), entry.getValue());
+            for (UUID playerUUID : needsUpdate) {
+                int time = flyTimes.getOrDefault(playerUUID, 0);
+                upsertTimeFly(playerUUID, time);
             }
+            needsUpdate.clear();
         }, 0L, 20L * seconds);
     }
 
@@ -139,7 +141,7 @@ public class TimeFlyManager {
         UUID playerUUID = player.getUniqueId();
         int newTime = flyTimes.getOrDefault(playerUUID, 0) + time;
         flyTimes.put(playerUUID, newTime);
-        upsertTimeFly(playerUUID, newTime);
+        needsUpdate.add(playerUUID);
     }
 
     public boolean removeFlyTime(Player sender , Player target, int time) {
@@ -153,13 +155,13 @@ public class TimeFlyManager {
 
         int newTime = flyTimes.getOrDefault(playerUUID, 0) - time;
         flyTimes.put(playerUUID, newTime);
-        upsertTimeFly(playerUUID, newTime);
+        needsUpdate.add(playerUUID);
         return true;
     }
 
     public void resetFlytime(Player player) {
         flyTimes.put(player.getUniqueId(), 0);
-        upsertTimeFly(player.getUniqueId(), 0);
+        needsUpdate.add(player.getUniqueId());
     }
 
     private void manageCommandMessageOnTimeLeft() throws SQLException {
@@ -231,11 +233,6 @@ public class TimeFlyManager {
     public void updateFlyStatus(UUID playerUUID, boolean isFlying) {
         this.isFlying.put(playerUUID, isFlying);
     }
-
-    public boolean getFlyStatus(Player player) {
-        return getFlyStatus(player);
-    }
-
 
     private Location getSafeLocation(Player player) {
 

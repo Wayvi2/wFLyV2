@@ -57,7 +57,7 @@ public class FlyCommand extends Command<JavaPlugin> {
                 return;
             }
 
-            if (playersInFly.FlyTimeRemaining() == 0) {
+            if (plugin.getTimeFlyManager().getTimeRemaining(player) == 0) {
                 ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
                 return;
             }
