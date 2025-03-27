@@ -31,21 +31,20 @@ public class ConditionManager {
 
     private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
-    private final RequestHelper requestHelper;
     private final Map<UUID, Boolean> flyStateCache = new HashMap<>();
     private Map<UUID, Location> lastSafeLocation = new HashMap<>();
+    private final Set<String> unregisteredPlaceholders = new HashSet<>();
+
 
     /**
      * Initializes the ConditionManager with the provided plugin, config utility, and request helper.
      *
      * @param plugin        the plugin instance
      * @param configUtil    the configuration utility for loading custom configurations
-     * @param requestHelper the request helper instance
      */
-    public ConditionManager(WFlyV2 plugin, ConfigUtil configUtil, RequestHelper requestHelper) {
+    public ConditionManager(WFlyV2 plugin, ConfigUtil configUtil) {
         this.plugin = plugin;
         this.configUtil = configUtil;
-        this.requestHelper = requestHelper;
         loadConditions();
     }
 
@@ -53,6 +52,7 @@ public class ConditionManager {
      * Loads the conditions from the configuration for both authorized and not authorized conditions.
      */
     public void loadConditions() {
+        resetUnregisteredPlaceholders();
         authorizedConditions = loadConditionsFromConfig("conditions.authorized");
         notAuthorizedConditions = loadConditionsFromConfig("conditions.not-authorized");
     }
@@ -71,6 +71,8 @@ public class ConditionManager {
                 String placeholder = section.getString(key + ".placeholder");
                 String equalsValue = section.getString(key + ".equals");
                 List<String> commands = section.getStringList(key + ".commands");
+
+
                 if (placeholder != null && equalsValue != null) {
                     result.add(new Condition(placeholder, equalsValue, commands));
                 }
@@ -93,6 +95,21 @@ public class ConditionManager {
         for (Condition c : authorizedConditions) {
             String placeholderValue = PlaceholderAPI.setPlaceholders(player, c.getPlaceholder());
             String equalsValue = PlaceholderAPI.setPlaceholders(player, c.getEqualsValue());
+
+            if (!plugin.isStartup() && placeholderValue.equals(c.getPlaceholder())) {
+                if (!unregisteredPlaceholders.contains(placeholderValue)) {
+                    plugin.getLogger().severe("Placeholder not registered: " + placeholderValue);
+                    unregisteredPlaceholders.add(placeholderValue);
+                }
+            }
+
+            if (!plugin.isStartup() && isPlaceholder(equalsValue)) {
+                if (!PlaceholderAPI.isRegistered(equalsValue) && !unregisteredPlaceholders.contains(equalsValue)) {
+                    plugin.getLogger().severe("Placeholder not registered: " + equalsValue);
+                    unregisteredPlaceholders.add(equalsValue);
+                }
+            }
+
             if (placeholderValue.equalsIgnoreCase(equalsValue)) {
                 return true;
             }
@@ -101,11 +118,34 @@ public class ConditionManager {
         for (Condition c : notAuthorizedConditions) {
             String placeholderValue = PlaceholderAPI.setPlaceholders(player, c.getPlaceholder());
             String equalsValue = PlaceholderAPI.setPlaceholders(player, c.getEqualsValue());
+
+            if (!plugin.isStartup() && placeholderValue.equals(c.getPlaceholder())) {
+                if (!unregisteredPlaceholders.contains(placeholderValue)) {
+                    plugin.getLogger().severe("Placeholder not registered: " + placeholderValue);
+                    unregisteredPlaceholders.add(placeholderValue);
+                }
+            }
+
+            if (!plugin.isStartup() && isPlaceholder(equalsValue)) {
+                if (!PlaceholderAPI.isRegistered(equalsValue) && !unregisteredPlaceholders.contains(equalsValue)) {
+                    plugin.getLogger().severe("Placeholder not registered: " + equalsValue);
+                    unregisteredPlaceholders.add(equalsValue);
+                }
+            }
             if (placeholderValue.equalsIgnoreCase(equalsValue)) {
                 return false;
             }
         }
         return true;
+    }
+
+
+    public boolean isPlaceholder(String input) {
+        if (input == null || input.length() < 3) {
+            return false;
+        }
+
+        return input.startsWith("%") && input.endsWith("%");
     }
 
     /**
@@ -168,5 +208,9 @@ public class ConditionManager {
         }
 
         return new Location(world, loc.getX(), y + 1, loc.getZ());
+    }
+
+    public void resetUnregisteredPlaceholders() {
+        unregisteredPlaceholders.clear();
     }
 }

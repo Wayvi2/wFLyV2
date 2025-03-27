@@ -1,8 +1,9 @@
 package com.wayvi.wfly.wflyV2;
 
+import com.wayvi.wfly.wflyV2.handlers.CustomMessageHandler;
 import com.wayvi.wfly.wflyV2.pluginhook.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyV2.commands.*;
-import com.wayvi.wfly.wflyV2.handlers.CustomMessagehandler;
+
 import com.wayvi.wfly.wflyV2.listeners.FlyListener;
 import com.wayvi.wfly.wflyV2.listeners.PvPListener;
 import com.wayvi.wfly.wflyV2.managers.ConditionManager;
@@ -14,6 +15,7 @@ import com.wayvi.wfly.wflyV2.util.*;
 import fr.maxlego08.sarah.RequestHelper;
 import fr.traqueur.commands.api.CommandManager;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
@@ -26,9 +28,14 @@ public final class WFlyV2 extends JavaPlugin {
 
     private TimeFormatTranslatorUtil timeFormatTranslatorUtil;
 
+    private ConditionManager conditionManager;
+
+    private boolean isStartup = true;
+
 
     @Override
     public void onEnable() {
+
 
         // INIT METRICS FOR BSTATS
         Metrics metrics = new Metrics(this, 24609);
@@ -54,11 +61,9 @@ public final class WFlyV2 extends JavaPlugin {
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
 
         // INIT ConditionsManager
-        ConditionManager conditionWorldManager = new ConditionManager(this, configUtil, requestHelper);
-        conditionWorldManager.checkCanFly();
+        ConditionManager conditionManager = new ConditionManager(this, configUtil);
+        conditionManager.checkCanFly();
 
-        // INIT ConditionManager
-        ConditionManager conditionManager = new ConditionManager(this, configUtil, requestHelper);
 
         //INIT PvPListener
         PvPListener pvpListener = new PvPListener(this, configUtil);
@@ -90,12 +95,12 @@ public final class WFlyV2 extends JavaPlugin {
         // COMMANDS
         CommandManager commandManager = new CommandManager(this);
         commandManager.registerCommand(new ReloadCommand(this, configUtil, pvpListener, conditionManager));
-        commandManager.registerCommand(new FlyCommand(this, configUtil, conditionWorldManager, pvpListener));
+        commandManager.registerCommand(new FlyCommand(this, configUtil, conditionManager, pvpListener));
         commandManager.registerCommand(new FlySpeedCommand(this, this.flyManager));
         commandManager.registerCommand(new AddTimeCommand(this, configUtil));
         commandManager.registerCommand(new ResetTimeCommand(this, configUtil));
         commandManager.registerCommand(new RemoveTimeCommand(this, configUtil));
-        commandManager.setMessageHandler(new CustomMessagehandler(configUtil));
+        commandManager.setMessageHandler(new CustomMessageHandler(configUtil));
         commandManager.registerCommand(new FlyHelpCommand(this));
 
         // LISTENER
@@ -110,6 +115,7 @@ public final class WFlyV2 extends JavaPlugin {
             }
         });
         getLogger().info("Plugin enabled");
+        Bukkit.getScheduler().runTaskLater(this, () -> isStartup = false, 40L);
     }
 
     @Override
@@ -129,4 +135,13 @@ public final class WFlyV2 extends JavaPlugin {
     public TimeFormatTranslatorUtil getTimeFormatTranslatorUtil() {
         return timeFormatTranslatorUtil;
     }
+
+    public ConditionManager getConditionManager() {
+        return this.conditionManager;
+    }
+
+    public boolean isStartup() {
+        return isStartup;
+    }
+
 }
