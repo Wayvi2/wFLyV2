@@ -10,7 +10,7 @@ public class WflyApi {
     private static WflyApi instance;
     private final WFlyV2 plugin;
 
-    private WflyApi(WFlyV2 plugin) {
+    public WflyApi(WFlyV2 plugin) {
         this.plugin = plugin;
     }
 
