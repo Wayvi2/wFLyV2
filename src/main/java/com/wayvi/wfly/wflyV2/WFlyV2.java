@@ -1,5 +1,6 @@
 package com.wayvi.wfly.wflyV2;
 
+import com.wayvi.wfly.wflyV2.api.WflyApi;
 import com.wayvi.wfly.wflyV2.handlers.CustomMessageHandler;
 import com.wayvi.wfly.wflyV2.pluginhook.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyV2.commands.*;
@@ -116,6 +117,8 @@ public final class WFlyV2 extends JavaPlugin {
         });
         getLogger().info("Plugin enabled");
         Bukkit.getScheduler().runTaskLater(this, () -> isStartup = false, 40L);
+
+        WflyApi.inject(this);
     }
 
     @Override
