@@ -17,6 +17,10 @@ public class WflyApi {
         return plugin.getTimeFlyManager().getTimeRemaining(player);
     }
 
+    public WFlyV2 getPlugin() {
+        return plugin;
+    }
+
 
 
 
