@@ -164,15 +164,7 @@ public class ConfigUtil {
         if (!configConfig.contains("conditions")) {
             configConfig.createSection("conditions");
         }
-        if (!configConfig.contains("conditions.not-authorized.my-first-conditions")) {
-            configConfig.set("conditions.not-authorized.my-first-conditions.placeholder", "%multiverse_world_alias%");
-            configConfig.set("conditions.not-authorized.my-first-conditions.equals", "world");
-            configConfig.set("conditions.not-authorized.my-first-conditions.command", "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000");
-        }
-        if (!configConfig.contains("conditions.authorized.my-seconds-conditions")) {
-            configConfig.set("conditions.authorized.my-seconds-conditions.placeholder", "%multiverse_world_alias%");
-            configConfig.set("conditions.authorized.my-seconds-conditions.equals", "world_nether");
-        }
+
 
         // Teleport on floor when fly disabled
         if (!configConfig.contains("tp-on-floor-when-fly-disabled")) {
