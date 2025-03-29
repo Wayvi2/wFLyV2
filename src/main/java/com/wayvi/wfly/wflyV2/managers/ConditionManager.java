@@ -90,51 +90,48 @@ public class ConditionManager {
         }
 
         for (Condition c : authorizedConditions) {
-            String placeholderValue = PlaceholderAPI.setPlaceholders(player, c.getPlaceholder());
-            String equalsValue = PlaceholderAPI.setPlaceholders(player, c.getEqualsValue());
-
-            if (plugin.isStartup() && placeholderValue.equals(c.getPlaceholder())) {
-                if (!unregisteredPlaceholders.contains(placeholderValue)) {
-                    plugin.getLogger().severe("Placeholder not registered: " + placeholderValue);
-                    unregisteredPlaceholders.add(placeholderValue);
-                }
-            }
-
-            if (plugin.isStartup() && isPlaceholder(equalsValue)) {
-                if (!PlaceholderAPI.isRegistered(equalsValue) && !unregisteredPlaceholders.contains(equalsValue)) {
-                    plugin.getLogger().severe("Placeholder not registered: " + equalsValue);
-                    unregisteredPlaceholders.add(equalsValue);
-                }
-            }
-
-            if (placeholderValue.equalsIgnoreCase(equalsValue)) {
+            if (checkPlaceholderError(player, c)) {
                 return true;
             }
         }
 
         for (Condition c : notAuthorizedConditions) {
-            String placeholderValue = PlaceholderAPI.setPlaceholders(player, c.getPlaceholder());
-            String equalsValue = PlaceholderAPI.setPlaceholders(player, c.getEqualsValue());
-
-            if (plugin.isStartup() && placeholderValue.equals(c.getPlaceholder())) {
-                if (!unregisteredPlaceholders.contains(placeholderValue)) {
-                    plugin.getLogger().severe("Placeholder not registered: " + placeholderValue);
-                    unregisteredPlaceholders.add(placeholderValue);
-                }
-            }
-
-            if (plugin.isStartup() && isPlaceholder(equalsValue)) {
-                if (!PlaceholderAPI.isRegistered(equalsValue) && !unregisteredPlaceholders.contains(equalsValue)) {
-                    plugin.getLogger().severe("Placeholder not registered: " + equalsValue);
-                    unregisteredPlaceholders.add(equalsValue);
-                }
-            }
-            if (placeholderValue.equalsIgnoreCase(equalsValue)) {
+            if (checkPlaceholderError(player, c)) {
                 return false;
             }
         }
+
         return true;
     }
+
+    private boolean checkPlaceholderError(Player player, Condition c) {
+        String placeholderValue = PlaceholderAPI.setPlaceholders(player, c.getPlaceholder());
+        String equalsValue = PlaceholderAPI.setPlaceholders(player, c.getEqualsValue());
+
+        if (placeholderValue.equals(c.getPlaceholder())) {
+            logPlaceholderError(placeholderValue);
+        }
+
+        if (isPlaceholder(equalsValue)) {
+            if (!PlaceholderAPI.isRegistered(equalsValue)) {
+                logPlaceholderError(equalsValue);
+            }
+        }
+
+        if (isPlaceholder(equalsValue)) {
+            return placeholderValue.equalsIgnoreCase(equalsValue);
+        } else {
+            return placeholderValue.equalsIgnoreCase(c.getEqualsValue());
+        }
+    }
+
+    private void logPlaceholderError(String placeholder) {
+        if (!unregisteredPlaceholders.contains(placeholder)) {
+            plugin.getLogger().severe("Placeholder not registered or not working: " + placeholder);
+            unregisteredPlaceholders.add(placeholder);
+        }
+    }
+
 
 
     public boolean isPlaceholder(String input) {

@@ -9,6 +9,7 @@ import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -37,10 +38,10 @@ public class FlyCommand extends Command<JavaPlugin> {
         super(plugin, "fly");
         setDescription("Fly command");
         setUsage("/fly");
-        addAlias("wfly.fly");
         setPermission(Permissions.FLY.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
+        addAlias("wfly.fly");
         this.conditionWorldManager = conditionWorldManager;
         this.pvpListener = pvpListener;
     }
@@ -62,6 +63,12 @@ public class FlyCommand extends Command<JavaPlugin> {
                     configUtil.getCustomMessage().getString("message.fly-deactivated") :
                     configUtil.getCustomMessage().getString("message.fly-activated");
 
+
+            if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {
+                plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
+                ColorSupportUtil.sendColorFormat(player, message);
+                return;
+            }
 
             // Check if player has remaining fly time
             if (plugin.getTimeFlyManager().getTimeRemaining(player) == 0) {
