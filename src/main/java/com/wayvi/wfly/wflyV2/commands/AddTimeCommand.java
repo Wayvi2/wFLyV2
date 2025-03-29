@@ -29,7 +29,7 @@ public class AddTimeCommand extends Command<JavaPlugin> {
     public AddTimeCommand(WFlyV2 plugin, ConfigUtil configUtil) {
         super(plugin, "wfly.addtime");
         setDescription("Manage fly time for players");
-        setUsage("/fly addtime <player> <time>");
+        setUsage("/wfly addtime <player> <time>");
         addArgs("player", Player.class);
         addArgs("time:int");
         setPermission(Permissions.ADD_FLY_TIME.getPermission());

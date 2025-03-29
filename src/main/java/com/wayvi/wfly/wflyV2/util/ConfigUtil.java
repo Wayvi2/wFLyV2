@@ -93,6 +93,7 @@ public class ConfigUtil {
         try {
             messageConfig.load(messageFile);
             configConfig.load(configFile);
+            checkAndAddMissingLines();
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
@@ -103,14 +104,93 @@ public class ConfigUtil {
      * it adds default values for those keys.
      */
     public void checkAndAddMissingLines() {
+        // Version
+        if (!configConfig.contains("version")) {
+            configConfig.set("version", version);
+        }
+
+        // Save database delay
+        if (!configConfig.contains("save-database-delay")) {
+            configConfig.set("save-database-delay", 60);
+        }
+
+        // Fly decrement method
+        if (!configConfig.contains("fly-decrement-method")) {
+            configConfig.set("fly-decrement-method", "PLAYER_FLY_MODE");
+        }
+
+        // Format placeholder
+        if (!configConfig.contains("format-placeholder.seconds")) {
+            configConfig.set("format-placeholder.seconds", true);
+        }
+        if (!configConfig.contains("format-placeholder.minutes")) {
+            configConfig.set("format-placeholder.minutes", false);
+        }
+        if (!configConfig.contains("format-placeholder.hours")) {
+            configConfig.set("format-placeholder.hours", true);
+        }
+        if (!configConfig.contains("format-placeholder.days")) {
+            configConfig.set("format-placeholder.days", true);
+        }
+        if (!configConfig.contains("format-placeholder.unlimited")) {
+            configConfig.set("format-placeholder.unlimited", "Unlimited");
+        }
+        if (!configConfig.contains("format-placeholder.auto-format")) {
+            configConfig.set("format-placeholder.auto-format", true);
+        }
+        if (!configConfig.contains("format-placeholder.remove-null-values.enabled")) {
+            configConfig.set("format-placeholder.remove-null-values.enabled", true);
+        }
+        if (!configConfig.contains("format-placeholder.remove-null-values.value")) {
+            configConfig.set("format-placeholder.remove-null-values.value", "#FFC77A0seconds");
+        }
+        if (!configConfig.contains("format-placeholder.format")) {
+            configConfig.set("format-placeholder.format", "#FFC77A%seconds%#FF9D00%seconds_suffixe%#FFC77A%minutes%#FF9D00%minutes_suffixe% #FFC77A%hours%#FF9D00%hours_suffixe% #FFC77A%days%#FF9D00%days_suffixe%");
+        }
+        if (!configConfig.contains("format-placeholder.other-format.seconds_suffixe")) {
+            configConfig.set("format-placeholder.other-format.seconds_suffixe", "seconds");
+        }
+        if (!configConfig.contains("format-placeholder.other-format.minutes_suffixe")) {
+            configConfig.set("format-placeholder.other-format.minutes_suffixe", "minutes");
+        }
+        if (!configConfig.contains("format-placeholder.other-format.hours_suffixe")) {
+            configConfig.set("format-placeholder.other-format.hours_suffixe", "hours");
+        }
+        if (!configConfig.contains("format-placeholder.other-format.days_suffixe")) {
+            configConfig.set("format-placeholder.other-format.days_suffixe", "days");
+        }
+
+        // Conditions
+        if (!configConfig.contains("conditions")) {
+            configConfig.createSection("conditions");
+        }
+        if (!configConfig.contains("conditions.not-authorized.my-first-conditions")) {
+            configConfig.set("conditions.not-authorized.my-first-conditions.placeholder", "%multiverse_world_alias%");
+            configConfig.set("conditions.not-authorized.my-first-conditions.equals", "world");
+            configConfig.set("conditions.not-authorized.my-first-conditions.command", "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000");
+        }
+        if (!configConfig.contains("conditions.authorized.my-seconds-conditions")) {
+            configConfig.set("conditions.authorized.my-seconds-conditions.placeholder", "%multiverse_world_alias%");
+            configConfig.set("conditions.authorized.my-seconds-conditions.equals", "world_nether");
+        }
+
+        // Teleport on floor when fly disabled
+        if (!configConfig.contains("tp-on-floor-when-fly-disabled")) {
+            configConfig.set("tp-on-floor-when-fly-disabled", true);
+        }
+
+        // PvP Settings
         if (!configConfig.contains("pvp.enabled-permission-range")) {
             configConfig.set("pvp.enabled-permission-range", false);
         }
-
         if (!configConfig.contains("pvp.fly-disable-radius")) {
             configConfig.set("pvp.fly-disable-radius", 5);
         }
+        if (!configConfig.contains("pvp.bypass.placeholders")) {
+            configConfig.set("pvp.bypass.placeholders", java.util.Arrays.asList("%lands_land_name_plain%"));
+        }
 
+        // Sauvegarde des modifications
         saveCustomConfig();
     }
 

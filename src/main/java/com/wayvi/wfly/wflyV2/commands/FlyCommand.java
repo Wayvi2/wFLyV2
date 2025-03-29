@@ -62,6 +62,13 @@ public class FlyCommand extends Command<JavaPlugin> {
                     configUtil.getCustomMessage().getString("message.fly-deactivated") :
                     configUtil.getCustomMessage().getString("message.fly-activated");
 
+
+            // Check if player has remaining fly time
+            if (plugin.getTimeFlyManager().getTimeRemaining(player) == 0) {
+                ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
+                return;
+            }
+
             // Bypass permission check
             if (player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || player.isOp()) {
                 plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
@@ -75,17 +82,12 @@ public class FlyCommand extends Command<JavaPlugin> {
                 return;
             }
 
-            // Check if player has remaining fly time
-            if (plugin.getTimeFlyManager().getTimeRemaining(player) == 0) {
-                ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
-                return;
-            }
-
             // Check if fly is allowed in the current world
             if (!conditionWorldManager.isFlyAuthorized(player)) {
                 ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-fly-here"));
                 return;
             }
+
 
             // Toggle flight mode
             plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());

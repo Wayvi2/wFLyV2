@@ -96,6 +96,7 @@ public class PvPListener implements Listener {
         if (shouldDisableFly && player.isFlying()) {
             plugin.getFlyManager().manageFly(player.getUniqueId(), false);
 
+
             Location location = getSafeLocation(player);
             player.teleport(location);
 
@@ -159,6 +160,11 @@ public class PvPListener implements Listener {
      * @return The safe location for the player to teleport to.
      */
     private Location getSafeLocation(Player player) {
+        boolean tpOnFloorWhenFlyDisabled = configUtil.getCustomConfig().getBoolean("tp-on-floor-when-fly-disabled");
+        if (!tpOnFloorWhenFlyDisabled) {
+            return player.getLocation();
+        }
+
         Location loc = player.getLocation();
         World world = player.getWorld();
         int y = loc.getBlockY();

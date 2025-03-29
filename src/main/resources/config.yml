@@ -1,9 +1,10 @@
-##############################################################################################
-#                                            WFLY PLUGIN                                     #
-##                                                                                           #
-#   Documentation : https://app.gitbook.com/o/ew6PbMsQsqKjVC6kUf22/s/wnts7HZ5JI6Nxy4VSXbq/   #
-#                                                                                            #
-##############################################################################################
+#########################################################################################################
+#                                            WFLY PLUGIN                                                #
+#                                                                                                       #
+#                                           Documentation :                                             #
+#https://wayfly-documentation.gitbook.io/wayfly-wikihttps://wayfly-documentation.gitbook.io/wayfly-wiki #
+#                                                                                                       #
+#########################################################################################################
 
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
@@ -33,20 +34,24 @@ format-placeholder:
     days_suffixe: "days"
 
 
-#EXAMPLE OF CONDITIONS
-#mean if condition is valid, players will can't activate her fly
+
+
+
+
+#conditions: {} if you don't want to use conditions
 conditions:
-  not-authorized: # refer if matched, player can't fly
+  not-authorized:
     my-first-conditions:
       placeholder: "%multiverse_world_alias%"
-      equals: "world" #player can't fly in this world
-      command: "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000" #optional
-  authorized: # refer if matched, player can fly
+      equals: "world" #player can't fly in this world (need multiverse plugin and /papi ecloud download Multiverse)
+      command: "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000"
+  authorized:
     my-seconds-conditions:
-      placeholder: "%lands_land_name_plain_here%"
-      equals: "%lands_lands%" #player can fly in his lands
-#NOTE : authorized section override not-authorized section
-# If authorized section is true for player(just 1), player can fly
+      placeholder: "%multiverse_world_alias%"
+      equals: "world_nether" #player can fly in this world (need multiverse plugin and /papi ecloud download Multiverse)
+
+# When true, the player will be teleported to the floor when he disable fly.
+tp-on-floor-when-fly-disabled: true
 
 
 

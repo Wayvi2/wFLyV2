@@ -31,7 +31,7 @@ public final class WFlyV2 extends JavaPlugin {
 
     private ConditionManager conditionManager;
 
-    private boolean isStartup = true;
+    private boolean isStartup = false;
 
 
     @Override
@@ -116,7 +116,7 @@ public final class WFlyV2 extends JavaPlugin {
             }
         });
         getLogger().info("Plugin enabled");
-        Bukkit.getScheduler().runTaskLater(this, () -> isStartup = false, 40L);
+        Bukkit.getScheduler().runTaskLater(this, () -> isStartup = true, 40L);
 
         WflyApi.inject(this);
     }
@@ -144,7 +144,7 @@ public final class WFlyV2 extends JavaPlugin {
     }
 
     public boolean isStartup() {
-        return isStartup;
+        return this.isStartup;
     }
 
 }

@@ -3,17 +3,14 @@ package com.wayvi.wfly.wflyV2.managers;
 import com.wayvi.wfly.wflyV2.WFlyV2;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.models.Condition;
-import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
-import fr.maxlego08.sarah.RequestHelper;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
@@ -96,14 +93,14 @@ public class ConditionManager {
             String placeholderValue = PlaceholderAPI.setPlaceholders(player, c.getPlaceholder());
             String equalsValue = PlaceholderAPI.setPlaceholders(player, c.getEqualsValue());
 
-            if (!plugin.isStartup() && placeholderValue.equals(c.getPlaceholder())) {
+            if (plugin.isStartup() && placeholderValue.equals(c.getPlaceholder())) {
                 if (!unregisteredPlaceholders.contains(placeholderValue)) {
                     plugin.getLogger().severe("Placeholder not registered: " + placeholderValue);
                     unregisteredPlaceholders.add(placeholderValue);
                 }
             }
 
-            if (!plugin.isStartup() && isPlaceholder(equalsValue)) {
+            if (plugin.isStartup() && isPlaceholder(equalsValue)) {
                 if (!PlaceholderAPI.isRegistered(equalsValue) && !unregisteredPlaceholders.contains(equalsValue)) {
                     plugin.getLogger().severe("Placeholder not registered: " + equalsValue);
                     unregisteredPlaceholders.add(equalsValue);
@@ -119,14 +116,14 @@ public class ConditionManager {
             String placeholderValue = PlaceholderAPI.setPlaceholders(player, c.getPlaceholder());
             String equalsValue = PlaceholderAPI.setPlaceholders(player, c.getEqualsValue());
 
-            if (!plugin.isStartup() && placeholderValue.equals(c.getPlaceholder())) {
+            if (plugin.isStartup() && placeholderValue.equals(c.getPlaceholder())) {
                 if (!unregisteredPlaceholders.contains(placeholderValue)) {
                     plugin.getLogger().severe("Placeholder not registered: " + placeholderValue);
                     unregisteredPlaceholders.add(placeholderValue);
                 }
             }
 
-            if (!plugin.isStartup() && isPlaceholder(equalsValue)) {
+            if (plugin.isStartup() && isPlaceholder(equalsValue)) {
                 if (!PlaceholderAPI.isRegistered(equalsValue) && !unregisteredPlaceholders.contains(equalsValue)) {
                     plugin.getLogger().severe("Placeholder not registered: " + equalsValue);
                     unregisteredPlaceholders.add(equalsValue);
@@ -159,9 +156,12 @@ public class ConditionManager {
                 boolean isAuthorized = isFlyAuthorized(player);
                 boolean isCurrentlyFlying = player.isFlying();
 
+
+
                 if (!isAuthorized && isCurrentlyFlying) {
                     try {
                         plugin.getFlyManager().manageFly(player.getUniqueId(), false);
+
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
@@ -199,6 +199,12 @@ public class ConditionManager {
      * @return the safe location for the player
      */
     private Location getSafeLocation(Player player) {
+        boolean tpOnFloorWhenFlyDisabled = configUtil.getCustomConfig().getBoolean("tp-on-floor-when-fly-disabled");
+        if (!tpOnFloorWhenFlyDisabled) {
+            return player.getLocation();
+        }
+
+
         Location loc = player.getLocation();
         World world = player.getWorld();
         int y = loc.getBlockY();

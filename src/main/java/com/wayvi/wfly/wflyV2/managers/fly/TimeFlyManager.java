@@ -319,6 +319,11 @@ public class TimeFlyManager {
      * @return A safe location for the player.
      */
     private Location getSafeLocation(Player player) {
+        boolean tpOnFloorWhenFlyDisabled = configUtil.getCustomConfig().getBoolean("tp-on-floor-when-fly-disabled");
+        if (!tpOnFloorWhenFlyDisabled) {
+            return player.getLocation();
+        }
+
         Location loc = player.getLocation();
         World world = player.getWorld();
         int y = loc.getBlockY();
