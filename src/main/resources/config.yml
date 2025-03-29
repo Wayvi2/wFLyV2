@@ -50,7 +50,7 @@ conditions:
       placeholder: "%multiverse_world_alias%"
       equals: "world_nether" #player can fly in this world (need multiverse plugin and /papi ecloud download Multiverse)
 
-# When true, the player will be teleported to the floor when he disable fly.
+# When true, the player will be teleported to the floor when their fly time expires or conditions are not met.
 tp-on-floor-when-fly-disabled: true
 
 

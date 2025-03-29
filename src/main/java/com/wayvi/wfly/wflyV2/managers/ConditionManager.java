@@ -204,7 +204,6 @@ public class ConditionManager {
             return player.getLocation();
         }
 
-
         Location loc = player.getLocation();
         World world = player.getWorld();
         int y = loc.getBlockY();
@@ -213,7 +212,7 @@ public class ConditionManager {
             y--;
         }
 
-        return new Location(world, loc.getX(), y + 1, loc.getZ());
+        return new Location(world, loc.getX(), y + 1, loc.getZ(), loc.getYaw(), loc.getPitch());
     }
 
     public void resetUnregisteredPlaceholders() {

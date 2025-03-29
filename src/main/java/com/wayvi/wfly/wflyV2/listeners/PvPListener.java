@@ -169,11 +169,11 @@ public class PvPListener implements Listener {
         World world = player.getWorld();
         int y = loc.getBlockY();
 
-        while (y > 0 && world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType() == Material.AIR) {
+        while (world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType() == Material.AIR) {
             y--;
         }
 
-        return new Location(world, loc.getX(), y + 1, loc.getZ());
+        return new Location(world, loc.getX(), y + 1, loc.getZ(), loc.getYaw(), loc.getPitch());
     }
 
     /**

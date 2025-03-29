@@ -332,6 +332,6 @@ public class TimeFlyManager {
             y--;
         }
 
-        return new Location(world, loc.getX(), y + 1, loc.getZ());
+        return new Location(world, loc.getX(), y + 1, loc.getZ(), loc.getYaw(), loc.getPitch());
     }
 }
