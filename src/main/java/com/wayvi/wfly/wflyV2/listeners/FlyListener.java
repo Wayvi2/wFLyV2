@@ -96,14 +96,20 @@ public class FlyListener implements Listener {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             boolean authorized = conditionManager.isFlyAuthorized(player);
             String messageKey = authorized ? "message.fly-activated" : "message.fly-deactivated";
-            ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString(messageKey));
+
 
             try {
-                if (player.isFlying()) {
-                plugin.getFlyManager().manageFly(player.getUniqueId(), authorized);}
+                AccessPlayerDTO playerData = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
+                boolean isinFly = playerData.isinFly();
+                if (isinFly) {
+                    plugin.getFlyManager().manageFly(player.getUniqueId(), true);
+                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString(messageKey));
+                }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
+
+
         }, 15L);
     }
 }

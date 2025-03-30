@@ -89,6 +89,9 @@ public class ConditionManager {
 
     public void checkCanFly() {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+
+
+
             for (Player player : Bukkit.getOnlinePlayers()) {
                 boolean isAuthorized = isFlyAuthorized(player);
                 boolean isCurrentlyFlying = player.isFlying();

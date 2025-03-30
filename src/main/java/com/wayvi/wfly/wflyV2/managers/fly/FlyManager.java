@@ -68,12 +68,10 @@ public class FlyManager {
             player1.setFlying(true);
             upsertFlyStatus(player1, true);
             plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), true);
-            plugin.getLogger().info("Fly enabled for " + player1.getName());
         } else {
             player1.setFlying(false);
             player1.setAllowFlight(false);
             plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
-            plugin.getLogger().info("Fly disabled for " + player1.getName());
 
             upsertFlyStatus(player1, false);
         }
