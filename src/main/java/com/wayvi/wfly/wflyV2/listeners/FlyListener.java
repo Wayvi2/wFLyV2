@@ -99,7 +99,8 @@ public class FlyListener implements Listener {
             ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString(messageKey));
 
             try {
-                plugin.getFlyManager().manageFly(player.getUniqueId(), authorized);
+                if (player.isFlying()) {
+                plugin.getFlyManager().manageFly(player.getUniqueId(), authorized);}
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
