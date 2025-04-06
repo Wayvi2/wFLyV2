@@ -1,8 +1,9 @@
 package com.wayvi.wfly.wflyV2.listeners;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
-import com.wayvi.wfly.wflyV2.managers.ConditionManager;
-import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
+import com.wayvi.wfly.wflyV2.api.FlyManager;
+import com.wayvi.wfly.wflyV2.api.WflyApi;
+import com.wayvi.wfly.wflyV2.managers.WConditionManager;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
@@ -25,7 +26,7 @@ public class FlyListener implements Listener {
     private final WFlyV2 plugin;
     private final FlyManager flyManager;
     private final RequestHelper requestHelper;
-    private final ConditionManager conditionManager;
+    private final WConditionManager conditionManager;
     private final ConfigUtil configUtil;
 
     /**
@@ -37,7 +38,7 @@ public class FlyListener implements Listener {
      * @param conditionManager The condition manager for flight authorization.
      * @param configUtil       The configuration utility for retrieving messages.
      */
-    public FlyListener(WFlyV2 plugin, FlyManager flyManager, RequestHelper requestHelper, ConditionManager conditionManager, ConfigUtil configUtil) {
+    public FlyListener(WFlyV2 plugin, FlyManager flyManager, RequestHelper requestHelper, WConditionManager conditionManager, ConfigUtil configUtil) {
         this.plugin = plugin;
         this.flyManager = flyManager;
         this.requestHelper = requestHelper;
@@ -55,10 +56,10 @@ public class FlyListener implements Listener {
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) throws SQLException {
         Player player = event.getPlayer();
-        int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
-        AccessPlayerDTO playerData = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
+        int timeRemaining = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
+        AccessPlayerDTO playerData = this.flyManager.getPlayerFlyData(player.getUniqueId());
 
-        plugin.getTimeFlyManager().upsertTimeFly(playerData.uniqueId(), timeRemaining);
+        WflyApi.get().getTimeFlyManager().upsertTimeFly(playerData.uniqueId(), timeRemaining);
     }
 
     /**
@@ -94,15 +95,15 @@ public class FlyListener implements Listener {
         Player player = event.getPlayer();
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            boolean authorized = conditionManager.isFlyAuthorized(player);
+            boolean authorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
             String messageKey = authorized ? "message.fly-activated" : "message.fly-deactivated";
 
 
             try {
-                AccessPlayerDTO playerData = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
+                AccessPlayerDTO playerData = this.flyManager.getPlayerFlyData(player.getUniqueId());
                 boolean isinFly = playerData.isinFly();
                 if (isinFly) {
-                    plugin.getFlyManager().manageFly(player.getUniqueId(), true);
+                    this.flyManager.manageFly(player.getUniqueId(), true);
                     ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString(messageKey));
                 }
             } catch (SQLException e) {

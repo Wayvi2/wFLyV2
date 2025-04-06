@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyV2.commands;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.api.WflyApi;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
@@ -13,7 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * Command to remove fly time from a player.
  */
-public class RemoveTimeCommand extends Command<JavaPlugin> {
+public class RemoveTimeCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
@@ -29,7 +30,7 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
         setDescription("Manage fly time for players.");
         setUsage("/fly removetime <player> <time>");
         addArgs("player", Player.class);
-        addArgs("time:int");
+        addArgs("time", Integer.class);
         setPermission(Permissions.REMOVE_FLY_TIME.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
@@ -46,12 +47,13 @@ public class RemoveTimeCommand extends Command<JavaPlugin> {
         Player target = args.get("player");
         int time = args.get("time");
 
-        if (plugin.getTimeFlyManager().removeFlyTime((Player) sender, target, time)) {
+        if (WflyApi.get().getTimeFlyManager().removeFlyTime((Player) sender, target, time)) {
             ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
                     .getString("message.fly-time-removed")
                     .replace("%time%", String.valueOf(time)));
 
-            if (sender instanceof Player) {
+            if (sender instanceof Player /*player*/) {
+                //CACA tu peux passer par un design pattern
                 Player playerSender = (Player) sender;
                 ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage()
                         .getString("message.fly-time-remove-to-player")

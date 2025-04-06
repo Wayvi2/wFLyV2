@@ -10,7 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * Command to display the help documentation link for the WayFly plugin.
  */
-public class FlyHelpCommand extends Command<JavaPlugin> {
+public class FlyHelpCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
 

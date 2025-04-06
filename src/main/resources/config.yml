@@ -34,7 +34,8 @@ format-placeholder:
     days_suffixe: "days"
 
 
-
+command:
+  alias: "wfly"
 
 
 

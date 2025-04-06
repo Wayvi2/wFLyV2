@@ -1,29 +1,28 @@
 package com.wayvi.wfly.wflyV2.commands;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.api.WflyApi;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.listeners.PvPListener;
-import com.wayvi.wfly.wflyV2.managers.ConditionManager;
+import com.wayvi.wfly.wflyV2.managers.WConditionManager;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
 
 /**
  * Command to toggle flight for a player.
  */
-public class FlyCommand extends Command<JavaPlugin> {
+public class FlyCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
-    private final ConditionManager conditionWorldManager;
+    private final WConditionManager conditionWorldManager;
     private final PvPListener pvpListener;
 
     /**
@@ -34,14 +33,14 @@ public class FlyCommand extends Command<JavaPlugin> {
      * @param conditionWorldManager   Manager for world-based fly restrictions.
      * @param pvpListener             Listener to check for nearby players in PvP.
      */
-    public FlyCommand(WFlyV2 plugin, ConfigUtil configUtil, ConditionManager conditionWorldManager, PvPListener pvpListener) {
-        super(plugin, "fly");
+    public FlyCommand(WFlyV2 plugin, ConfigUtil configUtil, WConditionManager conditionWorldManager, PvPListener pvpListener) {
+        super(plugin, "fly.fly");
         setDescription("Fly command");
         setUsage("/fly");
         setPermission(Permissions.FLY.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
-        addAlias("wfly.fly");
+        addAlias("testest.test1");
         this.conditionWorldManager = conditionWorldManager;
         this.pvpListener = pvpListener;
     }
@@ -56,7 +55,7 @@ public class FlyCommand extends Command<JavaPlugin> {
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = (Player) commandSender;
         try {
-            AccessPlayerDTO playersInFly = plugin.getFlyManager().getPlayerFlyData(player.getUniqueId());
+            AccessPlayerDTO playersInFly = WflyApi.get().getFlyManager().getPlayerFlyData(player.getUniqueId());
 
             // Determine the message based on the current flight status
             String message = playersInFly.isinFly() ?
@@ -65,20 +64,20 @@ public class FlyCommand extends Command<JavaPlugin> {
 
 
             if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {
-                plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
+                WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
                 ColorSupportUtil.sendColorFormat(player, message);
                 return;
             }
 
             // Check if player has remaining fly time
-            if (plugin.getTimeFlyManager().getTimeRemaining(player) == 0) {
+            if (WflyApi.get().getTimeFlyManager().getTimeRemaining(player) == 0) {
                 ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
                 return;
             }
 
             // Bypass permission check
             if (player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || player.isOp()) {
-                plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
+                WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
                 ColorSupportUtil.sendColorFormat(player, message);
                 return;
             }
@@ -90,14 +89,14 @@ public class FlyCommand extends Command<JavaPlugin> {
             }
 
             // Check if fly is allowed in the current world
-            if (!conditionWorldManager.isFlyAuthorized(player)) {
+            if (!WflyApi.get().getConditionManager().isFlyAuthorized(player)) {
                 ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-fly-here"));
                 return;
             }
 
 
             // Toggle flight mode
-            plugin.getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
+            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
             ColorSupportUtil.sendColorFormat(player, message);
 
         } catch (SQLException e) {

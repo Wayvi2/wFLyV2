@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyV2.placeholders;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.api.WflyApi;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
@@ -83,7 +84,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
 
             switch (params) {
                 case "fly_remaining":
-                    int timeRemaining = plugin.getTimeFlyManager().getTimeRemaining(player);
+                    int timeRemaining = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
                     if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
                         return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomConfig().getString("format-placeholder.unlimited"));
                     }
@@ -91,14 +92,14 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                 case "fly_activate":
                     try {
                         UUID player1 = offlinePlayer.getUniqueId();
-                        AccessPlayerDTO isFlying = plugin.getFlyManager().getPlayerFlyData(player1);
+                        AccessPlayerDTO isFlying = WflyApi.get().getFlyManager().getPlayerFlyData(player1);
                         return String.valueOf(isFlying.isinFly());
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
                 case "fly_remaining_seconds":
                     UUID player1 = offlinePlayer.getUniqueId();
-                    return String.valueOf(plugin.getTimeFlyManager().getTimeRemaining(Bukkit.getPlayer(player1)));
+                    return String.valueOf(WflyApi.get().getTimeFlyManager().getTimeRemaining(Bukkit.getPlayer(player1)));
             }
         }
         return null;
@@ -112,8 +113,8 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      * @return A formatted string representing the time.
      */
     private String formatTime(int seconds) {
-        Map<String, Boolean> enabledFormats = plugin.getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
-        String format = plugin.getTimeFormatTranslatorUtil().getPlaceholderFormat();
+        Map<String, Boolean> enabledFormats = WflyApi.get().getPlugin().getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
+        String format = WflyApi.get().getPlugin().getTimeFormatTranslatorUtil().getPlaceholderFormat();
         boolean autoFormat = configUtil.getCustomConfig().getBoolean("format-placeholder.auto-format");
         boolean removeNullValues = configUtil.getCustomConfig().getBoolean("format-placeholder.remove-null-values.enabled");
         String nullValue = configUtil.getCustomConfig().getString("format-placeholder.remove-null-values.value", "0");

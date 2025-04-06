@@ -1,5 +1,7 @@
 package com.wayvi.wfly.wflyV2;
 
+import com.wayvi.wfly.wflyV2.api.FlyManager;
+import com.wayvi.wfly.wflyV2.api.TimeFlyManager;
 import com.wayvi.wfly.wflyV2.api.WflyApi;
 import com.wayvi.wfly.wflyV2.handlers.CustomMessageHandler;
 import com.wayvi.wfly.wflyV2.pluginhook.cluescroll.FlyQuest;
@@ -7,10 +9,10 @@ import com.wayvi.wfly.wflyV2.commands.*;
 
 import com.wayvi.wfly.wflyV2.listeners.FlyListener;
 import com.wayvi.wfly.wflyV2.listeners.PvPListener;
-import com.wayvi.wfly.wflyV2.managers.ConditionManager;
-import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
+import com.wayvi.wfly.wflyV2.managers.WConditionManager;
+import com.wayvi.wfly.wflyV2.managers.fly.WFlyManager;
 import com.wayvi.wfly.wflyV2.managers.PlaceholerapiManager;
-import com.wayvi.wfly.wflyV2.managers.fly.TimeFlyManager;
+import com.wayvi.wfly.wflyV2.managers.fly.WTimeFlyManager;
 import com.wayvi.wfly.wflyV2.services.DatabaseService;
 import com.wayvi.wfly.wflyV2.util.*;
 import fr.maxlego08.sarah.RequestHelper;
@@ -22,21 +24,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.sql.SQLException;
 
 public final class WFlyV2 extends JavaPlugin {
-
-    private FlyManager flyManager;
-
-    private TimeFlyManager timeFlyManager;
-
     private TimeFormatTranslatorUtil timeFormatTranslatorUtil;
-
-    private ConditionManager conditionManager;
-
     private boolean isStartup = false;
-
 
     @Override
     public void onEnable() {
 
+        WflyApi.inject(this);
 
         // INIT METRICS FOR BSTATS
         Metrics metrics = new Metrics(this, 24609);
@@ -62,15 +56,16 @@ public final class WFlyV2 extends JavaPlugin {
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
 
         // INIT ConditionsManager
-        ConditionManager conditionManager = new ConditionManager(this, configUtil);
+        WConditionManager conditionManager = new WConditionManager(configUtil);
         conditionManager.checkCanFly();
-
+        WflyApi.inject(conditionManager);
 
         //INIT PvPListener
-        PvPListener pvpListener = new PvPListener(this, configUtil);
+        PvPListener pvpListener = new PvPListener( configUtil);
 
         // INIT FlyManager
-        this.flyManager = new FlyManager(this, requestHelper, configUtil);
+        FlyManager flyManager = new WFlyManager(this, requestHelper, configUtil);
+        WflyApi.inject(flyManager);
 
         // INIT FlyQuest
 
@@ -81,11 +76,9 @@ public final class WFlyV2 extends JavaPlugin {
             getLogger().info("ClueScrolls is not enabled: Skipping ClueScrolls integration");
         }
 
-
-
-
         // INIT TimeFlyManager
-        this.timeFlyManager = new TimeFlyManager(this, requestHelper, configUtil);
+        TimeFlyManager  timeFlyManager = new WTimeFlyManager(requestHelper, configUtil);
+        WflyApi.inject(timeFlyManager);
         try {
             timeFlyManager.decrementTimeRemaining();
             timeFlyManager.saveFlyTimes();
@@ -94,11 +87,11 @@ public final class WFlyV2 extends JavaPlugin {
         }
 
         // COMMANDS
-        CommandManager commandManager = new CommandManager(this);
+        CommandManager<WFlyV2> commandManager = new CommandManager<>(this);
         commandManager.setDebug(false);
         commandManager.registerCommand(new ReloadCommand(this, configUtil, pvpListener, conditionManager));
         commandManager.registerCommand(new FlyCommand(this, configUtil, conditionManager, pvpListener));
-        commandManager.registerCommand(new FlySpeedCommand(this, this.flyManager));
+        commandManager.registerCommand(new FlySpeedCommand(this, flyManager));
         commandManager.registerCommand(new AddTimeCommand(this, configUtil));
         commandManager.registerCommand(new ResetTimeCommand(this, configUtil));
         commandManager.registerCommand(new RemoveTimeCommand(this, configUtil));
@@ -107,7 +100,7 @@ public final class WFlyV2 extends JavaPlugin {
 
         // LISTENER
         getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, requestHelper, conditionManager, configUtil), this);
-        getServer().getPluginManager().registerEvents(new PvPListener(this, configUtil), this);
+        getServer().getPluginManager().registerEvents(new PvPListener(configUtil), this);
 
         new VersionCheckerUtil(this, 118465).getLatestVersion(version -> {
             if (this.getDescription().getVersion().equalsIgnoreCase(version)) {
@@ -118,34 +111,19 @@ public final class WFlyV2 extends JavaPlugin {
         });
         getLogger().info("Plugin enabled");
         Bukkit.getScheduler().runTaskLater(this, () -> isStartup = true, 40L);
-
-        WflyApi.inject(this);
     }
 
     @Override
     public void onDisable() {
         getLogger().info("Plugin disabled");
-        timeFlyManager.SaveFlyTimeOnDisable();
-    }
-
-    public TimeFlyManager getTimeFlyManager() {
-        return timeFlyManager;
-    }
-
-    public FlyManager getFlyManager() {
-        return flyManager;
-    }
-
-    public TimeFormatTranslatorUtil getTimeFormatTranslatorUtil() {
-        return timeFormatTranslatorUtil;
-    }
-
-    public ConditionManager getConditionManager() {
-        return this.conditionManager;
+        WflyApi.get().getTimeFlyManager().SaveFlyTimeOnDisable();
     }
 
     public boolean isStartup() {
         return this.isStartup;
     }
 
+    public TimeFormatTranslatorUtil getTimeFormatTranslatorUtil() {
+        return this.timeFormatTranslatorUtil;
+    }
 }
