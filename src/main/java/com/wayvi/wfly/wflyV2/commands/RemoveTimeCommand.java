@@ -52,8 +52,7 @@ public class RemoveTimeCommand extends Command<WFlyV2> {
                     .getString("message.fly-time-removed")
                     .replace("%time%", String.valueOf(time)));
 
-            if (sender instanceof Player /*player*/) {
-                //CACA tu peux passer par un design pattern
+            if (sender instanceof Player ) {
                 Player playerSender = (Player) sender;
                 ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage()
                         .getString("message.fly-time-remove-to-player")

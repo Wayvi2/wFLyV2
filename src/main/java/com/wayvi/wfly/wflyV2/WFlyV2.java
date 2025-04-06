@@ -116,7 +116,7 @@ public final class WFlyV2 extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("Plugin disabled");
-        WflyApi.get().getTimeFlyManager().SaveFlyTimeOnDisable();
+        WflyApi.get().getTimeFlyManager().saveFlyTimeOnDisable();
     }
 
     public boolean isStartup() {

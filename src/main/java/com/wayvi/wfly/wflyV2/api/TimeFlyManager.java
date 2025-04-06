@@ -20,7 +20,7 @@ public interface TimeFlyManager {
 
     void saveFlyTimes() throws SQLException;
 
-    void SaveFlyTimeOnDisable();
+    void saveFlyTimeOnDisable();
 
     void upsertTimeFly(@NotNull UUID playerUUID, int newTimeRemaining);
 

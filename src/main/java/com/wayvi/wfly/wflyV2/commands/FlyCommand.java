@@ -14,6 +14,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Command to toggle flight for a player.
@@ -40,7 +41,13 @@ public class FlyCommand extends Command<WFlyV2> {
         setPermission(Permissions.FLY.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
-        addAlias("testest.test1");
+
+        //create alias by config
+        for (String s : configUtil.getCustomConfig().getStringList("command.alias")) {
+            s = s.replaceAll("\\s+", ".");
+            addAlias(s);
+        }
+
         this.conditionWorldManager = conditionWorldManager;
         this.pvpListener = pvpListener;
     }

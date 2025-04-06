@@ -84,9 +84,8 @@ public class WTimeFlyManager implements TimeFlyManager {
     /**
      * Saves fly times to the database when the server is disabled.
      */
-    //CACA PASD DE MAJ SUR UNE METHODE
     @Override
-    public void SaveFlyTimeOnDisable() {
+    public void saveFlyTimeOnDisable() {
         for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
             upsertTimeFly(entry.getKey(), entry.getValue());
             WflyApi.get().getPlugin().getLogger().info("Fly time saved");

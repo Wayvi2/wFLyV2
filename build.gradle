@@ -40,7 +40,7 @@ dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
     //compileOnly('world.bentobox:bentobox:3.2.3-20250101.170024-4')
     compileOnly('me.clip:placeholderapi:2.11.6')
-    implementation(files("libs/CommandsAPI-3.0.1.jar"))
+    implementation('com.github.Traqueur-dev:CommandsAPI:3.0.1')
     implementation 'com.github.Maxlego08:Sarah:1.16'
     //compileOnly("io.papermc.paper:paper-api:1.8.1-R0.1-SNAPSHOT")
     compileOnly 'io.github.electro2560:ClueScrollsAPI:master-SNAPSHOT'
