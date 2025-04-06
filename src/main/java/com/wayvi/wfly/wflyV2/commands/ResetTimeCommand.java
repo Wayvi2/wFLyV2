@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyV2.commands;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.api.WflyApi;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
@@ -13,7 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * Command to reset a player's fly time.
  */
-public class ResetTimeCommand extends Command<JavaPlugin> {
+public class ResetTimeCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
@@ -49,7 +50,7 @@ public class ResetTimeCommand extends Command<JavaPlugin> {
             return;
         }
 
-        plugin.getTimeFlyManager().resetFlytime(target);
+        WflyApi.get().getTimeFlyManager().resetFlytime(target);
         ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage().getString("message.fly-time-reset"));
 
         if (sender instanceof Player) {

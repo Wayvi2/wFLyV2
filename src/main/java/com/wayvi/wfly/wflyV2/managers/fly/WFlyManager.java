@@ -1,13 +1,13 @@
 package com.wayvi.wfly.wflyV2.managers.fly;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.api.FlyManager;
+import com.wayvi.wfly.wflyV2.api.WflyApi;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
  * This class manages the fly mechanics for players in the server, including enabling/disabling flight,
  * adjusting fly speed, and interacting with the database to store fly status and data.
  */
-public class FlyManager {
+public class WFlyManager implements FlyManager { // met un W maj les classe ca commence tjr par une maj
 
     static int threads = Runtime.getRuntime().availableProcessors();
     public static ExecutorService service = Executors.newFixedThreadPool(threads);
@@ -38,7 +38,7 @@ public class FlyManager {
      * @param requestHelper The request helper to interact with the database.
      * @param configUtil The configuration utility.
      */
-    public FlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
+    public WFlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
         this.requestHelper = requestHelper;
         this.plugin = plugin;
         this.configUtil = configUtil;
@@ -51,6 +51,7 @@ public class FlyManager {
      * @param fly True to enable flight, false to disable.
      * @throws SQLException If there is an error accessing the database.
      */
+    @Override
     public void manageFly(UUID player, boolean fly) throws SQLException {
         Player player1 = Bukkit.getPlayer(player);
 
@@ -67,11 +68,11 @@ public class FlyManager {
             player1.setAllowFlight(true);
             player1.setFlying(true);
             upsertFlyStatus(player1, true);
-            plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), true);
+            WflyApi.get().getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), true);
         } else {
             player1.setFlying(false);
             player1.setAllowFlight(false);
-            plugin.getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
+            WflyApi.get().getTimeFlyManager().updateFlyStatus(player1.getUniqueId(), false);
 
             upsertFlyStatus(player1, false);
         }
@@ -83,6 +84,7 @@ public class FlyManager {
      * @param player The player whose fly speed will be adjusted.
      * @param speed The desired fly speed, where 1.0 is the normal speed.
      */
+    @Override
     public void manageFlySpeed(Player player, double speed) {
         speed = speed / 10.0;
 
@@ -111,6 +113,7 @@ public class FlyManager {
      * @return The fly data of the player.
      * @throws SQLException If there is an error accessing the database.
      */
+    @Override
     public AccessPlayerDTO getPlayerFlyData(UUID player) throws SQLException {
         List<AccessPlayerDTO> fly = this.requestHelper.select("fly", AccessPlayerDTO.class,
                 table -> table.where("uniqueId", player));
@@ -128,22 +131,25 @@ public class FlyManager {
      * @param player The player whose fly status will be updated.
      * @param isFlying The current flying status of the player.
      */
+    @Override
     public void upsertFlyStatus(Player player, boolean isFlying) {
         service.execute(() -> {
             List<AccessPlayerDTO> existingRecords = this.requestHelper.select("fly", AccessPlayerDTO.class,
                     table -> table.where("uniqueId", player.getUniqueId()));
 
+            //idem ici use le upsert de requestHelper te fait pas chier
+
             if (existingRecords.isEmpty()) {
                 this.requestHelper.insert("fly", table -> {
                     table.uuid("uniqueId", player.getUniqueId()).primary();
                     table.bool("isinFly", isFlying);
-                    table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
+                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
                 });
             } else {
                 this.requestHelper.update("fly", table -> {
                     table.where("uniqueId", player.getUniqueId());
                     table.bool("isinFly", isFlying);
-                    table.bigInt("FlyTimeRemaining", plugin.getTimeFlyManager().getTimeRemaining(player));
+                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
                 });
             }
         });
@@ -155,6 +161,7 @@ public class FlyManager {
      * @param player The UUID of the player.
      * @throws SQLException If there is an error accessing the database.
      */
+    @Override
     public void createNewPlayer(UUID player) throws SQLException {
         this.requestHelper.insert("fly", table -> {
             table.uuid("uniqueId", player).primary();

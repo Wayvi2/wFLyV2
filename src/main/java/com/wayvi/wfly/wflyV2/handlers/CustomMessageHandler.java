@@ -40,15 +40,6 @@ public class CustomMessageHandler implements MessageHandler {
         return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomMessage().getString("message.only-in-game"));
     }
 
-    /**
-     * Retrieves the missing arguments message.
-     *
-     * @return The formatted missing arguments message.
-     */
-    @Override
-    public String getMissingArgsMessage() {
-        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomMessage().getString("message.missing-args"));
-    }
 
     /**
      * Retrieves the argument not recognized message.

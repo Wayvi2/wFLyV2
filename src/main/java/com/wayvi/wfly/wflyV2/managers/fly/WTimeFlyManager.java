@@ -1,6 +1,8 @@
 package com.wayvi.wfly.wflyV2.managers.fly;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.api.TimeFlyManager;
+import com.wayvi.wfly.wflyV2.api.WflyApi;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
@@ -23,9 +25,8 @@ import java.util.concurrent.*;
  * This class manages the fly time for players and coordinates the decrement of fly time, as well as handling the
  * fly status of players based on remaining time. It also manages saving and loading fly time to/from a database.
  */
-public class TimeFlyManager {
+public class WTimeFlyManager implements TimeFlyManager {
 
-    private final WFlyV2 plugin;
     private final RequestHelper requestHelper;
     private final ConfigUtil configUtil;
     private final Map<UUID, Integer> flyTimes = new ConcurrentHashMap<>();
@@ -40,12 +41,10 @@ public class TimeFlyManager {
     /**
      * Constructor to initialize the TimeFlyManager with plugin dependencies and load existing fly times from the database.
      *
-     * @param plugin         The main plugin instance.
      * @param requestHelper  Helper for database requests.
      * @param configUtil     Configuration utility for custom messages and settings.
      */
-    public TimeFlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
-        this.plugin = plugin;
+    public WTimeFlyManager(RequestHelper requestHelper, ConfigUtil configUtil) {
         this.requestHelper = requestHelper;
         this.configUtil = configUtil;
         loadFlyTimes();
@@ -58,21 +57,22 @@ public class TimeFlyManager {
      * Loads fly time data from the database into memory.
      */
     public void loadFlyTimes() {
-        List<AccessPlayerDTO> flyData = this.requestHelper.select("fly", AccessPlayerDTO.class, table -> {
-        });
+        List<AccessPlayerDTO> flyData = this.requestHelper.selectAll("fly", AccessPlayerDTO.class);
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
-            upsertTimeFly(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
+            //upsertTimeFly(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining()); useless tu viens de les recup de la bdd
             flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             isFlying.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.isinFly());
+            //ici tu pourrais juste save un map Map<UUID, AccessPlayerDTO> pour pas avoir besoin de manip les deux map tout le temps
         }
     }
 
     /**
      * Saves all updated fly times to the database periodically based on the configured delay.
      */
+    @Override
     public void saveFlyTimes() {
         int seconds = configUtil.getCustomConfig().getInt("save-database-delay");
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+        Bukkit.getScheduler().runTaskTimer(WflyApi.get().getPlugin(), () -> {
             for (UUID playerUUID : needsUpdate) {
                 int time = flyTimes.getOrDefault(playerUUID, 0);
                 upsertTimeFly(playerUUID, time);
@@ -84,10 +84,11 @@ public class TimeFlyManager {
     /**
      * Saves fly times to the database when the server is disabled.
      */
-    public void SaveFlyTimeOnDisable() {
+    @Override
+    public void saveFlyTimeOnDisable() {
         for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
             upsertTimeFly(entry.getKey(), entry.getValue());
-            plugin.getLogger().info("Fly time saved");
+            WflyApi.get().getPlugin().getLogger().info("Fly time saved");
         }
     }
 
@@ -95,12 +96,12 @@ public class TimeFlyManager {
      * Starts a task to decrement the fly time of players who are flying and have a time limit.
      */
     private void startDecrementTask() {
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+        Bukkit.getScheduler().runTaskTimer(WflyApi.get().getPlugin(), () -> {
             try {
                 decrementTimeRemaining();
                 manageCommandMessageOnTimeLeft();
             } catch (SQLException e) {
-                plugin.getLogger().severe("Error managing fly time: " + e.getMessage());
+                WflyApi.get().getPlugin().getLogger().severe("Error managing fly time: " + e.getMessage());
             }
 
         }, 0, 20);
@@ -111,6 +112,7 @@ public class TimeFlyManager {
      *
      * @throws SQLException If there is an issue with the database.
      */
+    @Override
     public void decrementTimeRemaining() throws SQLException {
         for (UUID playerUUID : flyTimes.keySet()) {
             Player player = Bukkit.getPlayer(playerUUID);
@@ -126,7 +128,7 @@ public class TimeFlyManager {
             boolean currentlyFlying = isFlying.getOrDefault(playerUUID, false);
 
             if (timeRemaining <= 0 && currentlyFlying) {
-                plugin.getFlyManager().manageFly(playerUUID, false);
+                WflyApi.get().getFlyManager().manageFly(playerUUID, false);
                 isFlying.put(playerUUID, false);
 
                 Location safeLocation = getSafeLocation(player);
@@ -169,6 +171,7 @@ public class TimeFlyManager {
      * @param time   The amount of time to add (in seconds).
      * @throws SQLException If there is an issue with the database.
      */
+    @Override
     public void addFlytime(Player player, int time) throws SQLException {
         UUID playerUUID = player.getUniqueId();
         int newTime = flyTimes.getOrDefault(playerUUID, 0) + time;
@@ -184,6 +187,7 @@ public class TimeFlyManager {
      * @param time   The amount of time to remove (in seconds).
      * @return True if time was successfully removed, false otherwise.
      */
+    @Override
     public boolean removeFlyTime(Player sender, Player target, int time) {
         UUID playerUUID = sender.getUniqueId();
         int currentFlyTime = getTimeRemaining(target);
@@ -204,6 +208,7 @@ public class TimeFlyManager {
      *
      * @param player The player whose fly time is being reset.
      */
+    @Override
     public void resetFlytime(Player player) {
         flyTimes.put(player.getUniqueId(), 0);
         needsUpdate.add(player.getUniqueId());
@@ -266,16 +271,28 @@ public class TimeFlyManager {
      * @param playerUUID      The player's UUID.
      * @param newTimeRemaining The new fly time remaining (in seconds).
      */
+    @Override
     public void upsertTimeFly(@NotNull UUID playerUUID, int newTimeRemaining) {
         sqlExecutor.execute(() -> {
             List<AccessPlayerDTO> existingRecords = this.requestHelper.select("fly", AccessPlayerDTO.class,
                     table -> table.where("uniqueId", playerUUID));
 
-            if (existingRecords.isEmpty()) {
+
+            //ca ca fait tout le truc d'en bas
+            //je te montre juste des trucs je suppr rien a toi de rechecker apres
+            try {
+                this.requestHelper.upsert("fly", AccessPlayerDTO.class, WflyApi.get().getFlyManager().getPlayerFlyData(playerUUID));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            //att
+            //si j'ai fais ca c psq sur la version 1.8 ca marchait pas, j'ai pas réessayé depuis
+
+            /*if (existingRecords.isEmpty()) {
                 this.requestHelper.insert("fly", table -> {
                     table.uuid("uniqueId", playerUUID).primary();
                     try {
-                        AccessPlayerDTO playerFlyData = plugin.getFlyManager().getPlayerFlyData(playerUUID);
+                        AccessPlayerDTO playerFlyData = WflyApi.get().getFlyManager().getPlayerFlyData(playerUUID);
                         table.bool("isinFly", playerFlyData.isinFly());
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
@@ -288,7 +305,7 @@ public class TimeFlyManager {
                     table.bool("isinFly", existingRecords.get(0).isinFly());
                     table.bigInt("FlyTimeRemaining", newTimeRemaining);
                 });
-            }
+            }*/
         });
     }
 
@@ -298,6 +315,7 @@ public class TimeFlyManager {
      * @param player The player to check.
      * @return The remaining fly time (in seconds).
      */
+    @Override
     public int getTimeRemaining(Player player) {
         return flyTimes.getOrDefault(player.getUniqueId(), 0);
     }
@@ -308,6 +326,7 @@ public class TimeFlyManager {
      * @param playerUUID The player's UUID.
      * @param isFlying   Whether the player is currently flying.
      */
+    @Override
     public void updateFlyStatus(UUID playerUUID, boolean isFlying) {
         this.isFlying.put(playerUUID, isFlying);
     }

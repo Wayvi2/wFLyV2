@@ -5,8 +5,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Utility class to handle the loading, saving, and managing of configuration files
@@ -25,7 +27,7 @@ public class ConfigUtil {
     private FileConfiguration configConfig;
 
     private FileConfiguration customConfig;
-    private String version = "1.0.1.2";
+    private String version = "1.0.1.5";
     private final Plugin plugin;
 
     /**
@@ -113,6 +115,13 @@ public class ConfigUtil {
         if (!configConfig.contains("save-database-delay")) {
             configConfig.set("save-database-delay", 60);
         }
+
+        // Aliases
+        if (!configConfig.contains("command.alias")) {
+
+            configConfig.set("command.alias", new ArrayList<String>());
+        }
+
 
         // Fly decrement method
         if (!configConfig.contains("fly-decrement-method")) {

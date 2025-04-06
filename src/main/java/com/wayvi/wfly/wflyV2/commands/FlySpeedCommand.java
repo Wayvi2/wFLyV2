@@ -1,16 +1,16 @@
 package com.wayvi.wfly.wflyV2.commands;
 
-import com.wayvi.wfly.wflyV2.managers.fly.FlyManager;
+import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.api.FlyManager;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * Command to manage the flight speed of a player.
  */
-public class FlySpeedCommand extends Command<JavaPlugin> {
+public class FlySpeedCommand extends Command<WFlyV2> {
 
     private final FlyManager flyManager;
 
@@ -20,11 +20,11 @@ public class FlySpeedCommand extends Command<JavaPlugin> {
      * @param plugin     The main plugin instance.
      * @param flyManager The fly manager responsible for handling flight speed changes.
      */
-    public FlySpeedCommand(JavaPlugin plugin, FlyManager flyManager) {
+    public FlySpeedCommand(WFlyV2 plugin, FlyManager flyManager) {
         super(plugin, "flyspeed");
         setDescription("Manage the fly speed");
         setUsage("/flyspeed <number>");
-        addArgs("speed:double");
+        addArgs("speed", Double.class);
         this.flyManager = flyManager;
     }
 

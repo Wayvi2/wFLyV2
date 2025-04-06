@@ -1,6 +1,8 @@
 package com.wayvi.wfly.wflyV2.managers;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.api.ConditionManager;
+import com.wayvi.wfly.wflyV2.api.WflyApi;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.models.Condition;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
@@ -16,30 +18,30 @@ import org.bukkit.entity.Player;
 import java.sql.SQLException;
 import java.util.*;
 
-public class ConditionManager {
+public class WConditionManager implements ConditionManager {
 
     private List<Condition> authorizedConditions;
     private List<Condition> notAuthorizedConditions;
-    private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
     private final Map<UUID, Boolean> flyStateCache = new HashMap<>();
     private final Map<UUID, Location> lastSafeLocation = new HashMap<>();
     private final Set<String> unregisteredPlaceholders = new HashSet<>();
     private final Map<UUID, Boolean> flyPermissionCache = new HashMap<>();
 
-    public ConditionManager(WFlyV2 plugin, ConfigUtil configUtil) {
-        this.plugin = plugin;
+    public WConditionManager(ConfigUtil configUtil) {
         this.configUtil = configUtil;
         loadConditions();
     }
 
+    @Override
     public void loadConditions() {
         resetUnregisteredPlaceholders();
         authorizedConditions = loadConditionsFromConfig("conditions.authorized");
         notAuthorizedConditions = loadConditionsFromConfig("conditions.not-authorized");
     }
 
-    private List<Condition> loadConditionsFromConfig(String path) {
+    @Override
+    public List<Condition> loadConditionsFromConfig(String path) {
         List<Condition> result = new ArrayList<>();
         ConfigurationSection section = configUtil.getCustomConfig().getConfigurationSection(path);
         if (section != null) {
@@ -55,6 +57,7 @@ public class ConditionManager {
         return result;
     }
 
+    @Override
     public boolean isFlyAuthorized(Player player) {
         if (hasBypassPermission(player)) {
             return true;
@@ -72,7 +75,7 @@ public class ConditionManager {
         return true;
     }
 
-    private boolean checkPlaceholder(Player player, Condition c) {
+    public boolean checkPlaceholder(Player player, Condition c) {
         String placeholderValue = PlaceholderAPI.setPlaceholders(player, c.getPlaceholder());
         if (placeholderValue.equals(c.getPlaceholder())) {
             logPlaceholderError(placeholderValue);
@@ -81,23 +84,25 @@ public class ConditionManager {
         return placeholderValue.equalsIgnoreCase(equalsValue);
     }
 
-    private void logPlaceholderError(String placeholder) {
+    @Override
+    public void logPlaceholderError(String placeholder) {
         if (unregisteredPlaceholders.add(placeholder)) {
-            plugin.getLogger().severe("Placeholder not registered or not working: " + placeholder);
+            WflyApi.get().getPlugin().getLogger().severe("Placeholder not registered or not working: " + placeholder);
         }
     }
 
+    @Override
     public void checkCanFly() {
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+        Bukkit.getScheduler().runTaskTimer(WflyApi.get().getPlugin(), () -> {
 
 
 
             for (Player player : Bukkit.getOnlinePlayers()) {
-                boolean isAuthorized = isFlyAuthorized(player);
+                boolean isAuthorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
                 boolean isCurrentlyFlying = player.isFlying();
                 if (!isAuthorized && isCurrentlyFlying) {
                     try {
-                        plugin.getFlyManager().manageFly(player.getUniqueId(), false);
+                        WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
@@ -121,7 +126,8 @@ public class ConditionManager {
         }, 20L, 20L);
     }
 
-    private Location getSafeLocation(Player player) {
+    @Override
+    public Location getSafeLocation(Player player) {
         boolean tpOnFloorWhenFlyDisabled = configUtil.getCustomConfig().getBoolean("tp-on-floor-when-fly-disabled");
         if (!tpOnFloorWhenFlyDisabled) {
             return player.getLocation();
@@ -138,6 +144,7 @@ public class ConditionManager {
         return new Location(world, loc.getX(), y + 1, loc.getZ(), loc.getYaw(), loc.getPitch());
     }
 
+    @Override
     public void resetUnregisteredPlaceholders() {
         unregisteredPlaceholders.clear();
     }

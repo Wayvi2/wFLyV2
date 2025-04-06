@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyV2.listeners;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.api.WflyApi;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
@@ -24,7 +25,6 @@ import java.util.UUID;
  */
 public class PvPListener implements Listener {
 
-    private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
     private int FLY_DISABLE_RADIUS;
     private boolean featureActive;
@@ -35,11 +35,9 @@ public class PvPListener implements Listener {
     /**
      * Constructs a PvPListener instance.
      *
-     * @param plugin The main plugin instance.
      * @param configUtil The configuration utility.
      */
-    public PvPListener(WFlyV2 plugin, ConfigUtil configUtil) {
-        this.plugin = plugin;
+    public PvPListener( ConfigUtil configUtil) {
         this.configUtil = configUtil;
         reloadConfigValues();
     }
@@ -94,7 +92,7 @@ public class PvPListener implements Listener {
         }
 
         if (shouldDisableFly && player.isFlying()) {
-            plugin.getFlyManager().manageFly(player.getUniqueId(), false);
+            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
 
 
             Location location = getSafeLocation(player);

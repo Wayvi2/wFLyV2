@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyV2.commands;
 
 import com.wayvi.wfly.wflyV2.WFlyV2;
+import com.wayvi.wfly.wflyV2.api.WflyApi;
 import com.wayvi.wfly.wflyV2.constants.Permissions;
 import com.wayvi.wfly.wflyV2.util.ConfigUtil;
 import com.wayvi.wfly.wflyV2.util.ColorSupportUtil;
@@ -15,7 +16,7 @@ import java.sql.SQLException;
 /**
  * Command to add fly time to a player.
  */
-public class AddTimeCommand extends Command<JavaPlugin> {
+public class AddTimeCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
     private ConfigUtil configUtil;
@@ -31,7 +32,7 @@ public class AddTimeCommand extends Command<JavaPlugin> {
         setDescription("Manage fly time for players");
         setUsage("/wfly addtime <player> <time>");
         addArgs("player", Player.class);
-        addArgs("time:int");
+        addArgs("time", Integer.class);
         setPermission(Permissions.ADD_FLY_TIME.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
@@ -49,7 +50,7 @@ public class AddTimeCommand extends Command<JavaPlugin> {
         int time = args.get("time");
 
         try {
-            plugin.getTimeFlyManager().addFlytime(target, time);
+            WflyApi.get().getTimeFlyManager().addFlytime(target, time);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
