@@ -9,9 +9,9 @@
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
 
-version: '1.0.1.4'
+version: '1.0.1.5'
 
-save-database-delay: 60 # in seconds
+save-database-delay: 300 # in seconds
 
 #see docs for more info
 fly-decrement-method: PLAYER_FLY_MODE
