@@ -90,40 +90,58 @@ public class WConditionManager implements ConditionManager {
         }
     }
 
+
     @Override
     public void checkCanFly() {
         Bukkit.getScheduler().runTaskTimer(WflyApi.get().getPlugin(), () -> {
-
-
-
             for (Player player : Bukkit.getOnlinePlayers()) {
-                boolean isAuthorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
-                boolean isCurrentlyFlying = player.isFlying();
-                if (!isAuthorized && isCurrentlyFlying) {
-                    try {
-                        WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                    Location safeLocation = getSafeLocation(player);
-                    if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
-                        ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
-                        if (player.getWorld().getEnvironment() != World.Environment.NETHER) {
-                            player.teleport(safeLocation);
-                            lastSafeLocation.put(player.getUniqueId(), safeLocation);
-                        }
-                    }
-                    for (Condition c : notAuthorizedConditions) {
-                        if (checkPlaceholder(player, c)) {
-                            for (String command : c.getCommands()) {
-                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
-                            }
-                        }
-                    }
-                }
+                handlePlayerFlyState(player);
             }
         }, 20L, 20L);
     }
+
+    private void handlePlayerFlyState(Player player) {
+        boolean isAuthorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
+        boolean isCurrentlyFlying = player.isFlying();
+
+        if (!isAuthorized && isCurrentlyFlying) {
+            deactivateFlyForPlayer(player);
+        }
+    }
+
+    private void deactivateFlyForPlayer(Player player) {
+        try {
+            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        Location safeLocation = getSafeLocation(player);
+        if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
+            handleFlyDeactivation(player, safeLocation);
+        }
+
+        executeNotAuthorizedCommands(player);
+    }
+
+    private void handleFlyDeactivation(Player player, Location safeLocation) {
+        ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
+        if (player.getWorld().getEnvironment() != World.Environment.NETHER) {
+            player.teleport(safeLocation);
+            lastSafeLocation.put(player.getUniqueId(), safeLocation);
+        }
+    }
+
+    private void executeNotAuthorizedCommands(Player player) {
+        for (Condition c : notAuthorizedConditions) {
+            if (checkPlaceholder(player, c)) {
+                for (String command : c.getCommands()) {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
+                }
+            }
+        }
+    }
+
 
     @Override
     public Location getSafeLocation(Player player) {

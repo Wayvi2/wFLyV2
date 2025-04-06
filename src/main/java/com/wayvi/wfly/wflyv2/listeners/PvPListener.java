@@ -56,52 +56,59 @@ public class PvPListener implements Listener {
      */
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) throws SQLException {
-        featureActive = configUtil.getCustomConfig().getBoolean("pvp.enabled-permission-range");
-        if (!featureActive) return;
+        if (!isPvPFeatureActive()) return;
 
         Player player = event.getPlayer();
+        if (isInBypassMode(player)) return;
 
-        if (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR || player.hasPermission(Permissions.BYPASS_FLY.getPermission())) return;
+        if (shouldDisableFly(player) && player.isFlying()) {
+            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
+            Location location = getSafeLocation(player);
+            player.teleport(location);
+        }
+    }
 
+    private boolean isPvPFeatureActive() {
+        return configUtil.getCustomConfig().getBoolean("pvp.enabled-permission-range");
+    }
+
+    private boolean isInBypassMode(Player player) {
+        return player.getGameMode() == GameMode.CREATIVE ||
+                player.getGameMode() == GameMode.SPECTATOR ||
+                player.hasPermission(Permissions.BYPASS_FLY.getPermission());
+    }
+
+    private boolean shouldDisableFly(Player player) {
         List<String> bypassPlaceholders = configUtil.getCustomConfig().getStringList("pvp.bypass.placeholders");
 
-        boolean shouldDisableFly = false;
-
         for (Player nearbyPlayer : Bukkit.getOnlinePlayers()) {
-            if (nearbyPlayer != player && nearbyPlayer.getWorld().equals(player.getWorld())) {
-                if (nearbyPlayer.getLocation().distance(player.getLocation()) <= FLY_DISABLE_RADIUS) {
-                    boolean hasMatchingPlaceholder = true;
-
-                    for (String placeholder : bypassPlaceholders) {
-                        String playerPlaceholder = PlaceholderAPI.setPlaceholders(player, placeholder);
-                        String nearbyPlayerPlaceholder = PlaceholderAPI.setPlaceholders(nearbyPlayer, placeholder);
-
-                        if (!playerPlaceholder.equals(nearbyPlayerPlaceholder)) {
-                            hasMatchingPlaceholder = false;
-                            break;
-                        }
-                    }
-
-                    if (!hasMatchingPlaceholder) {
-                        shouldDisableFly = true;
-                        break;
-                    }
+            if (isPotentialThreat(player, nearbyPlayer)) {
+                if (!haveMatchingPlaceholders(player, nearbyPlayer, bypassPlaceholders)) {
+                    return true;
                 }
             }
         }
-
-        if (shouldDisableFly && player.isFlying()) {
-            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
-
-
-            Location location = getSafeLocation(player);
-            player.teleport(location);
-
-            playerFlyState.put(player.getUniqueId(), false);
-            playerLastSafeLocation.put(player.getUniqueId(), location);
-            ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.player-in-range"));
-        }
+        return false;
     }
+
+    private boolean isPotentialThreat(Player player, Player nearbyPlayer) {
+        return !nearbyPlayer.equals(player)
+                && nearbyPlayer.getWorld().equals(player.getWorld())
+                && nearbyPlayer.getLocation().distance(player.getLocation()) <= FLY_DISABLE_RADIUS;
+    }
+
+    private boolean haveMatchingPlaceholders(Player player, Player nearbyPlayer, List<String> placeholders) {
+        for (String placeholder : placeholders) {
+            String playerValue = PlaceholderAPI.setPlaceholders(player, placeholder);
+            String nearbyValue = PlaceholderAPI.setPlaceholders(nearbyPlayer, placeholder);
+
+            if (!playerValue.equals(nearbyValue)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     /**
      * Event handler for when a player toggles flight. If the player is within the fly-disable radius of another player,
@@ -111,44 +118,31 @@ public class PvPListener implements Listener {
      */
     @EventHandler
     public void onFlightToggle(PlayerToggleFlightEvent event) {
-        featureActive = configUtil.getCustomConfig().getBoolean("pvp.enabled-permission-range");
-        if (!featureActive) return;
+        if (!isPvPFeatureActive()) return;
 
         Player player = event.getPlayer();
 
-        if (player.getGameMode() == GameMode.CREATIVE || player.hasPermission(Permissions.BYPASS_FLY.getPermission())) return;
+        if (isInBypassMode(player)) return;
 
-        List<String> bypassPlaceholders = configUtil.getCustomConfig().getStringList("pvp.bypass.placeholders");
-
-        boolean shouldDisableFly = false;
-
-        for (Player nearbyPlayer : Bukkit.getOnlinePlayers()) {
-            if (nearbyPlayer != player && nearbyPlayer.getWorld().equals(player.getWorld())) {
-                if (nearbyPlayer.getLocation().distance(player.getLocation()) <= FLY_DISABLE_RADIUS) {
-                    boolean hasMatchingPlaceholder = true;
-
-                    for (String placeholder : bypassPlaceholders) {
-                        String playerPlaceholder = PlaceholderAPI.setPlaceholders(player, placeholder);
-                        String nearbyPlayerPlaceholder = PlaceholderAPI.setPlaceholders(nearbyPlayer, placeholder);
-
-                        if (!playerPlaceholder.equals(nearbyPlayerPlaceholder)) {
-                            hasMatchingPlaceholder = false;
-                            break;
-                        }
-                    }
-
-                    if (!hasMatchingPlaceholder) {
-                        shouldDisableFly = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (shouldDisableFly) {
+        if (hasNearbyThreat(player)) {
             event.setCancelled(true);
         }
     }
+
+    private boolean hasNearbyThreat(Player player) {
+        List<String> bypassPlaceholders = configUtil.getCustomConfig().getStringList("pvp.bypass.placeholders");
+
+        return Bukkit.getOnlinePlayers().stream()
+                .filter(p -> isNearbyPlayerThreat(player, p))
+                .anyMatch(p -> !haveMatchingPlaceholders(player, p, bypassPlaceholders));
+    }
+
+    private boolean isNearbyPlayerThreat(Player player, Player nearbyPlayer) {
+        return !nearbyPlayer.equals(player)
+                && nearbyPlayer.getWorld().equals(player.getWorld())
+                && nearbyPlayer.getLocation().distance(player.getLocation()) <= FLY_DISABLE_RADIUS;
+    }
+
 
     /**
      * Gets a safe location for the player to teleport to if they need to be grounded.
@@ -182,27 +176,15 @@ public class PvPListener implements Listener {
     public boolean HasNearbyPlayers(Player player) {
         List<String> bypassPlaceholders = configUtil.getCustomConfig().getStringList("pvp.bypass.placeholders");
 
-        for (Player nearbyPlayer : Bukkit.getOnlinePlayers()) {
-            if (nearbyPlayer != player && nearbyPlayer.getWorld().equals(player.getWorld())) {
-                if (nearbyPlayer.getLocation().distance(player.getLocation()) <= FLY_DISABLE_RADIUS) {
-                    boolean hasMatchingPlaceholder = true;
-
-                    for (String placeholder : bypassPlaceholders) {
-                        String playerPlaceholder = PlaceholderAPI.setPlaceholders(player, placeholder);
-                        String nearbyPlayerPlaceholder = PlaceholderAPI.setPlaceholders(nearbyPlayer, placeholder);
-
-                        if (!playerPlaceholder.equals(nearbyPlayerPlaceholder)) {
-                            hasMatchingPlaceholder = false;
-                            break;
-                        }
-                    }
-
-                    if (!hasMatchingPlaceholder) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return Bukkit.getOnlinePlayers().stream()
+                .filter(nearbyPlayer -> isValidNearbyPlayer(player, nearbyPlayer))
+                .anyMatch(nearbyPlayer -> !haveMatchingPlaceholders(player, nearbyPlayer, bypassPlaceholders));
     }
+
+    private boolean isValidNearbyPlayer(Player player, Player nearbyPlayer) {
+        return !nearbyPlayer.equals(player)
+                && nearbyPlayer.getWorld().equals(player.getWorld())
+                && nearbyPlayer.getLocation().distance(player.getLocation()) <= FLY_DISABLE_RADIUS;
+    }
+
 }

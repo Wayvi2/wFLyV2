@@ -115,11 +115,11 @@ public class WTimeFlyManager implements TimeFlyManager {
     public void decrementTimeRemaining() throws SQLException {
         for (UUID playerUUID : flyTimes.keySet()) {
             Player player = Bukkit.getPlayer(playerUUID);
-
             if (player == null || !player.isOnline()) {
                 continue;
             }
-            if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {
+
+            if (isExemptFromFlyDecrement(player)) {
                 continue;
             }
 
@@ -127,17 +127,7 @@ public class WTimeFlyManager implements TimeFlyManager {
             boolean currentlyFlying = isFlying.getOrDefault(playerUUID, false);
 
             if (timeRemaining <= 0 && currentlyFlying) {
-                WflyApi.get().getFlyManager().manageFly(playerUUID, false);
-                isFlying.put(playerUUID, false);
-
-                Location safeLocation = getSafeLocation(player);
-                if (!safeLocation.equals(lastSafeLocation.get(playerUUID))) {
-                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
-                    if (player.getWorld().getEnvironment() != World.Environment.NETHER) {
-                        player.teleport(safeLocation);
-                        lastSafeLocation.put(playerUUID, safeLocation);
-                    }
-                }
+                handleFlyDeactivation(playerUUID, player);
                 continue;
             }
 
@@ -145,22 +135,43 @@ public class WTimeFlyManager implements TimeFlyManager {
                 continue;
             }
 
-            String decrementMethod = configUtil.getCustomConfig().getString("fly-decrement-method", "PLAYER_FLY_MODE");
+            decrementFlyTime(playerUUID, player, currentlyFlying);
+        }
+    }
 
-            if (decrementMethod.equalsIgnoreCase("PLAYER_FLYING_MODE")) {
-                if (currentlyFlying && player.isFlying()) {
-                    timeRemaining--;
-                    flyTimes.put(playerUUID, timeRemaining);
-                    needsUpdate.add(playerUUID);
-                }
-            } else {
-                if (currentlyFlying) {
-                    timeRemaining--;
-                    flyTimes.put(playerUUID, timeRemaining);
-                    needsUpdate.add(playerUUID);
-                }
+    private boolean isExemptFromFlyDecrement(Player player) {
+        return player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp();
+    }
+
+    private void handleFlyDeactivation(UUID playerUUID, Player player) throws SQLException {
+        WflyApi.get().getFlyManager().manageFly(playerUUID, false);
+        isFlying.put(playerUUID, false);
+        Location safeLocation = getSafeLocation(player);
+
+        if (!safeLocation.equals(lastSafeLocation.get(playerUUID))) {
+            ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
+            if (player.getWorld().getEnvironment() != World.Environment.NETHER) {
+                player.teleport(safeLocation);
+                lastSafeLocation.put(playerUUID, safeLocation);
             }
         }
+    }
+
+    private void decrementFlyTime(UUID playerUUID, Player player, boolean currentlyFlying) {
+        String decrementMethod = configUtil.getCustomConfig().getString("fly-decrement-method", "PLAYER_FLY_MODE");
+
+        if (decrementMethod.equalsIgnoreCase("PLAYER_FLYING_MODE") && currentlyFlying && player.isFlying()) {
+            decrementTimeForPlayer(playerUUID);
+        } else if (!decrementMethod.equalsIgnoreCase("PLAYER_FLYING_MODE") && currentlyFlying) {
+            decrementTimeForPlayer(playerUUID);
+        }
+    }
+
+    private void decrementTimeForPlayer(UUID playerUUID) {
+        int timeRemaining = flyTimes.getOrDefault(playerUUID, 0);
+        timeRemaining--;
+        flyTimes.put(playerUUID, timeRemaining);
+        needsUpdate.add(playerUUID);
     }
 
     /**
