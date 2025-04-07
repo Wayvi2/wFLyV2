@@ -90,7 +90,7 @@ public final class WFlyV2 extends JavaPlugin {
         CommandManager<WFlyV2> commandManager = new CommandManager<>(this);
         commandManager.setDebug(false);
         commandManager.registerCommand(new ReloadCommand(this, configUtil, pvpListener, conditionManager));
-        commandManager.registerCommand(new FlyCommand(this, configUtil, conditionManager, pvpListener));
+        commandManager.registerCommand(new FlyCommand(this, configUtil, pvpListener));
         commandManager.registerCommand(new FlySpeedCommand(this, flyManager));
         commandManager.registerCommand(new AddTimeCommand(this, configUtil));
         commandManager.registerCommand(new ResetTimeCommand(this, configUtil));

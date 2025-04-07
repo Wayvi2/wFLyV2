@@ -104,6 +104,10 @@ public class WConditionManager implements ConditionManager {
         boolean isAuthorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
         boolean isCurrentlyFlying = player.isFlying();
 
+        if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {
+            return;
+        }
+
         if (!isAuthorized && isCurrentlyFlying) {
             deactivateFlyForPlayer(player);
         }

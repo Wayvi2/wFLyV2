@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyv2.commands;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
+
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.listeners.PvPListener;
@@ -20,9 +21,7 @@ import java.sql.SQLException;
  */
 public class FlyCommand extends Command<WFlyV2> {
 
-    private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
-    private final WConditionManager conditionWorldManager;
     private final PvPListener pvpListener;
 
     /**
@@ -30,15 +29,13 @@ public class FlyCommand extends Command<WFlyV2> {
      *
      * @param plugin                 The main plugin instance.
      * @param configUtil              Configuration utility for custom messages.
-     * @param conditionWorldManager   Manager for world-based fly restrictions.
      * @param pvpListener             Listener to check for nearby players in PvP.
      */
-    public FlyCommand(WFlyV2 plugin, ConfigUtil configUtil, WConditionManager conditionWorldManager, PvPListener pvpListener) {
+    public FlyCommand(WFlyV2 plugin, ConfigUtil configUtil, PvPListener pvpListener) {
         super(plugin, "fly.fly");
         setDescription("Fly command");
         setUsage("/fly");
         setPermission(Permissions.FLY.getPermission());
-        this.plugin = plugin;
         this.configUtil = configUtil;
 
         //create alias by config
@@ -46,8 +43,6 @@ public class FlyCommand extends Command<WFlyV2> {
             s = s.replaceAll("\\s+", ".");
             addAlias(s);
         }
-
-        this.conditionWorldManager = conditionWorldManager;
         this.pvpListener = pvpListener;
     }
 
@@ -67,6 +62,7 @@ public class FlyCommand extends Command<WFlyV2> {
             String message = playersInFly.isinFly() ?
                     configUtil.getCustomMessage().getString("message.fly-deactivated") :
                     configUtil.getCustomMessage().getString("message.fly-activated");
+
 
 
             if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {

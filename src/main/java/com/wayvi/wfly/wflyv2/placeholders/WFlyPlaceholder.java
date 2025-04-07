@@ -58,7 +58,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      */
     @Override
     public @NotNull String getVersion() {
-        return "1.0.8";
+        return "1.0.1.5";
     }
 
     /**
@@ -81,6 +81,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
     public @Nullable String onRequest(OfflinePlayer offlinePlayer, @NotNull String params) {
         if (offlinePlayer.isOnline() && offlinePlayer.getPlayer() != null) {
             Player player = offlinePlayer.getPlayer();
+
 
             switch (params) {
                 case "fly_remaining":
