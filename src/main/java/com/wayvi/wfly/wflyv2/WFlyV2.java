@@ -64,7 +64,7 @@ public final class WFlyV2 extends JavaPlugin {
         PvPListener pvpListener = new PvPListener( configUtil);
 
         // INIT FlyManager
-        FlyManager flyManager = new WFlyManager(this, requestHelper, configUtil);
+        FlyManager flyManager = new WFlyManager(requestHelper, configUtil);
         WflyApi.inject(flyManager);
 
         // INIT FlyQuest
@@ -99,7 +99,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new FlyHelpCommand(this));
 
         // LISTENER
-        getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, requestHelper, conditionManager, configUtil), this);
+        getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, configUtil), this);
         getServer().getPluginManager().registerEvents(new PvPListener(configUtil), this);
 
         new VersionCheckerUtil(this, 118465).getLatestVersion(version -> {

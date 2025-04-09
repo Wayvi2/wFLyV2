@@ -1,6 +1,6 @@
 package com.wayvi.wfly.wflyv2.managers.fly;
 
-import com.wayvi.wfly.wflyv2.WFlyV2;
+
 import com.wayvi.wfly.wflyv2.api.FlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
@@ -9,11 +9,12 @@ import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -21,26 +22,22 @@ import java.util.concurrent.Executors;
  * This class manages the fly mechanics for players in the server, including enabling/disabling flight,
  * adjusting fly speed, and interacting with the database to store fly status and data.
  */
-public class WFlyManager implements FlyManager { // met un W maj les classe ca commence tjr par une maj
+public class WFlyManager implements FlyManager {
 
     static int threads = Runtime.getRuntime().availableProcessors();
     public static ExecutorService service = Executors.newFixedThreadPool(threads);
 
-    private final WFlyV2 plugin;
     private final RequestHelper requestHelper;
-    private BukkitTask flyTask;
     private final ConfigUtil configUtil;
 
     /**
      * Constructs a FlyManager instance.
      *
-     * @param plugin The main plugin instance.
      * @param requestHelper The request helper to interact with the database.
      * @param configUtil The configuration utility.
      */
-    public WFlyManager(WFlyV2 plugin, RequestHelper requestHelper, ConfigUtil configUtil) {
+    public WFlyManager( RequestHelper requestHelper, ConfigUtil configUtil) {
         this.requestHelper = requestHelper;
-        this.plugin = plugin;
         this.configUtil = configUtil;
     }
 
@@ -49,16 +46,10 @@ public class WFlyManager implements FlyManager { // met un W maj les classe ca c
      *
      * @param player The UUID of the player.
      * @param fly True to enable flight, false to disable.
-     * @throws SQLException If there is an error accessing the database.
      */
     @Override
-    public void manageFly(UUID player, boolean fly) throws SQLException {
+    public void manageFly(UUID player, boolean fly) {
         Player player1 = Bukkit.getPlayer(player);
-
-        if (flyTask != null) {
-            flyTask.cancel();
-            flyTask = null;
-        }
 
         if (player1 == null) {
             return;
@@ -137,8 +128,6 @@ public class WFlyManager implements FlyManager { // met un W maj les classe ca c
             List<AccessPlayerDTO> existingRecords = this.requestHelper.select("fly", AccessPlayerDTO.class,
                     table -> table.where("uniqueId", player.getUniqueId()));
 
-            //idem ici use le upsert de requestHelper te fait pas chier
-
             if (existingRecords.isEmpty()) {
                 this.requestHelper.insert("fly", table -> {
                     table.uuid("uniqueId", player.getUniqueId()).primary();
@@ -155,6 +144,7 @@ public class WFlyManager implements FlyManager { // met un W maj les classe ca c
         });
     }
 
+
     /**
      * Creates a new player record in the database with the default fly status.
      *
@@ -169,4 +159,13 @@ public class WFlyManager implements FlyManager { // met un W maj les classe ca c
             table.bigInt("FlyTimeRemaining", 0);
         });
     }
+
+
+
+
+
+
+
+
+
 }

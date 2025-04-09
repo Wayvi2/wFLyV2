@@ -114,11 +114,7 @@ public class WConditionManager implements ConditionManager {
     }
 
     private void deactivateFlyForPlayer(Player player) {
-        try {
-            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
 
         Location safeLocation = getSafeLocation(player);
         if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {

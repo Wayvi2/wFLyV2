@@ -5,7 +5,7 @@ import org.jetbrains.annotations.ApiStatus;
 
 public class WflyApi {
 
-    private static WflyApi instance;
+    private static final WflyApi INSTANCE = new WflyApi();
 
     private static WFlyV2 plugin;
     private static FlyManager flyManager;
@@ -16,7 +16,6 @@ public class WflyApi {
     public static void inject(WFlyV2 plugin) {
         WflyApi.plugin = plugin;
     }
-
 
     @ApiStatus.Internal
     public static void inject(FlyManager flyManager) {
@@ -34,10 +33,7 @@ public class WflyApi {
     }
 
     public static WflyApi get() {
-        if (instance == null) {
-            instance = new WflyApi();
-        }
-        return instance;
+        return INSTANCE;
     }
 
     public WFlyV2 getPlugin() {

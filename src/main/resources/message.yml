@@ -32,6 +32,7 @@ message:
   arg-not-recognized: "&cArgument not recognized!"
   message-requirement: "&cYou do not meet the requirements to use this command!"
   player-in-range: "&cPlayer is too far away!"
+  no-spectator: "&cYou can deactivate fly in spectator mode!"
 
 
 

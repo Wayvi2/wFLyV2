@@ -9,10 +9,12 @@ import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -25,8 +27,6 @@ public class FlyListener implements Listener {
 
     private final WFlyV2 plugin;
     private final FlyManager flyManager;
-    private final RequestHelper requestHelper;
-    private final WConditionManager conditionManager;
     private final ConfigUtil configUtil;
 
     /**
@@ -34,15 +34,11 @@ public class FlyListener implements Listener {
      *
      * @param plugin           The main plugin instance.
      * @param flyManager       The fly manager handling flight mechanics.
-     * @param requestHelper    The request helper for managing data requests.
-     * @param conditionManager The condition manager for flight authorization.
      * @param configUtil       The configuration utility for retrieving messages.
      */
-    public FlyListener(WFlyV2 plugin, FlyManager flyManager, RequestHelper requestHelper, WConditionManager conditionManager, ConfigUtil configUtil) {
+    public FlyListener(WFlyV2 plugin, FlyManager flyManager, ConfigUtil configUtil) {
         this.plugin = plugin;
         this.flyManager = flyManager;
-        this.requestHelper = requestHelper;
-        this.conditionManager = conditionManager;
         this.configUtil = configUtil;
     }
 
@@ -81,6 +77,19 @@ public class FlyListener implements Listener {
         } catch (SQLException e) {
             plugin.getLogger().severe("Error managing fly: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    @EventHandler
+    public void onPlayerChangeGameMode(PlayerGameModeChangeEvent event)  {
+        Player player = event.getPlayer();
+
+        if (player.getGameMode() == GameMode.SPECTATOR && event.getNewGameMode() == GameMode.SURVIVAL) {
+
+            boolean fly = WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId());
+            if (fly) {
+                WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), true);
+            }
         }
     }
 

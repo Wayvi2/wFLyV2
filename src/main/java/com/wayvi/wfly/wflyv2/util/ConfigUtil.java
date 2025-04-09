@@ -8,6 +8,7 @@ import org.bukkit.plugin.Plugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Utility class to handle the loading, saving, and managing of configuration files
@@ -26,7 +27,7 @@ public class ConfigUtil {
     private FileConfiguration configConfig;
 
     private FileConfiguration customConfig;
-    private String version = "1.0.1.6";
+    private String version = "1.0.1.7";
     private final Plugin plugin;
 
     /**
@@ -187,7 +188,12 @@ public class ConfigUtil {
             configConfig.set("pvp.fly-disable-radius", 5);
         }
         if (!configConfig.contains("pvp.bypass.placeholders")) {
-            configConfig.set("pvp.bypass.placeholders", java.util.Arrays.asList("%lands_land_name_plain%"));
+            configConfig.set("pvp.bypass.placeholders", Collections.singletonList("%lands_land_name_plain%"));
+        }
+
+        //message
+        if (!messageConfig.contains("no-spectator")) {
+            messageConfig.set("message.no-spectator", "&cYou can deactivate fly in spectator mode!");
         }
 
         // Sauvegarde des modifications

@@ -7,10 +7,7 @@ import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -58,10 +55,8 @@ public class WTimeFlyManager implements TimeFlyManager {
     public void loadFlyTimes() {
         List<AccessPlayerDTO> flyData = this.requestHelper.selectAll("fly", AccessPlayerDTO.class);
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
-            //upsertTimeFly(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining()); useless tu viens de les recup de la bdd
             flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             isFlying.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.isinFly());
-            //ici tu pourrais juste save un map Map<UUID, AccessPlayerDTO> pour pas avoir besoin de manip les deux map tout le temps
         }
     }
 
@@ -114,6 +109,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     @Override
     public void decrementTimeRemaining() throws SQLException {
         for (UUID playerUUID : flyTimes.keySet()) {
+
             Player player = Bukkit.getPlayer(playerUUID);
             if (player == null || !player.isOnline()) {
                 continue;
@@ -140,7 +136,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     }
 
     private boolean isExemptFromFlyDecrement(Player player) {
-        return player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp();
+        return player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()  || player.getGameMode() == GameMode.SPECTATOR ;
     }
 
     private void handleFlyDeactivation(UUID playerUUID, Player player) throws SQLException {
@@ -288,15 +284,13 @@ public class WTimeFlyManager implements TimeFlyManager {
                     table -> table.where("uniqueId", playerUUID));
 
 
-            //ca ca fait tout le truc d'en bas
-            //je te montre juste des trucs je suppr rien a toi de rechecker apres
+
             try {
                 this.requestHelper.upsert("fly", AccessPlayerDTO.class, WflyApi.get().getFlyManager().getPlayerFlyData(playerUUID));
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-            //att
-            //si j'ai fais ca c psq sur la version 1.8 ca marchait pas, j'ai pas réessayé depuis
+
 
             /*if (existingRecords.isEmpty()) {
                 this.requestHelper.insert("fly", table -> {
@@ -339,6 +333,11 @@ public class WTimeFlyManager implements TimeFlyManager {
     @Override
     public void updateFlyStatus(UUID playerUUID, boolean isFlying) {
         this.isFlying.put(playerUUID, isFlying);
+    }
+
+    @Override
+    public boolean getIsFlying(UUID playerUUID) {
+        return this.isFlying.getOrDefault(playerUUID, false);
     }
 
     /**
