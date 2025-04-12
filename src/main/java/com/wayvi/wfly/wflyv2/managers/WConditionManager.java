@@ -7,10 +7,7 @@ import com.wayvi.wfly.wflyv2.models.Condition;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import me.clip.placeholderapi.PlaceholderAPI;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
@@ -22,7 +19,6 @@ public class WConditionManager implements ConditionManager {
     private List<Condition> authorizedConditions;
     private List<Condition> notAuthorizedConditions;
     private final ConfigUtil configUtil;
-    private final Map<UUID, Boolean> flyStateCache = new HashMap<>();
     private final Map<UUID, Location> lastSafeLocation = new HashMap<>();
     private final Set<String> unregisteredPlaceholders = new HashSet<>();
     private final Map<UUID, Boolean> flyPermissionCache = new HashMap<>();
@@ -168,6 +164,6 @@ public class WConditionManager implements ConditionManager {
 
     public boolean hasBypassPermission(Player player) {
         return flyPermissionCache.computeIfAbsent(player.getUniqueId(), uuid ->
-                player.isOp() || player.hasPermission(Permissions.BYPASS_FLY.getPermission()));
+                player.isOp() || player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || player.getGameMode() == GameMode.SPECTATOR);
     }
 }
