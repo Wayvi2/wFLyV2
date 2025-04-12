@@ -25,4 +25,6 @@ public interface TimeFlyManager {
     void upsertTimeFly(@NotNull UUID playerUUID, int newTimeRemaining);
 
     void updateFlyStatus(UUID playerUUID, boolean isFlying);
+
+    boolean getIsFlying(UUID playerUUID);
 }

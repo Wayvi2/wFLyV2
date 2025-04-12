@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface FlyManager {
 
-    void manageFly(UUID player, boolean fly) throws SQLException;
+    void manageFly(UUID player, boolean fly);
 
     void manageFlySpeed(Player player, double speed);
 
@@ -17,5 +17,6 @@ public interface FlyManager {
     void upsertFlyStatus(Player player, boolean isFlying);
 
     void createNewPlayer(UUID player) throws SQLException;
+
 
 }

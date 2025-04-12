@@ -11,6 +11,7 @@ import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
+import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -63,6 +64,11 @@ public class FlyCommand extends Command<WFlyV2> {
                     configUtil.getCustomMessage().getString("message.fly-deactivated") :
                     configUtil.getCustomMessage().getString("message.fly-activated");
 
+
+            if (player.getGameMode() == GameMode.SPECTATOR) {
+                ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-spectator"));
+                return;
+            }
 
 
             if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {
