@@ -118,7 +118,6 @@ public class ConfigUtil {
 
         // Aliases
         if (!configConfig.contains("command.alias")) {
-
             configConfig.set("command.alias", new ArrayList<String>());
         }
 
@@ -191,12 +190,74 @@ public class ConfigUtil {
             configConfig.set("pvp.bypass.placeholders", Collections.singletonList("%lands_land_name_plain%"));
         }
 
-        //message
-        if (!messageConfig.contains("no-spectator")) {
+        // Messages
+        if (!messageConfig.contains("message.reload")) {
+            messageConfig.set("message.reload", "&cPlugin has been reloaded!");
+        }
+        if (!messageConfig.contains("message.fly-activated")) {
+            messageConfig.set("message.fly-activated", "&aYou have been set to fly! Use /fly to disable fly.");
+        }
+        if (!messageConfig.contains("message.fly-deactivated")) {
+            messageConfig.set("message.fly-deactivated", "&cYou have been set to walk! Use /fly to enable fly.");
+        }
+        if (!messageConfig.contains("message.fly-speed-too-high")) {
+            messageConfig.set("message.fly-speed-too-high", "&cSpeed too high! Maximum speed is %speed%");
+        }
+        if (!messageConfig.contains("message.fly-speed")) {
+            messageConfig.set("message.fly-speed", "&aYou have set your fly speed to &e%speed%");
+        }
+        if (!messageConfig.contains("message.fly-speed-no-permission")) {
+            messageConfig.set("message.fly-speed-no-permission", "&cYou do not have permission to set your fly speed to &e%speed%");
+        }
+        if (!messageConfig.contains("message.no-timefly-remaining")) {
+            messageConfig.set("message.no-timefly-remaining", "&cYou have no timefly remaining!");
+        }
+        if (!messageConfig.contains("message.fly-time-added")) {
+            messageConfig.set("message.fly-time-added", "&aYou have been given &e%time% &atimefly!");
+        }
+        if (!messageConfig.contains("message.fly-time-added-to-player")) {
+            messageConfig.set("message.fly-time-added-to-player", "&aYou have been given &e%time% &atimefly to &e%player%");
+        }
+        if (!messageConfig.contains("message.fly-time-remove-to-player")) {
+            messageConfig.set("message.fly-time-remove-to-player", "&aYou have removed &e%time% &atimefly from &e%player%");
+        }
+        if (!messageConfig.contains("message.fly-time-reset-to-player")) {
+            messageConfig.set("message.fly-time-reset-to-player", "&aYou have been given reset &atimefly to &e%player%");
+        }
+        if (!messageConfig.contains("message.fly-time-removed")) {
+            messageConfig.set("message.fly-time-removed", "&cYou have been taken &e%time% &ctimefly!");
+        }
+        if (!messageConfig.contains("message.fly-time-reset")) {
+            messageConfig.set("message.fly-time-reset", "&aYou have been given &e0 &atimefly!");
+        }
+        if (!messageConfig.contains("message.no-fly-here")) {
+            messageConfig.set("message.no-fly-here", "&cYou cannot fly here!");
+        }
+        if (!messageConfig.contains("message.fly-remove-too-high")) {
+            messageConfig.set("message.fly-remove-too-high", "&cYou cannot remove too much timefly!");
+        }
+        if (!messageConfig.contains("message.no-permission")) {
+            messageConfig.set("message.no-permission", "&cYou do not have permission to use this command!");
+        }
+        if (!messageConfig.contains("message.only-in-game")) {
+            messageConfig.set("message.only-in-game", "&cThis command can only be used in game!");
+        }
+        if (!messageConfig.contains("message.missing-args")) {
+            messageConfig.set("message.missing-args", "&cMissing arguments!");
+        }
+        if (!messageConfig.contains("message.arg-not-recognized")) {
+            messageConfig.set("message.arg-not-recognized", "&cArgument not recognized!");
+        }
+        if (!messageConfig.contains("message.message-requirement")) {
+            messageConfig.set("message.message-requirement", "&cYou do not meet the requirements to use this command!");
+        }
+        if (!messageConfig.contains("message.player-in-range")) {
+            messageConfig.set("message.player-in-range", "&cPlayer is too far away!");
+        }
+        if (!messageConfig.contains("message.no-spectator")) {
             messageConfig.set("message.no-spectator", "&cYou can deactivate fly in spectator mode!");
         }
 
-        // Sauvegarde des modifications
         saveCustomConfig();
     }
 
