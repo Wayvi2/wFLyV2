@@ -19,6 +19,7 @@ import fr.maxlego08.sarah.RequestHelper;
 import fr.traqueur.commands.api.CommandManager;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
@@ -102,13 +103,8 @@ public final class WFlyV2 extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, configUtil), this);
         getServer().getPluginManager().registerEvents(new PvPListener(configUtil), this);
 
-        new VersionCheckerUtil(this, 118465).getLatestVersion(version -> {
-            if (this.getDescription().getVersion().equalsIgnoreCase(version)) {
-                this.getLogger().info("Plugin is up to date");
-            } else {
-                this.getLogger().info("Plugin has an update");
-            }
-        });
+        new VersionCheckerUtil(this, 118465).checkAndNotify();
+
         getLogger().info("Plugin enabled");
         Bukkit.getScheduler().runTaskLater(this, () -> isStartup = true, 40L);
     }
