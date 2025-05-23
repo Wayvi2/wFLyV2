@@ -163,7 +163,7 @@ public class WConditionManager implements ConditionManager {
     }
 
     public boolean hasBypassPermission(Player player) {
-        return flyPermissionCache.computeIfAbsent(player.getUniqueId(), uuid ->
-                player.isOp() || player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || player.getGameMode() == GameMode.SPECTATOR);
+        return flyPermissionCache.computeIfAbsent(player.getUniqueId(),
+                uuid -> (player.isOp() || player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || player.getGameMode() == GameMode.SPECTATOR))  || player.hasPermission(Permissions.BYPASS_FLY.getPermission() );
     }
 }

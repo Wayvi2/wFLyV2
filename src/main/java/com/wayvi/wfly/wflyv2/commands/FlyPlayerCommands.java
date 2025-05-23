@@ -1,14 +1,12 @@
 package com.wayvi.wfly.wflyv2.commands;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
-
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.listeners.PvPListener;
-import com.wayvi.wfly.wflyv2.managers.WConditionManager;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
+import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
 import org.bukkit.GameMode;
@@ -17,39 +15,37 @@ import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
 
-/**
- * Command to toggle flight for a player.
- */
-public class FlyCommand extends Command<WFlyV2> {
+public class FlyPlayerCommands  extends Command<WFlyV2> {
+
 
     private final ConfigUtil configUtil;
     private final PvPListener pvpListener;
-
     /**
      * Constructs the FlyCommand.
      *
-     * @param plugin      The main plugin instance.
-     * @param configUtil  Configuration utility for custom messages.
-     * @param pvpListener Listener to check for nearby players in PvP.
+     * @param plugin                 The main plugin instance.
+     * @param configUtil              Configuration utility for custom messages.
+     * @param pvpListener             Listener to check for nearby players in PvP.
      */
-    public FlyCommand(WFlyV2 plugin, ConfigUtil configUtil, PvPListener pvpListener) {
-        super(plugin, "fly.fly");
+    public FlyPlayerCommands(WFlyV2 plugin, ConfigUtil configUtil, PvPListener pvpListener) {
+        super(plugin, "wfly.fly");
+        addArgs("player", Player.class);
         setDescription("Fly command");
-        setUsage("/fly");
+        setUsage("/wfly fly <player>");
         setPermission(Permissions.FLY.getPermission());
         this.configUtil = configUtil;
-
-        //create alias by config
-        for (String s : configUtil.getCustomConfig().getStringList("command.alias")) {
-            s = s.replaceAll("\\s+", ".");
-            addAlias(s);
-        }
         this.pvpListener = pvpListener;
     }
 
+    /**
+     * Executes the fly command logic.
+     *
+     * @param commandSender The command sender (must be a player).
+     * @param arguments     The command arguments (none required).
+     */
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
-        Player player = (Player) commandSender;
+        Player player = arguments.get("player");
         try {
             AccessPlayerDTO playersInFly = WflyApi.get().getFlyManager().getPlayerFlyData(player.getUniqueId());
 
@@ -61,7 +57,6 @@ public class FlyCommand extends Command<WFlyV2> {
                 ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-spectator"));
                 return;
             }
-
             boolean hasInfiniteFly = player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp();
 
             if (!hasInfiniteFly) {
@@ -92,3 +87,6 @@ public class FlyCommand extends Command<WFlyV2> {
         }
     }
 }
+
+
+

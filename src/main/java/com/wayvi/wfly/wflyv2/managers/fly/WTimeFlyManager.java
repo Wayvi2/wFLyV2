@@ -82,8 +82,8 @@ public class WTimeFlyManager implements TimeFlyManager {
     public void saveFlyTimeOnDisable() {
         for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
             upsertTimeFly(entry.getKey(), entry.getValue());
-            // WflyApi.get().getPlugin().getLogger().info("Fly time saved");
         }
+        WflyApi.get().getPlugin().getLogger().info("Fly time saved");
     }
 
     /**
