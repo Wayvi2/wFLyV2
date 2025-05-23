@@ -32,7 +32,7 @@ public class FlyPlayerCommands  extends Command<WFlyV2> {
         addArgs("player", Player.class);
         setDescription("Fly command");
         setUsage("/wfly fly <player>");
-        setPermission(Permissions.FLY.getPermission());
+        setPermission(Permissions.MANAGE_FLY.getPermission());
         this.configUtil = configUtil;
         this.pvpListener = pvpListener;
     }
