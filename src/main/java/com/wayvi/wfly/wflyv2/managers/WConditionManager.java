@@ -100,7 +100,7 @@ public class WConditionManager implements ConditionManager {
         boolean isAuthorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
         boolean isCurrentlyFlying = player.isFlying();
 
-        if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) {
+        if (hasBypassPermission(player)) {
             return;
         }
 
@@ -121,8 +121,8 @@ public class WConditionManager implements ConditionManager {
     }
 
     private void handleFlyDeactivation(Player player, Location safeLocation) {
-        ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
         if (player.getWorld().getEnvironment() != World.Environment.NETHER) {
+            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
             player.teleport(safeLocation);
             lastSafeLocation.put(player.getUniqueId(), safeLocation);
         }
