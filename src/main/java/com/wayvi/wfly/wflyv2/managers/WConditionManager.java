@@ -128,7 +128,8 @@ public class WConditionManager implements ConditionManager {
         }
     }
 
-    private void executeNotAuthorizedCommands(Player player) {
+    @Override
+    public void executeNotAuthorizedCommands(Player player) {
         for (Condition c : notAuthorizedConditions) {
             if (checkPlaceholder(player, c)) {
                 for (String command : c.getCommands()) {

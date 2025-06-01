@@ -26,4 +26,6 @@ public interface ConditionManager {
 
     boolean hasBypassPermission(Player player);
 
+    void executeNotAuthorizedCommands(Player player);
+
 }
