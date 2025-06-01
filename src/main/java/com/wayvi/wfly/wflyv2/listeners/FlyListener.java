@@ -8,6 +8,7 @@ import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -90,17 +91,27 @@ public class FlyListener implements Listener {
                 AccessPlayerDTO playerData = flyManager.getPlayerFlyData(player.getUniqueId());
 
                 if (playerData != null && playerData.isinFly()) {
-                    flyManager.manageFly(player.getUniqueId(), true);
+                    flyManager.manageFly(player.getUniqueId(), authorized);
 
                     String messageKey = authorized ? "message.fly-activated" : "message.fly-deactivated";
                     String message = configUtil.getCustomMessage().getString(messageKey);
 
                     ColorSupportUtil.sendColorFormat(player, message);
+
+                    if (!authorized && configUtil.getCustomConfig().getBoolean("tp-on-floor-when-fly-disabled")) {
+                        Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
+                        player.teleport(safeLoc);
+                    }
+
+                    if (!authorized) {
+                        WflyApi.get().getConditionManager().executeNotAuthorizedCommands(player);
+                    }
                 }
             } catch (SQLException e) {
                 plugin.getLogger().severe("Error during world change for player " + player.getName() + ": " + e.getMessage());
                 e.printStackTrace();
             }
-        }, 15L);
+        }, 5L);
     }
+
 }

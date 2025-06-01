@@ -44,7 +44,9 @@ public enum Permissions {
     /**
      * Permission to bypass the fly restrictions (e.g., for staff or admins).
      */
-    BYPASS_FLY("wfly.bypass.fly");
+    BYPASS_FLY("wfly.bypass.fly"),
+
+    MANAGE_FLY("wfly.manage.fly");
 
     private final String permission;
 

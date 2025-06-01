@@ -44,6 +44,7 @@ public class FlyCommand extends Command<WFlyV2> {
             s = s.replaceAll("\\s+", ".");
             addAlias(s);
         }
+
         this.pvpListener = pvpListener;
     }
 
