@@ -1,6 +1,6 @@
 
 
-[<img alt="Discord" src="https://img.shields.io/badge/-Get_help_on_Discord-7289DA.svg?logo=discord&style=flat-square&logoColor=white" height=32>](https://discord.gg/yourdiscord)
+[<img alt="Discord" src="https://img.shields.io/badge/-Get_help_on_Discord-7289DA.svg?logo=discord&style=flat-square&logoColor=white" height=32>](https://discord.com/invite/zmjNggAmvU)
 
 ---
 
