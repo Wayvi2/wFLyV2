@@ -23,6 +23,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
+import java.util.concurrent.CompletionException;
 
 public final class WFlyV2 extends JavaPlugin {
     private TimeFormatTranslatorUtil timeFormatTranslatorUtil;
@@ -36,13 +37,14 @@ public final class WFlyV2 extends JavaPlugin {
         // INIT METRICS FOR BSTATS
         Metrics metrics = new Metrics(this, 24609);
 
-        // INIT DATABASE
-        DatabaseService databaseService = new DatabaseService(this);
-        databaseService.initializeDatabase();
-
         // CONFIGS
         ConfigUtil configUtil = new ConfigUtil(this);
         configUtil.createCustomConfig();
+
+        // INIT DATABASE
+        DatabaseService databaseService = new DatabaseService(this, configUtil);
+        databaseService.initializeDatabase();
+
 
         // INIT miniMessageSupport
         ColorSupportUtil miniMessageSupportUtil = new ColorSupportUtil();
@@ -107,17 +109,25 @@ public final class WFlyV2 extends JavaPlugin {
         new VersionCheckerUtil(this, 118465).checkAndNotify();
 
         getLogger().info("Plugin enabled");
-        Bukkit.getScheduler().runTaskLater(this, () -> isStartup = true, 40L);
+        //Bukkit.getScheduler().runTaskLater(this, () -> isStartup = true, 40L);
     }
 
     @Override
     public void onDisable() {
+        try {
+            WflyApi.get().getTimeFlyManager().saveFlyTimeOnDisable().join();
+            getLogger().info("Fly time saved");
+        } catch (CompletionException e) {
+            getLogger().severe("Erreur lors de la sauvegarde des fly times à l'arrêt : " + e.getCause());
+        }
         getLogger().info("Plugin disabled");
-        WflyApi.get().getTimeFlyManager().saveFlyTimeOnDisable();
     }
 
     public boolean isStartup() {
         return this.isStartup;
+    }
+    public void setStartup(boolean startup) {
+        this.isStartup = startup;
     }
 
     public TimeFormatTranslatorUtil getTimeFormatTranslatorUtil() {

@@ -2,12 +2,12 @@ package com.wayvi.wfly.wflyv2.services;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.migrations.CreateUserTableMigration;
-import fr.maxlego08.sarah.DatabaseConfiguration;
-import fr.maxlego08.sarah.DatabaseConnection;
-import fr.maxlego08.sarah.MigrationManager;
-import fr.maxlego08.sarah.SqliteConnection;
+import com.wayvi.wfly.wflyv2.util.ConfigUtil;
+import fr.maxlego08.sarah.*;
 
 import java.io.File;
+
+import static fr.maxlego08.sarah.database.DatabaseType.MYSQL;
 
 /**
  * Handles the initialization and management of the SQLite database for the WFly plugin.
@@ -15,6 +15,7 @@ import java.io.File;
  */
 public class DatabaseService {
 
+    private ConfigUtil configUtil;
     private File databaseFile;
     private DatabaseConnection connection;
     private final WFlyV2 plugin;
@@ -24,8 +25,9 @@ public class DatabaseService {
      *
      * @param plugin the main WFlyV2 plugin instance, used for accessing plugin methods and configurations
      */
-    public DatabaseService(WFlyV2 plugin) {
+    public DatabaseService(WFlyV2 plugin, ConfigUtil configUtil) {
         this.plugin = plugin;
+        this.configUtil = configUtil;
     }
 
     /**
@@ -49,11 +51,21 @@ public class DatabaseService {
                     plugin.getLogger().info("Database file created successfully!");
                 }
             }
-
             // Configure and create a new SQLite database connection
-            DatabaseConfiguration configuration = DatabaseConfiguration.sqlite(false);
-            this.connection = new SqliteConnection(configuration, plugin.getDataFolder());
+            if (configUtil.getCustomConfig().getBoolean("mysql.enabled")){
+                DatabaseConfiguration configuration = DatabaseConfiguration.create(configUtil.getCustomConfig().getString("mysql.username"),
+                                                                                   configUtil.getCustomConfig().getString("mysql.password"),
+                                                                                   configUtil.getCustomConfig().getInt("mysql.port"),
+                                                                                   configUtil.getCustomConfig().getString("mysql.host"),
+                                                                                   configUtil.getCustomConfig().getString("mysql.database"),
+                                                                             false,
+                                                                                   MYSQL);
+                this.connection = new MySqlConnection(configuration);
+            } else {
+                DatabaseConfiguration configuration = DatabaseConfiguration.sqlite(false);
+                this.connection = new SqliteConnection(configuration, plugin.getDataFolder());
 
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

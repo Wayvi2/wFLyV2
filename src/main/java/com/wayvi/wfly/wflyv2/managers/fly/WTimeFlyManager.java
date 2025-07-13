@@ -11,11 +11,12 @@ import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
+
+
 
 /**
  * This class manages the fly time for players and coordinates the decrement of fly time, as well as handling the
@@ -30,6 +31,11 @@ public class WTimeFlyManager implements TimeFlyManager {
     private final Map<UUID, Integer> lastNotifiedTime = new ConcurrentHashMap<>();
     private final Set<UUID> needsUpdate = ConcurrentHashMap.newKeySet();
     private Map<UUID, Location> lastSafeLocation = new HashMap<>();
+    private final Map<UUID, Long> lastMovementTime = new HashMap<>();
+    private final Map<UUID, Location> lastLocations = new HashMap<>();
+
+    private static final int THREADS = Runtime.getRuntime().availableProcessors();
+    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(THREADS);
 
     static int threads = Runtime.getRuntime().availableProcessors();
     public static ExecutorService sqlExecutor = Executors.newFixedThreadPool(threads);
@@ -60,6 +66,22 @@ public class WTimeFlyManager implements TimeFlyManager {
         }
     }
 
+    @Override
+    public void loadFlyTimesForPlayer(Player player) {
+        UUID playerUUID = player.getUniqueId();
+        List<AccessPlayerDTO> flyData = this.requestHelper.selectAll("fly", AccessPlayerDTO.class);
+
+        for (AccessPlayerDTO accessPlayerDTO : flyData) {
+            if (accessPlayerDTO.uniqueId().equals(playerUUID)) {
+                flyTimes.put(playerUUID, accessPlayerDTO.FlyTimeRemaining());
+                isFlying.put(playerUUID, accessPlayerDTO.isinFly());
+                break;
+            }
+        }
+    }
+
+
+
     /**
      * Saves all updated fly times to the database periodically based on the configured delay.
      */
@@ -68,8 +90,7 @@ public class WTimeFlyManager implements TimeFlyManager {
         int seconds = configUtil.getCustomConfig().getInt("save-database-delay");
         Bukkit.getScheduler().runTaskTimer(WflyApi.get().getPlugin(), () -> {
             for (UUID playerUUID : needsUpdate) {
-                int time = flyTimes.getOrDefault(playerUUID, 0);
-                upsertTimeFly(playerUUID, time);
+                saveFlyTimeOnDisableOnline();
             }
             needsUpdate.clear();
         }, 0L, 20L * seconds);
@@ -79,12 +100,13 @@ public class WTimeFlyManager implements TimeFlyManager {
      * Saves fly times to the database when the server is disabled.
      */
     @Override
-    public void saveFlyTimeOnDisable() {
+    public void saveFlyTimeOnDisableOnline() {
         for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
-            upsertTimeFly(entry.getKey(), entry.getValue());
+            saveInDbFlyTime(Bukkit.getPlayer(entry.getKey()));
         }
         WflyApi.get().getPlugin().getLogger().info("Fly time saved");
     }
+
 
     /**
      * Starts a task to decrement the fly time of players who are flying and have a time limit.
@@ -108,6 +130,7 @@ public class WTimeFlyManager implements TimeFlyManager {
      */
     @Override
     public void decrementTimeRemaining() throws SQLException {
+        String decrementMethod = configUtil.getCustomConfig().getString("fly-decrement-method", "PLAYER_FLY_MODE");
         for (UUID playerUUID : flyTimes.keySet()) {
 
             Player player = Bukkit.getPlayer(playerUUID);
@@ -131,7 +154,12 @@ public class WTimeFlyManager implements TimeFlyManager {
                 continue;
             }
 
+            if (isExemptFromLastPosition(player) && configUtil.getCustomConfig().getBoolean("fly-decrement-disabled-by-static") && decrementMethod.equalsIgnoreCase("PLAYER_FLYING_MODE")) {
+                continue;
+            }
+
             decrementFlyTime(playerUUID, player, currentlyFlying);
+
         }
     }
 
@@ -183,6 +211,7 @@ public class WTimeFlyManager implements TimeFlyManager {
         int newTime = flyTimes.getOrDefault(playerUUID, 0) + time;
         flyTimes.put(playerUUID, newTime);
         needsUpdate.add(playerUUID);
+        saveInDbFlyTime(player);
     }
 
     /**
@@ -206,7 +235,9 @@ public class WTimeFlyManager implements TimeFlyManager {
         int newTime = flyTimes.getOrDefault(playerUUID, 0) - time;
         flyTimes.put(playerUUID, newTime);
         needsUpdate.add(playerUUID);
+        saveInDbFlyTime(target);
         return true;
+
     }
 
     /**
@@ -218,6 +249,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     public void resetFlytime(Player player) {
         flyTimes.put(player.getUniqueId(), 0);
         needsUpdate.add(player.getUniqueId());
+        saveInDbFlyTime(player);
     }
 
     /**
@@ -271,47 +303,139 @@ public class WTimeFlyManager implements TimeFlyManager {
         }
     }
 
-    /**
-     * Upserts the fly time for a player in the database.
-     *
-     * @param playerUUID      The player's UUID.
-     * @param newTimeRemaining The new fly time remaining (in seconds).
-     */
+    private boolean isExemptFromLastPosition(Player player) {
+        if (player == null || !player.isOnline()) return true;
+
+        UUID uuid = player.getUniqueId();
+        boolean currentlyFlying = isFlying.getOrDefault(uuid, false);
+
+        if (!currentlyFlying) {
+            lastLocations.remove(uuid);
+            lastMovementTime.remove(uuid);
+            return false;
+        }
+
+        Location currentLocation = player.getLocation();
+        Location lastLocation = lastLocations.get(uuid);
+
+        long currentTime = System.currentTimeMillis();
+        int delayMillis = configUtil.getCustomConfig().getInt("delay", 3000); // fallback 3000ms
+
+        if (lastLocation == null || !locationsEqual(currentLocation, lastLocation)) {
+            // Il a bougé → on met à jour
+            lastLocations.put(uuid, currentLocation.clone());
+            lastMovementTime.put(uuid, currentTime);
+            return false;
+        }
+
+        // Pas bougé → on vérifie le temps écoulé
+        long lastMoveTime = lastMovementTime.getOrDefault(uuid, currentTime);
+        if ((currentTime - lastMoveTime) >= delayMillis) {
+            return true; // immobile assez longtemps → exempté
+        }
+
+        return false;
+    }
+
+
+
+    private boolean locationsEqual(Location loc1, Location loc2) {
+        return loc1.getBlockX() == loc2.getBlockX()
+                && loc1.getBlockY() == loc2.getBlockY()
+                && loc1.getBlockZ() == loc2.getBlockZ();
+    }
+
+
     @Override
-    public void upsertTimeFly(@NotNull UUID playerUUID, int newTimeRemaining) {
-        sqlExecutor.execute(() -> {
-            List<AccessPlayerDTO> existingRecords = this.requestHelper.select("fly", AccessPlayerDTO.class,
-                    table -> table.where("uniqueId", playerUUID));
+    public void saveInDbFlyTime(Player player) {
+        if (player == null) return;
+        EXECUTOR.execute(() -> {
+            final UUID uuid = player.getUniqueId();
+            final List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
+                    table -> table.where("uniqueId", uuid));
 
-
-
-            try {
-                this.requestHelper.upsert("fly", AccessPlayerDTO.class, WflyApi.get().getFlyManager().getPlayerFlyData(playerUUID));
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-
-
-            /*if (existingRecords.isEmpty()) {
-                this.requestHelper.insert("fly", table -> {
-                    table.uuid("uniqueId", playerUUID).primary();
-                    try {
-                        AccessPlayerDTO playerFlyData = WflyApi.get().getFlyManager().getPlayerFlyData(playerUUID);
-                        table.bool("isinFly", playerFlyData.isinFly());
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                    table.bigInt("FlyTimeRemaining", newTimeRemaining);
+            if (records.isEmpty()) {
+                requestHelper.insert("fly", table -> {
+                    table.uuid("uniqueId", uuid).primary();
+                    table.bool("isinFly", getIsFlying(uuid));
+                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player) );
                 });
             } else {
-                this.requestHelper.update("fly", table -> {
-                    table.where("uniqueId", playerUUID);
-                    table.bool("isinFly", existingRecords.get(0).isinFly());
-                    table.bigInt("FlyTimeRemaining", newTimeRemaining);
+                requestHelper.update("fly", table -> {
+                    table.where("uniqueId", uuid);
+                    table.bool("isinFly", getIsFlying(uuid));
+                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player) );
                 });
-            }*/
+            }
         });
     }
+
+    @Override
+    public CompletableFuture<Void> saveInDbFlyTimeDisable(Player player) {
+        if (player == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        return CompletableFuture.runAsync(() -> {
+            final UUID uuid = player.getUniqueId();
+            final List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
+                    table -> table.where("uniqueId", uuid));
+
+            if (records.isEmpty()) {
+                requestHelper.insert("fly", table -> {
+                    table.uuid("uniqueId", uuid).primary();
+                    table.bool("isinFly", getIsFlying(uuid));
+                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
+                });
+            } else {
+                requestHelper.update("fly", table -> {
+                    table.where("uniqueId", uuid);
+                    table.bool("isinFly", getIsFlying(uuid));
+                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
+                });
+            }
+        }, EXECUTOR);
+    }
+
+    @Override
+    public CompletableFuture<Void> saveFlyTimeOnDisable() {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        for (UUID playerUUID : flyTimes.keySet()) {
+            Player player = Bukkit.getPlayer(playerUUID);
+            if (player != null) {
+                futures.add(saveInDbFlyTimeDisable(player));
+            }
+        }
+
+        CompletableFuture<Void> allDone = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        return allDone;
+    }
+    /*
+    @Override
+    public void loadFromDbFlyTime(Player player) {
+        if (player == null) return;
+
+        final UUID uuid = player.getUniqueId();
+
+        EXECUTOR.execute(() -> {
+            final List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
+                    table -> table.where("uniqueId", uuid));
+
+            if (!records.isEmpty()) {
+                AccessPlayerDTO dto = records.get(0);
+                flyTimes.put(uuid, dto.FlyTimeRemaining());
+                isFlying.put(uuid, dto.isinFly());
+            } else {
+                flyTimes.put(uuid, 0);
+                isFlying.put(uuid, false);
+            }
+        });
+    }
+    */
+
+
+
 
     /**
      * Gets the remaining fly time for a player.
@@ -361,5 +485,9 @@ public class WTimeFlyManager implements TimeFlyManager {
         }
 
         return new Location(world, loc.getX(), y + 1, loc.getZ(), loc.getYaw(), loc.getPitch());
+    }
+
+    public static void shutdownExecutor() {
+        EXECUTOR.shutdownNow();
     }
 }
