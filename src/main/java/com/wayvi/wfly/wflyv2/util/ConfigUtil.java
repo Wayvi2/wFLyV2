@@ -108,7 +108,17 @@ public class ConfigUtil {
 
         boolean changed = false;
 
+        // Delay
 
+        if (!configConfig.contains("fly-decrement-disabled-by-static")) {
+            configConfig.set("fly-decrement-disabled-by-static", false);
+            changed = true;
+        }
+
+        if (!configConfig.contains("delay")) {
+            configConfig.set("delay", 3);
+            changed = true;
+        }
         // Version
         if (!configConfig.contains("version")) {
             configConfig.set("version", version);
@@ -206,6 +216,33 @@ public class ConfigUtil {
             configConfig.set("pvp.enabled-permission-range", false);
             changed = true;
         }
+
+        if (!configConfig.contains("mysql.enabled")) {
+            configConfig.set("mysql.enabled", false);
+            changed = true;
+        }
+        if (!configConfig.contains("mysql.host")) {
+            configConfig.set("mysql.host", "localhost");
+            changed = true;
+        }
+        if (!configConfig.contains("mysql.port")) {
+            configConfig.set("mysql.port", 3306);
+            changed = true;
+        }
+        if (!configConfig.contains("mysql.database")) {
+            configConfig.set("mysql.database", "wfly");
+            changed = true;
+        }
+        if (!configConfig.contains("mysql.username")) {
+            configConfig.set("mysql.username", "root");
+            changed = true;
+        }
+        if (!configConfig.contains("mysql.password")) {
+            configConfig.set("mysql.password", "root");
+            changed = true;
+        }
+
+
         if (!configConfig.contains("pvp.fly-disable-radius")) {
             configConfig.set("pvp.fly-disable-radius", 5);
             changed = true;
@@ -304,6 +341,7 @@ public class ConfigUtil {
             messageConfig.set("message.no-spectator", "&cYou can deactivate fly in spectator mode!");
             changed = true;
         }
+
         if (changed){
             saveCustomConfig();
         }

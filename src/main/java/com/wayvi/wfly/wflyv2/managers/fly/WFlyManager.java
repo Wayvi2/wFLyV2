@@ -101,7 +101,7 @@ public class WFlyManager implements FlyManager {
     }
 
     @Override
-    public void createNewPlayer(final UUID uuid) throws SQLException {
+    public void createNewPlayer(final UUID uuid) {
         requestHelper.insert("fly", table -> {
             table.uuid("uniqueId", uuid).primary();
             table.bool("isinFly", false);

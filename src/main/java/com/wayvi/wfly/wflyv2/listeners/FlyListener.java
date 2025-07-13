@@ -36,11 +36,11 @@ public class FlyListener implements Listener {
         Player player = event.getPlayer();
 
         try {
-            int remainingTime = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
+            //int remainingTime = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
             AccessPlayerDTO playerData = flyManager.getPlayerFlyData(player.getUniqueId());
 
             if (playerData != null) {
-                WflyApi.get().getTimeFlyManager().upsertTimeFly(playerData.uniqueId(), remainingTime);
+                WflyApi.get().getTimeFlyManager().saveInDbFlyTime(player);
             }
         } catch (SQLException e) {
             plugin.getLogger().severe("Failed to save flight time for player " + player.getName() + ": " + e.getMessage());
@@ -51,6 +51,10 @@ public class FlyListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+
+        if (configUtil.getCustomConfig().getBoolean("mysql.enabled")) {
+            WflyApi.get().getTimeFlyManager().loadFlyTimesForPlayer(player);
+        }
 
         try {
             AccessPlayerDTO playerData = flyManager.getPlayerFlyData(player.getUniqueId());

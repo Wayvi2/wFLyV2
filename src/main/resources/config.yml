@@ -9,12 +9,26 @@
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
 
-version: '1.0.2.1'
+version: '1.0.2.2'
+
+mysql:
+  enabled: false
+  host: localhost
+  port: 3306
+  database: wfly
+  username: root
+  password: root
 
 save-database-delay: 300 # in seconds
 
 #see docs for more info
 fly-decrement-method: PLAYER_FLY_MODE
+
+
+#work only if fly-decrement-method is PLAYER_FLYING_MODE
+fly-decrement-disabled-by-static: false
+delay: 3
+
 
 format-placeholder:
   seconds: true

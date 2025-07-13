@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public interface TimeFlyManager {
 
@@ -14,17 +15,24 @@ public interface TimeFlyManager {
 
     void resetFlytime(Player player);
 
+    void saveInDbFlyTime(Player player);
+
     int getTimeRemaining(Player player);
 
     void decrementTimeRemaining() throws SQLException;
 
     void saveFlyTimes() throws SQLException;
 
-    void saveFlyTimeOnDisable();
-
-    void upsertTimeFly(@NotNull UUID playerUUID, int newTimeRemaining);
-
     void updateFlyStatus(UUID playerUUID, boolean isFlying);
 
     boolean getIsFlying(UUID playerUUID);
+
+    CompletableFuture<Void> saveFlyTimeOnDisable();
+
+    CompletableFuture<Void> saveInDbFlyTimeDisable(Player player);
+
+    void saveFlyTimeOnDisableOnline();
+
+    void loadFlyTimesForPlayer(Player player);
+
 }
