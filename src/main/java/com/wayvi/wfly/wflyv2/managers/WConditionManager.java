@@ -236,7 +236,6 @@ public class WConditionManager implements ConditionManager {
             logPlaceholderError(equalsRaw);
         }
 
-        // Compare simplement les valeurs remplacées
         return placeholderValue.equalsIgnoreCase(equalsValue);
     }
 
