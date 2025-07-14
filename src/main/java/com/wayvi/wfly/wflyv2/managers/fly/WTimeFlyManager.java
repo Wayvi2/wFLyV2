@@ -140,6 +140,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     @Override
     public boolean removeFlyTime(CommandSender sender, Player target, int time) {
         UUID senderUUID = null;
+
         if (sender instanceof Player) {
             Player playerSender = (Player) sender;
             senderUUID = playerSender.getUniqueId();
