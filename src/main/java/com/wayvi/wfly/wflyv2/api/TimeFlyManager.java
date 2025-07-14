@@ -1,5 +1,6 @@
 package com.wayvi.wfly.wflyv2.api;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,7 +12,7 @@ public interface TimeFlyManager {
 
     void addFlytime(Player player, int time) throws SQLException;
 
-    boolean removeFlyTime(Player sender, Player target, int time);
+    boolean removeFlyTime(CommandSender sender, Player target, int time);
 
     void resetFlytime(Player player);
 

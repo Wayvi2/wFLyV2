@@ -2,8 +2,8 @@ package com.wayvi.wfly.wflyv2.commands;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.FlyManager;
-import fr.traqueur.commands.api.Arguments;
-import fr.traqueur.commands.api.Command;
+import fr.traqueur.commands.api.arguments.Arguments;
+import fr.traqueur.commands.spigot.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 

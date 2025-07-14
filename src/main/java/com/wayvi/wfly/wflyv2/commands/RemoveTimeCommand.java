@@ -5,8 +5,8 @@ import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
-import fr.traqueur.commands.api.Arguments;
-import fr.traqueur.commands.api.Command;
+import fr.traqueur.commands.api.arguments.Arguments;
+import fr.traqueur.commands.spigot.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -46,12 +46,12 @@ public class RemoveTimeCommand extends Command<WFlyV2> {
         Player target = args.get("player");
         int time = args.get("time");
 
-        if (WflyApi.get().getTimeFlyManager().removeFlyTime((Player) sender, target, time)) {
+        if (WflyApi.get().getTimeFlyManager().removeFlyTime(sender, target, time)) {
             ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
                     .getString("message.fly-time-removed")
                     .replace("%time%", String.valueOf(time)));
 
-            if (sender instanceof Player ) {
+            if (sender instanceof Player) {
                 Player playerSender = (Player) sender;
                 ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage()
                         .getString("message.fly-time-remove-to-player")
@@ -63,3 +63,5 @@ public class RemoveTimeCommand extends Command<WFlyV2> {
         }
     }
 }
+
+

@@ -5,8 +5,11 @@ import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
-import fr.traqueur.commands.api.Arguments;
-import fr.traqueur.commands.api.Command;
+
+import fr.traqueur.commands.api.arguments.Arguments;
+import fr.traqueur.commands.spigot.Command;
+
+
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -40,13 +43,13 @@ public class AddTimeCommand extends Command<WFlyV2> {
     /**
      * Executes the command logic to add fly time to a player.
      *
-     * @param sender The command sender (player or console).
-     * @param args   The command arguments (player and time).
+     * @param commandSender The command sender (player or console).
+     * @param arguments   The command arguments (player and time).
      */
     @Override
-    public void execute(CommandSender sender, Arguments args) {
-        Player target = args.get("player");
-        int time = args.get("time");
+    public void execute(CommandSender commandSender, Arguments arguments) {
+        Player target = arguments.get("player");
+        int time = arguments.get("time");
 
         try {
             WflyApi.get().getTimeFlyManager().addFlytime(target, time);
@@ -58,8 +61,8 @@ public class AddTimeCommand extends Command<WFlyV2> {
                 .getString("message.fly-time-added")
                 .replace("%time%", String.valueOf(time)));
 
-        if (sender instanceof Player) {
-            Player playerSender = (Player) sender;
+        if (commandSender instanceof Player) {
+            Player playerSender = (Player) commandSender;
             ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage()
                     .getString("message.fly-time-added-to-player")
                     .replace("%time%", String.valueOf(time))

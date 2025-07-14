@@ -21,24 +21,47 @@ import java.sql.SQLException;
 
 public class FlyListener implements Listener {
 
+    // ══════════════════════════════════════════════════════
+    //                 FIELDS & DEPENDENCIES
+    // ══════════════════════════════════════════════════════
+
     private final WFlyV2 plugin;
     private final FlyManager flyManager;
     private final ConfigUtil configUtil;
 
+    // ══════════════════════════════════════════════════════
+    //                 CONSTRUCTOR & INIT
+    // ══════════════════════════════════════════════════════
+
+    /**
+     * Creates a new FlyListener with required dependencies.
+     *
+     * @param plugin     the main plugin instance
+     * @param flyManager the FlyManager instance managing flight data
+     * @param configUtil the configuration utility for accessing config/messages
+     */
     public FlyListener(WFlyV2 plugin, FlyManager flyManager, ConfigUtil configUtil) {
         this.plugin = plugin;
         this.flyManager = flyManager;
         this.configUtil = configUtil;
     }
 
+    // ══════════════════════════════════════════════════════
+    //                 EVENT HANDLERS
+    // ══════════════════════════════════════════════════════
+
+    /**
+     * Called when a player quits the server.
+     * Saves the player's remaining fly time to the database.
+     *
+     * @param event the quit event
+     */
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
         try {
-            //int remainingTime = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
             AccessPlayerDTO playerData = flyManager.getPlayerFlyData(player.getUniqueId());
-
             if (playerData != null) {
                 WflyApi.get().getTimeFlyManager().saveInDbFlyTime(player);
             }
@@ -48,6 +71,12 @@ public class FlyListener implements Listener {
         }
     }
 
+    /**
+     * Called when a player joins the server.
+     * Loads fly time data and restores fly state if applicable.
+     *
+     * @param event the join event
+     */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
@@ -70,6 +99,12 @@ public class FlyListener implements Listener {
         }
     }
 
+    /**
+     * Called when a player changes game mode.
+     * Specifically handles the transition from SPECTATOR to SURVIVAL to restore flight if applicable.
+     *
+     * @param event the game mode change event
+     */
     @EventHandler
     public void onPlayerChangeGameMode(PlayerGameModeChangeEvent event) {
         Player player = event.getPlayer();
@@ -85,6 +120,13 @@ public class FlyListener implements Listener {
         }
     }
 
+    /**
+     * Called when a player changes world.
+     * Checks if player is authorized to fly in the new world, manages flight state,
+     * sends messages, teleports to safe location if needed, and executes commands on unauthorized flight.
+     *
+     * @param event the world change event
+     */
     @EventHandler
     public void onWorldChange(PlayerChangedWorldEvent event) {
         Player player = event.getPlayer();
