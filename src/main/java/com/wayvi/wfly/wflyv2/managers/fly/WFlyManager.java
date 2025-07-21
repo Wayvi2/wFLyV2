@@ -16,7 +16,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Fly manager that handles player fly state, speed, and database interaction.
+ * Fly manager implementation responsible for handling flight permissions,
+ * speed, and database storage for players.
  */
 public class WFlyManager implements FlyManager {
 
@@ -26,11 +27,23 @@ public class WFlyManager implements FlyManager {
     private final RequestHelper requestHelper;
     private final ConfigUtil configUtil;
 
+    /**
+     * Constructs a new WFlyManager instance.
+     *
+     * @param requestHelper the database access helper
+     * @param configUtil the configuration utility for message and setting retrieval
+     */
     public WFlyManager(final RequestHelper requestHelper, final ConfigUtil configUtil) {
         this.requestHelper = requestHelper;
         this.configUtil = configUtil;
     }
 
+    /**
+     * Enables or disables flight for a specific player.
+     *
+     * @param uuid the UUID of the player
+     * @param fly whether the player should be allowed to fly
+     */
     @Override
     public void manageFly(final UUID uuid, final boolean fly) {
         final Player player = Bukkit.getPlayer(uuid);
@@ -43,6 +56,12 @@ public class WFlyManager implements FlyManager {
         upsertFlyStatus(player, fly);
     }
 
+    /**
+     * Sets the fly speed of the player, validating permissions and limits.
+     *
+     * @param player the player whose fly speed is to be set
+     * @param speed the desired fly speed (0–10)
+     */
     @Override
     public void manageFlySpeed(final Player player, double speed) {
         final double normalizedSpeed = speed / 10.0;
@@ -63,12 +82,26 @@ public class WFlyManager implements FlyManager {
         sendFlySpeedMessage(player, "message.fly-speed-no-permission", speed);
     }
 
+    /**
+     * Sends a formatted message to the player regarding their fly speed.
+     *
+     * @param player the player to message
+     * @param key the config key for the message
+     * @param speed the speed value to inject into the message
+     */
     private void sendFlySpeedMessage(final Player player, final String key, final double speed) {
         final String message = configUtil.getCustomMessage().getString(key)
                 .replace("%speed%", String.valueOf(speed));
         ColorSupportUtil.sendColorFormat(player, message);
     }
 
+    /**
+     * Retrieves flight-related data for a specific player from the database.
+     *
+     * @param uuid the UUID of the player
+     * @return an {@link AccessPlayerDTO} containing player flight data
+     * @throws SQLException if the database query fails
+     */
     @Override
     public AccessPlayerDTO getPlayerFlyData(final UUID uuid) throws SQLException {
         final List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
@@ -77,6 +110,12 @@ public class WFlyManager implements FlyManager {
         return records.isEmpty() ? new AccessPlayerDTO(uuid, false, 0) : records.get(0);
     }
 
+    /**
+     * Inserts or updates the player's current fly state and remaining fly time in the database.
+     *
+     * @param player the player whose data is being updated
+     * @param isFlying whether the player is currently flying
+     */
     @Override
     public void upsertFlyStatus(final Player player, final boolean isFlying) {
         EXECUTOR.execute(() -> {
@@ -100,6 +139,11 @@ public class WFlyManager implements FlyManager {
         });
     }
 
+    /**
+     * Creates a new database entry for a player when they are first seen.
+     *
+     * @param uuid the UUID of the new player
+     */
     @Override
     public void createNewPlayer(final UUID uuid) {
         requestHelper.insert("fly", table -> {

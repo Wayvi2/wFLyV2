@@ -16,8 +16,8 @@ import com.wayvi.wfly.wflyv2.managers.fly.WTimeFlyManager;
 import com.wayvi.wfly.wflyv2.services.DatabaseService;
 import com.wayvi.wfly.wflyv2.util.*;
 import fr.maxlego08.sarah.RequestHelper;
-import fr.traqueur.commands.api.CommandManager;
 
+import fr.traqueur.commands.spigot.CommandManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,8 +26,11 @@ import java.sql.SQLException;
 import java.util.concurrent.CompletionException;
 
 public final class WFlyV2 extends JavaPlugin {
+
     private TimeFormatTranslatorUtil timeFormatTranslatorUtil;
     private boolean isStartup = false;
+    private CommandManager<WFlyV2> commandManager;
+
 
     @Override
     public void onEnable() {
@@ -90,7 +93,7 @@ public final class WFlyV2 extends JavaPlugin {
         }
 
         // COMMANDS
-        CommandManager<WFlyV2> commandManager = new CommandManager<>(this);
+        commandManager = new CommandManager<>(this);
         commandManager.setDebug(true);
         commandManager.registerCommand(new ReloadCommand(this, configUtil, pvpListener, conditionManager));
         commandManager.registerCommand(new FlyCommand(this, configUtil, pvpListener));
