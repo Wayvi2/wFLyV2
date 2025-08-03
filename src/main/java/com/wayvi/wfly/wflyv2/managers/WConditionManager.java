@@ -231,13 +231,19 @@ public class WConditionManager implements ConditionManager {
             logPlaceholderError(placeholderRaw);
         }
 
-        String equalsValue = PlaceholderAPI.setPlaceholders(player, equalsRaw);
-        if (equalsValue.equals(equalsRaw)) {
-            logPlaceholderError(equalsRaw);
+        String equalsValue;
+        if (equalsRaw.startsWith("%") && equalsRaw.endsWith("%")) {
+            equalsValue = PlaceholderAPI.setPlaceholders(player, equalsRaw);
+            if (equalsValue.equals(equalsRaw)) {
+                logPlaceholderError(equalsRaw);
+            }
+        } else {
+            equalsValue = equalsRaw;
         }
 
         return placeholderValue.equalsIgnoreCase(equalsValue);
     }
+
 
 
 

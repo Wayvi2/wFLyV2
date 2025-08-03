@@ -112,7 +112,7 @@ public final class WFlyV2 extends JavaPlugin {
         new VersionCheckerUtil(this, 118465).checkAndNotify();
 
         getLogger().info("Plugin enabled");
-        //Bukkit.getScheduler().runTaskLater(this, () -> isStartup = true, 40L);
+        Bukkit.getScheduler().runTaskLater(this, () -> isStartup = true, 40L);
     }
 
     @Override
@@ -121,7 +121,7 @@ public final class WFlyV2 extends JavaPlugin {
             WflyApi.get().getTimeFlyManager().saveFlyTimeOnDisable().join();
             getLogger().info("Fly time saved");
         } catch (CompletionException e) {
-            getLogger().severe("Erreur lors de la sauvegarde des fly times à l'arrêt : " + e.getCause());
+            getLogger().severe("" + e.getCause());
         }
         getLogger().info("Plugin disabled");
     }
