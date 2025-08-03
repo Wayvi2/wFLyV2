@@ -181,6 +181,30 @@ public class WTimeFlyManager implements TimeFlyManager {
         saveInDbFlyTime(player);
     }
 
+    // ---------- ADD/REMOVE/RESET FOR ALL PLAYERS -----------
+    @Override
+    public void resetFlytimeForAllPlayers() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            resetFlytime(player);
+        }
+    }
+    @Override
+    public void addFlytimeForAllPlayers(int time) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            try {
+                addFlytime(player, time);
+            } catch (SQLException e) {
+                WflyApi.get().getPlugin().getLogger().warning("Error adding flytime for player " + player.getName());
+            }
+        }
+    }
+    @Override
+    public void removeFlytimeForAllPlayers(int time) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            removeFlyTime(null, player, time);
+        }
+    }
+
     @Override
     public int getTimeRemaining(Player player) {
         return flyTimes.getOrDefault(player.getUniqueId(), 0);

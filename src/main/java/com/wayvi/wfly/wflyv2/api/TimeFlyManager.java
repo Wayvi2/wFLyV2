@@ -36,4 +36,10 @@ public interface TimeFlyManager {
 
     void loadFlyTimesForPlayer(Player player);
 
+    void resetFlytimeForAllPlayers();
+
+    void addFlytimeForAllPlayers(int time);
+
+    void removeFlytimeForAllPlayers(int time);
+
 }
