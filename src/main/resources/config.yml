@@ -9,7 +9,7 @@
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
 
-version: '1.0.2.2'
+version: '1.0.2.4'
 
 mysql:
   enabled: false
@@ -51,6 +51,8 @@ format-placeholder:
 command:
   alias:
     - "wfly"
+    - "fly"
+    - "otherToToggleFly"
 
 
 
@@ -60,7 +62,7 @@ conditions:
     my-first-conditions:
       placeholder: "%multiverse_world_alias%"
       equals: "world" #player can't fly in this world (need multiverse plugin and /papi ecloud download Multiverse)
-      command: "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000"
+      commands: "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000"
   authorized:
     my-seconds-conditions:
       placeholder: "%multiverse_world_alias%"

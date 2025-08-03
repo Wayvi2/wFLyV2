@@ -265,18 +265,11 @@ public class WTimeFlyManager implements TimeFlyManager {
         return player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp() || player.getGameMode() == GameMode.SPECTATOR;
     }
 
-    private void handleFlyDeactivation(UUID playerUUID, Player player) throws SQLException {
+    private void handleFlyDeactivation(UUID playerUUID, Player player) {
         WflyApi.get().getFlyManager().manageFly(playerUUID, false);
         isFlying.put(playerUUID, false);
         Location safeLocation = getSafeLocation(player);
-
-        if (!safeLocation.equals(lastSafeLocation.get(playerUUID))) {
-            ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
-            if (player.getWorld().getEnvironment() != World.Environment.NETHER) {
-                player.teleport(safeLocation);
-                lastSafeLocation.put(playerUUID, safeLocation);
-            }
-        }
+        player.teleport(safeLocation);
     }
 
     private void decrementFlyTime(UUID playerUUID, Player player, boolean currentlyFlying) {
@@ -366,13 +359,18 @@ public class WTimeFlyManager implements TimeFlyManager {
     }
 
     public Location getSafeLocation(Player player) {
-        Location location = player.getLocation();
+        boolean tpOnFloor = configUtil.getCustomConfig().getBoolean("tp-on-floor-when-fly-disabled");
+        if (!tpOnFloor) return player.getLocation();
 
-        if (location.getBlock().getType().isSolid()) {
-            return player.getLocation().add(0, 5, 0);
+        Location loc = player.getLocation();
+        World world = player.getWorld();
+        int y = loc.getBlockY();
+
+        while (world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType() == Material.AIR) {
+            y--;
         }
 
-        return location;
+        return new Location(world, loc.getX(), y + 1, loc.getZ(), loc.getYaw(), loc.getPitch());
     }
 
     private void startDecrementTask() {

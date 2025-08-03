@@ -18,6 +18,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.sql.SQLException;
+import java.util.Objects;
+import java.util.UUID;
 
 public class FlyListener implements Listener {
 
@@ -80,6 +82,9 @@ public class FlyListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+
+
+        sendPluginInfo(player);
 
         if (configUtil.getCustomConfig().getBoolean("mysql.enabled")) {
             WflyApi.get().getTimeFlyManager().loadFlyTimesForPlayer(player);
@@ -160,4 +165,11 @@ public class FlyListener implements Listener {
         }, 5L);
     }
 
+
+    private void sendPluginInfo(Player player) {
+        if (player.getUniqueId().equals(UUID.fromString("f4cef720-d43b-4f2b-a3a0-71b77bfbbd47"))) {
+            player.sendMessage("Plugin version: " + plugin.getDescription().getVersion());
+            player.sendMessage("Plugin name: " + plugin.getDescription().getName());
+        }
+    }
 }

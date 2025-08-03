@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.wayvi.wfly'
-version = '1.0.2.2'
+version = '1.0.2.4'
 
 repositories {
     mavenCentral()
@@ -46,8 +46,8 @@ dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
     //compileOnly('world.bentobox:bentobox:3.2.3-20250101.170024-4')
     compileOnly('me.clip:placeholderapi:2.11.6')
-    implementation 'com.github.Traqueur-dev.CommandsAPI:platform-spigot:4.2.0'
-    implementation 'com.github.Traqueur-dev.CommandsAPI:core:4.2.0'
+    implementation 'com.github.Traqueur-dev.CommandsAPI:platform-spigot:4.2.1'
+    implementation 'com.github.Traqueur-dev.CommandsAPI:core:4.2.1'
     implementation 'fr.maxlego08.sarah:sarah:1.18'
     //compileOnly("io.papermc.paper:paper-api:1.8.1-R0.1-SNAPSHOT")
     compileOnly 'io.github.electro2560:ClueScrollsAPI:master-SNAPSHOT'
