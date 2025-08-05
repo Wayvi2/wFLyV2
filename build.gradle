@@ -43,6 +43,7 @@ repositories {
 
 
 dependencies {
+    compileOnly("com.github.SpigotMC.BungeeCord:bungeecord-api:master-SNAPSHOT")
     compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
     //compileOnly('world.bentobox:bentobox:3.2.3-20250101.170024-4')
     compileOnly('me.clip:placeholderapi:2.11.6')
