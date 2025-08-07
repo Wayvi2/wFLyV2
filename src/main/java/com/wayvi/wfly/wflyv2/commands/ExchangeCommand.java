@@ -39,7 +39,6 @@ public class ExchangeCommand extends Command<WFlyV2> {
         }
 
         int tempflyDonator = WflyApi.get().getTimeFlyManager().getTimeRemaining(donator);
-        int tempflyReceiver = WflyApi.get().getTimeFlyManager().getTimeRemaining(receiver);
 
         if (tempflyDonator >= time) {
             WflyApi.get().getExchangeManager().exchangeTimeFly(donator, receiver, time);
