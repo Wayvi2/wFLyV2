@@ -52,7 +52,6 @@ command:
   alias:
     - "wfly"
     - "fly"
-    - "otherToToggleFly"
 
 
 

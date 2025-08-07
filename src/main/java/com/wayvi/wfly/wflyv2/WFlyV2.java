@@ -5,7 +5,9 @@ import com.wayvi.wfly.wflyv2.api.TimeFlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.commands.all.RemoveAllTimeFlyCommand;
 import com.wayvi.wfly.wflyv2.commands.all.addAllTimeFlyCommand;
+import com.wayvi.wfly.wflyv2.commands.converter.ToggleTypeConverter;
 import com.wayvi.wfly.wflyv2.commands.other.MigrateTempFlyCommand;
+import com.wayvi.wfly.wflyv2.constants.ToggleType;
 import com.wayvi.wfly.wflyv2.handlers.CustomMessageHandler;
 import com.wayvi.wfly.wflyv2.managers.WExchangeManager;
 import com.wayvi.wfly.wflyv2.pluginhook.cluescroll.FlyQuest;
@@ -101,11 +103,16 @@ public final class WFlyV2 extends JavaPlugin {
             throw new RuntimeException(e);
         }
 
+        FlyCommand flyCommand = new FlyCommand(this, configUtil, pvpListener);
+
         // COMMANDS
         commandManager = new CommandManager<>(this);
         commandManager.setDebug(false);
+
+        commandManager.registerConverter(ToggleType.class, new ToggleTypeConverter());
+
         commandManager.registerCommand(new ReloadCommand(this, configUtil, pvpListener, conditionManager));
-        commandManager.registerCommand(new FlyCommand(this, configUtil, pvpListener));
+        commandManager.registerCommand(flyCommand);
         commandManager.registerCommand(new FlySpeedCommand(this, flyManager));
         commandManager.registerCommand(new AddTimeCommand(this, configUtil));
         commandManager.registerCommand(new ResetTimeCommand(this, configUtil));
@@ -122,6 +129,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new GetPlayerFlyTimeCommand(this, configUtil, placeholerapiManager.getPlaceholder()));
         commandManager.registerCommand(new ExchangeCommand(this, configUtil));
         commandManager.registerCommand(new FlyHelpPlayerCommand(this, configUtil));
+        commandManager.registerCommand(new ToggleFlyPlayerCommand(this,configUtil, flyCommand));
 
         // LISTENER
         getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, configUtil), this);
