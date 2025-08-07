@@ -52,7 +52,9 @@ public enum Permissions {
 
     GET_FLY_TIME("wfly.getflytime"),
 
-    HELP_PLAYER("wfly.help.player");
+    HELP_PLAYER("wfly.help.player"),
+
+    TOGGLE_FLY("wfly.toggle.fly");
 
     private final String permission;
 

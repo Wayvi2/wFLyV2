@@ -50,45 +50,54 @@ public class FlyCommand extends Command<WFlyV2> {
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = (Player) commandSender;
+        tryActivateFly(player);
+    }
+
+    public boolean tryActivateFly(Player player) {
         try {
-            AccessPlayerDTO playersInFly = WflyApi.get().getFlyManager().getPlayerFlyData(player.getUniqueId());
-
-            String message = playersInFly.isinFly() ?
-                    configUtil.getCustomMessage().getString("message.fly-deactivated") :
-                    configUtil.getCustomMessage().getString("message.fly-activated");
-
             if (player.getGameMode() == GameMode.SPECTATOR) {
                 ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-spectator"));
-                return;
+                return false;
+            }
+
+            AccessPlayerDTO playersInFly = WflyApi.get().getFlyManager().getPlayerFlyData(player.getUniqueId());
+
+            if (playersInFly.isinFly()) {
+                ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-deactivated"));
+                WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
+                return false;
             }
 
             boolean hasInfiniteFly = player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp();
+            boolean hasBypass = player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || player.isOp();
 
             if (!hasInfiniteFly) {
                 if (WflyApi.get().getTimeFlyManager().getTimeRemaining(player) == 0) {
                     ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
-                    return;
+                    return false;
                 }
             }
-
-            boolean hasBypass = player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || player.isOp();
 
             if (!hasBypass) {
                 if (pvpListener.HasNearbyPlayers(player)) {
                     ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.player-in-range"));
-                    return;
+                    return false;
                 }
 
                 if (!WflyApi.get().getConditionManager().isFlyAuthorized(player)) {
                     ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-fly-here"));
-                    return;
+                    return false;
                 }
             }
-            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), !playersInFly.isinFly());
-            ColorSupportUtil.sendColorFormat(player, message);
+
+            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), true);
+            ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.fly-activated"));
+            return true;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return false;
         }
     }
+
 }

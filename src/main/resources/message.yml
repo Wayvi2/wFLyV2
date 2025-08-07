@@ -43,6 +43,8 @@ message:
   only-get-his-fly-time: "&cYou cannot get other time fly than you."
   have-your-fly-time: "&aYou have %fly_remaining%"
   exchange-time-out: "&cYou cannot give too much!"
+  fly-activated-player: "&aYou have activated fly for %player%"
+  fly-deactivated-player: "&cYou have deactivated fly for %player%"
   help-message-player:
     - "&8&m──────&7 » &b&lw&bFlight &7Player &7« &8&m──────"
     - " &8| &b/fly"
