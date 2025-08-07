@@ -4,6 +4,7 @@ import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.ToggleType;
+import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
@@ -12,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -35,6 +37,7 @@ public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
     public void execute(CommandSender sender, Arguments arguments) {
         ToggleType state = arguments.get("state");
         Player targetPlayer = arguments.get("player");
+
 
         if (state == null || targetPlayer == null) {
             String message = configUtil.getCustomMessage().getString("message.arg-not-recognized");
@@ -64,6 +67,27 @@ public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
             }
 
         } else {
+            AccessPlayerDTO playerFlyData;
+            try {
+                playerFlyData = WflyApi.get().getFlyManager().getPlayerFlyData(targetPlayer.getUniqueId());
+            } catch (SQLException e) {
+                plugin.getLogger().warning("Error : " + e.getMessage());
+                return;
+            }
+
+            if (!playerFlyData.isinFly()) {
+                String notInFlyMessage = configUtil.getCustomMessage()
+                        .getString("message.player-not-in-fly")
+                        .replace("%player%", targetPlayer.getName());
+
+                if (sender instanceof Player) {
+                    ColorSupportUtil.sendColorFormat((Player) sender, notInFlyMessage);
+                } else {
+                    plugin.getLogger().info(notInFlyMessage);
+                }
+                return;
+            }
+
             WflyApi.get().getFlyManager().manageFly(targetPlayer.getUniqueId(), false);
 
             String msgSender = configUtil.getCustomMessage()
