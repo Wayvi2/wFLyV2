@@ -390,6 +390,22 @@ public class ConfigUtil {
             changed = true;
         }
 
+        if (!messageConfig.contains("fly-activated-player")) {
+            messageConfig.set("fly-activated-player", "&aYou have activated fly for %player%");
+            changed = true;
+        }
+
+        if (!messageConfig.contains("fly-deactivated-player")) {
+            messageConfig.set("fly-deactivated-player", "&cYou have deactivated fly for %player%");
+            changed = true;
+        }
+
+        if (!messageConfig.contains("player-not-in-fly")) {
+            messageConfig.set("player-not-in-fly", "&cThe %player% is not in fly!");
+            changed = true;
+        }
+
+
         if (!messageConfig.contains("help-message-player")) {
             configConfig.set("help-message-player", Arrays.asList(
                     "&8&m──────&7 » &b&lw&bFlight &7Player &7« &8&m──────",
@@ -436,6 +452,9 @@ public class ConfigUtil {
             ));
             changed = true;
         }
+
+
+
 
         if (changed){
             saveCustomConfig();
