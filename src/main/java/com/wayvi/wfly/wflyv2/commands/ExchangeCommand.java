@@ -35,6 +35,7 @@ public class ExchangeCommand extends Command<WFlyV2> {
         if (receiver == donator) {
             String message = configUtil.getCustomMessage().getString("message.exchange-cannot-the-same");
             ColorSupportUtil.sendColorFormat(donator, message);
+            return;
         }
 
         int tempflyDonator = WflyApi.get().getTimeFlyManager().getTimeRemaining(donator);
