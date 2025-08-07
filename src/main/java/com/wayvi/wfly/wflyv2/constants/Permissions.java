@@ -46,7 +46,11 @@ public enum Permissions {
      */
     BYPASS_FLY("wfly.bypass.fly"),
 
-    MANAGE_FLY("wfly.manage.fly");
+    MANAGE_FLY("wfly.manage.fly"),
+
+    GET_FLY_TIME_ADMIN("wfly.getflytime.admin"),
+
+    GET_FLY_TIME("wfly.getflytime");
 
     private final String permission;
 
