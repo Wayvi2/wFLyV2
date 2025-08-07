@@ -16,7 +16,7 @@ public class ExchangeCommand extends Command<WFlyV2> {
     private ConfigUtil configUtil;
 
     public ExchangeCommand(WFlyV2 plugin, ConfigUtil configUtil) {
-        super(plugin, "wfly.give");
+        super(plugin, "fly.give");
         addArgs("receiver", Player.class);
         addArgs("time", Integer.class);
 

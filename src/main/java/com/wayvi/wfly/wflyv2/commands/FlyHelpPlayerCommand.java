@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Command to display the help documentation link for the WayFly plugin.
  */
-public class FlyHelpCommand extends Command<WFlyV2> {
+public class FlyHelpPlayerCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
     private ConfigUtil configUtil;
@@ -25,9 +25,9 @@ public class FlyHelpCommand extends Command<WFlyV2> {
      *
      * @param plugin The main plugin instance.
      */
-    public FlyHelpCommand(WFlyV2 plugin, ConfigUtil configUtil) {
-        super(plugin, "wfly.help");
-        setPermission(Permissions.RELOAD.getPermission());
+    public FlyHelpPlayerCommand(WFlyV2 plugin, ConfigUtil configUtil) {
+        super(plugin, "fly.help");
+        setPermission(Permissions.HELP_PLAYER.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
     }
@@ -40,9 +40,13 @@ public class FlyHelpCommand extends Command<WFlyV2> {
      */
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
-        List<String> message = configUtil.getCustomMessage().getStringList("message.help-message-admin");
+
+        List<String> message = configUtil.getCustomMessage().getStringList("message.help-message-player");
         for (String s : message) {
             ColorSupportUtil.sendColorFormat((Player) commandSender, s);
         }
+
+
+
     }
 }
