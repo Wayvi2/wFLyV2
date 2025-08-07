@@ -342,6 +342,58 @@ public class ConfigUtil {
             changed = true;
         }
 
+        if (!messageConfig.contains("message.fly-time-added-to-all-player")) {
+            messageConfig.set("message.fly-time-added-to-all-player", "&aYou have been given &e%time% &atimefly to all players!");
+            changed = true;
+        }
+        if (!messageConfig.contains("message.fly-time-removed-to-all-player")) {
+            messageConfig.set("message.fly-time-removed-to-all-player", "&aYou have removed &e%time% &atimefly from all players!");
+            changed = true;
+        }
+        if (!messageConfig.contains("message.fly-time-reset-to-all-player")) {
+            messageConfig.set("message.fly-time-reset-to-all-player", "&aYou have been given reset &atimefly to all players!");
+            changed = true;
+        }
+        if (!messageConfig.contains("message.get-player-fly-time")) {
+            messageConfig.set("message.get-player-fly-time", "&a%player% have %fly_remaining%");
+            changed = true;
+        }
+        if (!messageConfig.contains("message.exchange-receiver")) {
+            messageConfig.set("message.exchange-receiver", "&a%donator% give you &e%time%");
+            changed = true;
+        }
+        if (!messageConfig.contains("message.exchange-donator")) {
+            messageConfig.set("message.exchange-donator", "&aYou have been given %time%s to %receiver%");
+            changed = true;
+        }
+        if (!messageConfig.contains("message.exchange-cannot-the-same")) {
+            messageConfig.set("message.exchange-cannot-the-same", "&cYou cannot exchange time fly with you!");
+            changed = true;
+        }
+        if (!messageConfig.contains("message.only-get-his-fly-time")) {
+            messageConfig.set("message.only-get-his-fly-time", "&cYou cannot get other time fly than you.");
+            changed = true;
+        }
+        if (!messageConfig.contains("message.have-your-fly-time")) {
+            messageConfig.set("message.have-your-fly-time", "&aYou have %fly_remaining%");
+            changed = true;
+        }
+
+
+        if (!configConfig.contains("decrementation-disable-by-condition")) {
+            configConfig.set("decrementation-disable-by-condition", Collections.singletonList("%player_name%=%player_name%"));
+            changed = true;
+        }
+        if (!messageConfig.contains("exchange-time-out")) {
+            configConfig.set("exchange-time-out", "&cYou cannot give too much!");
+            changed = true;
+        }
+
+
+
+
+
+
         if (changed){
             saveCustomConfig();
         }
