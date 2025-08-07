@@ -45,6 +45,8 @@ message:
   exchange-time-out: "&cYou cannot give too much!"
   fly-activated-player: "&aYou have activated fly for %player%"
   fly-deactivated-player: "&cYou have deactivated fly for %player%"
+  player-not-in-fly: "&cThe %player% is not in fly!"
+
   help-message-player:
     - "&8&m──────&7 » &b&lw&bFlight &7Player &7« &8&m──────"
     - " &8| &b/fly"
