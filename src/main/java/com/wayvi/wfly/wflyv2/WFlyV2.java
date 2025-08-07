@@ -7,6 +7,7 @@ import com.wayvi.wfly.wflyv2.commands.all.RemoveAllTimeFlyCommand;
 import com.wayvi.wfly.wflyv2.commands.all.addAllTimeFlyCommand;
 import com.wayvi.wfly.wflyv2.commands.other.MigrateTempFlyCommand;
 import com.wayvi.wfly.wflyv2.handlers.CustomMessageHandler;
+import com.wayvi.wfly.wflyv2.managers.WExchangeManager;
 import com.wayvi.wfly.wflyv2.pluginhook.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyv2.commands.*;
 
@@ -66,6 +67,10 @@ public final class WFlyV2 extends JavaPlugin {
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
 
         // INIT ConditionsManager
+        WExchangeManager exchangeManager = new WExchangeManager();
+        WflyApi.inject(exchangeManager);
+
+        // INIT ConditionsManager
         WConditionManager conditionManager = new WConditionManager(configUtil);
         conditionManager.checkCanFly();
         WflyApi.inject(conditionManager);
@@ -114,6 +119,9 @@ public final class WFlyV2 extends JavaPlugin {
             StorageAdapter storageAdapter = new StorageAdapter(this, requestHelper);
             commandManager.registerCommand(new MigrateTempFlyCommand(this, storageAdapter));
         }
+        commandManager.registerCommand(new GetPlayerFlyTimeCommand(this, configUtil, placeholerapiManager.getPlaceholder()));
+        commandManager.registerCommand(new ExchangeCommand(this, configUtil));
+
         // LISTENER
         getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, configUtil), this);
         getServer().getPluginManager().registerEvents(new PvPListener(configUtil), this);
