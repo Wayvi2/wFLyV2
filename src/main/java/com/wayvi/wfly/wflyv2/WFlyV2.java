@@ -111,7 +111,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new ResetTimeCommand(this, configUtil));
         commandManager.registerCommand(new RemoveTimeCommand(this, configUtil));
         commandManager.setMessageHandler(new CustomMessageHandler(configUtil));
-        commandManager.registerCommand(new FlyHelpCommand(this));
+        commandManager.registerCommand(new FlyHelpCommand(this, configUtil));
         commandManager.registerCommand(new FlyPlayerCommands(this,configUtil, pvpListener));
         commandManager.registerCommand(new addAllTimeFlyCommand(this,configUtil));
         commandManager.registerCommand(new RemoveAllTimeFlyCommand(this,configUtil));
@@ -121,6 +121,7 @@ public final class WFlyV2 extends JavaPlugin {
         }
         commandManager.registerCommand(new GetPlayerFlyTimeCommand(this, configUtil, placeholerapiManager.getPlaceholder()));
         commandManager.registerCommand(new ExchangeCommand(this, configUtil));
+        commandManager.registerCommand(new FlyHelpPlayerCommand(this, configUtil));
 
         // LISTENER
         getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, configUtil), this);

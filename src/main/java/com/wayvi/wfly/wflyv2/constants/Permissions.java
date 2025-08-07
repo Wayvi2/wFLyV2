@@ -48,9 +48,11 @@ public enum Permissions {
 
     MANAGE_FLY("wfly.manage.fly"),
 
-    GET_FLY_TIME_ADMIN("wfly.getflytime.admin"),
+    GET_FLY_TIME_ADMIN("wfly.getflytime.player"),
 
-    GET_FLY_TIME("wfly.getflytime");
+    GET_FLY_TIME("wfly.getflytime"),
+
+    HELP_PLAYER("wfly.help.player");
 
     private final String permission;
 

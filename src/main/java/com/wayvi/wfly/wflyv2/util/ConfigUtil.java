@@ -8,6 +8,7 @@ import org.bukkit.plugin.Plugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -389,10 +390,52 @@ public class ConfigUtil {
             changed = true;
         }
 
+        if (!messageConfig.contains("help-message-player")) {
+            configConfig.set("help-message-player", Arrays.asList(
+                    "&8&m──────&7 » &b&lw&bFlight &7Player &7« &8&m──────",
+                    " &8| &b/fly",
+                    " &8| &7Toggle between flight statuses.",
+                    "&r",
+                    " &8| &b/flyspeed <number>",
+                    " &8| &7Toggle between flight statuses.",
+                    "&r",
+                    " &8| &b/flytime",
+                    " &8| &7Check your remaining flight time.",
+                    "&r",
+                    " &8| &b/flytime <player>",
+                    " &8| &7Check another player's remaining flight time.",
+                    "&r",
+                    " &8| &b/fly give <player> <amount in seconds>",
+                    " &8| &7Give a player flight time out of your remaining flight time.",
+                    "&r"
+            ));
+            changed = true;
+        }
 
-
-
-
+        if (!messageConfig.contains("help-message-admin")) {
+            configConfig.set("help-message-admin", Arrays.asList(
+                    "&8&m──────&7 » &b&lw&bFlight &7Admin &7« &8&m──────",
+                    " &8| &b/wfly addtime <player> <amount>",
+                    " &8| &7Add flight time, in seconds, to a player.",
+                    "&r",
+                    " &8| &b/wfly removetime <player> <amount>",
+                    " &8| &7Remove flight time, in seconds, from a player.",
+                    "&r",
+                    " &8| &b/wfly reset <player>",
+                    " &8| &7Sets a player's flight time to 0 seconds.",
+                    "&r",
+                    " &8| &b/wfly addall <amount>",
+                    " &8| &7Add flight time to all players.",
+                    "&r",
+                    " &8| &b/wfly removeall <amount>",
+                    " &8| &7Remove flight time from all players.",
+                    "&r",
+                    " &8| &b/wfly reload",
+                    " &8| &7Reloads the plugins configurations.",
+                    "&r"
+            ));
+            changed = true;
+        }
 
         if (changed){
             saveCustomConfig();
