@@ -51,11 +51,7 @@ public class AddTimeCommand extends Command<WFlyV2> {
         Player target = arguments.get("player");
         int time = arguments.get("time");
 
-        try {
-            WflyApi.get().getTimeFlyManager().addFlytime(target, time);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        WflyApi.get().getTimeFlyManager().addFlytime(target, time);
 
         ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
                 .getString("message.fly-time-added")
