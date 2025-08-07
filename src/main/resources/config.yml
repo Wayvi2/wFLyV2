@@ -9,7 +9,7 @@
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
 
-version: '1.0.2.4'
+version: '1.0.2.5'
 
 mysql:
   enabled: false
@@ -85,7 +85,8 @@ pvp:
       #- "%otherPlaceholder%"  # You can put other placeholder if needed.
 
 
-
+decrementation-disable-by-condition:
+  - condition: "%player_name%=Wayvi2"
 
 
 

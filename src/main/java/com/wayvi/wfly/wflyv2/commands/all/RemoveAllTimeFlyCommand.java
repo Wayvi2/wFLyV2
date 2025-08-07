@@ -1,24 +1,16 @@
-package com.wayvi.wfly.wflyv2.commands;
+package com.wayvi.wfly.wflyv2.commands.all;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
-
+import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
-
-
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.sql.SQLException;
-
-/**
- * Command to add fly time to a player.
- */
-public class AddTimeCommand extends Command<WFlyV2> {
+public class RemoveAllTimeFlyCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
     private ConfigUtil configUtil;
@@ -29,11 +21,10 @@ public class AddTimeCommand extends Command<WFlyV2> {
      * @param plugin     The main plugin instance.
      * @param configUtil Configuration utility to manage custom messages.
      */
-    public AddTimeCommand(WFlyV2 plugin, ConfigUtil configUtil) {
-        super(plugin, "wfly.addtime");
-        setDescription("Manage fly time for players");
+    public RemoveAllTimeFlyCommand(WFlyV2 plugin, ConfigUtil configUtil) {
+        super(plugin, "wfly.removeall");
+        setDescription("Manage fly time for all players");
         setUsage("/wfly addtime <player> <time>");
-        addArgs("player", Player.class);
         addArgs("time", Integer.class);
         setPermission(Permissions.ADD_FLY_TIME.getPermission());
         this.plugin = plugin;
@@ -48,23 +39,22 @@ public class AddTimeCommand extends Command<WFlyV2> {
      */
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
-        Player target = arguments.get("player");
         int time = arguments.get("time");
 
-        WflyApi.get().getTimeFlyManager().addFlytime(target, time);
+        WflyApi.get().getTimeFlyManager().removeFlytimeForAllPlayers(time);
 
-        ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
-                .getString("message.fly-time-added")
-                .replace("%time%", String.valueOf(time)));
+        for (Player target : plugin.getServer().getOnlinePlayers()) {
+            ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
+                    .getString("message.fly-time-removed")
+                    .replace("%time%", String.valueOf(time)));
+        }
+
 
         if (commandSender instanceof Player) {
             Player playerSender = (Player) commandSender;
-            ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage()
-                    .getString("message.fly-time-added-to-player")
-                    .replace("%time%", String.valueOf(time))
-                    .replace("%player%", target.getName()));
+            ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage().getString("message.fly-time-removed-to-all-player").replace("%time%", String.valueOf(time)));
         } else {
-            plugin.getLogger().info("You have given " + time + " fly time to " + target.getName());
+            plugin.getLogger().info("You have removed " + time + " fly time to all players");
         }
     }
 }

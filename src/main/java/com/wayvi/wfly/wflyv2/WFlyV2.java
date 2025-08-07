@@ -3,7 +3,11 @@ package com.wayvi.wfly.wflyv2;
 import com.wayvi.wfly.wflyv2.api.FlyManager;
 import com.wayvi.wfly.wflyv2.api.TimeFlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
+import com.wayvi.wfly.wflyv2.commands.all.RemoveAllTimeFlyCommand;
+import com.wayvi.wfly.wflyv2.commands.all.addAllTimeFlyCommand;
+import com.wayvi.wfly.wflyv2.commands.other.MigrateTempFlyCommand;
 import com.wayvi.wfly.wflyv2.handlers.CustomMessageHandler;
+import com.wayvi.wfly.wflyv2.managers.WExchangeManager;
 import com.wayvi.wfly.wflyv2.pluginhook.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyv2.commands.*;
 
@@ -14,12 +18,13 @@ import com.wayvi.wfly.wflyv2.managers.fly.WFlyManager;
 import com.wayvi.wfly.wflyv2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyv2.managers.fly.WTimeFlyManager;
 import com.wayvi.wfly.wflyv2.services.DatabaseService;
+import com.wayvi.wfly.wflyv2.tempfly.StorageAdapter;
 import com.wayvi.wfly.wflyv2.util.*;
 import fr.maxlego08.sarah.RequestHelper;
 
 import fr.traqueur.commands.spigot.CommandManager;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
@@ -30,7 +35,6 @@ public final class WFlyV2 extends JavaPlugin {
     private TimeFormatTranslatorUtil timeFormatTranslatorUtil;
     private boolean isStartup = false;
     private CommandManager<WFlyV2> commandManager;
-
 
     @Override
     public void onEnable() {
@@ -49,6 +53,7 @@ public final class WFlyV2 extends JavaPlugin {
         databaseService.initializeDatabase();
 
 
+
         // INIT miniMessageSupport
         ColorSupportUtil miniMessageSupportUtil = new ColorSupportUtil();
 
@@ -60,6 +65,10 @@ public final class WFlyV2 extends JavaPlugin {
         RequestHelper requestHelper = new RequestHelper(databaseService.getConnection(), this.getLogger()::info);
 
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
+
+        // INIT ConditionsManager
+        WExchangeManager exchangeManager = new WExchangeManager();
+        WflyApi.inject(exchangeManager);
 
         // INIT ConditionsManager
         WConditionManager conditionManager = new WConditionManager(configUtil);
@@ -94,7 +103,7 @@ public final class WFlyV2 extends JavaPlugin {
 
         // COMMANDS
         commandManager = new CommandManager<>(this);
-        commandManager.setDebug(true);
+        commandManager.setDebug(false);
         commandManager.registerCommand(new ReloadCommand(this, configUtil, pvpListener, conditionManager));
         commandManager.registerCommand(new FlyCommand(this, configUtil, pvpListener));
         commandManager.registerCommand(new FlySpeedCommand(this, flyManager));
@@ -104,6 +113,14 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.setMessageHandler(new CustomMessageHandler(configUtil));
         commandManager.registerCommand(new FlyHelpCommand(this));
         commandManager.registerCommand(new FlyPlayerCommands(this,configUtil, pvpListener));
+        commandManager.registerCommand(new addAllTimeFlyCommand(this,configUtil));
+        commandManager.registerCommand(new RemoveAllTimeFlyCommand(this,configUtil));
+        if (getServer().getPluginManager().isPluginEnabled("TempFly")) {
+            StorageAdapter storageAdapter = new StorageAdapter(this, requestHelper);
+            commandManager.registerCommand(new MigrateTempFlyCommand(this, storageAdapter));
+        }
+        commandManager.registerCommand(new GetPlayerFlyTimeCommand(this, configUtil, placeholerapiManager.getPlaceholder()));
+        commandManager.registerCommand(new ExchangeCommand(this, configUtil));
 
         // LISTENER
         getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, configUtil), this);

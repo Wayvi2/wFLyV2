@@ -58,7 +58,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      */
     @Override
     public @NotNull String getVersion() {
-        return "1.0.2.4";
+        return "1.0.2.5";
     }
 
     /**
@@ -113,7 +113,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      * @param seconds The time in seconds to be formatted.
      * @return A formatted string representing the time.
      */
-    private String formatTime(int seconds) {
+    public String formatTime(int seconds) {
         Map<String, Boolean> enabledFormats = WflyApi.get().getPlugin().getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
         String format = WflyApi.get().getPlugin().getTimeFormatTranslatorUtil().getPlaceholderFormat();
         boolean autoFormat = configUtil.getCustomConfig().getBoolean("format-placeholder.auto-format");

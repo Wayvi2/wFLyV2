@@ -11,6 +11,7 @@ public class WflyApi {
     private static FlyManager flyManager;
     private static TimeFlyManager timeFlyManager;
     private static ConditionManager conditionManager;
+    private static ExchangeManager exchangeManager;
 
     @ApiStatus.Internal
     public static void inject(WFlyV2 plugin) {
@@ -32,6 +33,12 @@ public class WflyApi {
         WflyApi.conditionManager = conditionManager;
     }
 
+    @ApiStatus.Internal
+    public static void inject(ExchangeManager exchangeManager) {
+        WflyApi.exchangeManager = exchangeManager;
+    }
+
+
     public static WflyApi get() {
         return INSTANCE;
     }
@@ -51,5 +58,7 @@ public class WflyApi {
     public ConditionManager getConditionManager() {
         return conditionManager;
     }
+
+    public ExchangeManager getExchangeManager() {return exchangeManager;}
 
 }

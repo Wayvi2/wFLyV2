@@ -46,6 +46,7 @@ public class FlyPlayerCommands extends Command<WFlyV2> {
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = arguments.get("player");
+
         try {
             AccessPlayerDTO playersInFly = WflyApi.get().getFlyManager().getPlayerFlyData(player.getUniqueId());
 

@@ -15,6 +15,7 @@ public class PlaceholerapiManager {
 
     private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
+    private WFlyPlaceholder wFlyPlaceholder;
 
     /**
      * Constructor to initialize the PlaceholderAPI manager.
@@ -43,6 +44,17 @@ public class PlaceholerapiManager {
      * Creates a new instance of {@link WFlyPlaceholder} and registers the defined placeholders.
      */
     public void initialize() {
-        new WFlyPlaceholder(plugin, configUtil).register();
+        this.wFlyPlaceholder = new WFlyPlaceholder(plugin, configUtil);
+        this.wFlyPlaceholder.register();
+    }
+
+    /**
+     * Returns the instance of the registered WFlyPlaceholder.
+     *
+     * @return WFlyPlaceholder instance, or null if not initialized yet.
+     */
+    public WFlyPlaceholder getPlaceholder() {
+        return wFlyPlaceholder;
     }
 }
+

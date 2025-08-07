@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.wayvi.wfly'
-version = '1.0.2.4'
+version = '1.0.2.5'
 
 repositories {
     mavenCentral()

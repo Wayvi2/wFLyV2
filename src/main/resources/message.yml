@@ -33,6 +33,16 @@ message:
   message-requirement: "&cYou do not meet the requirements to use this command!"
   player-in-range: "&cPlayer is too far away!"
   no-spectator: "&cYou can deactivate fly in spectator mode!"
+  fly-time-added-to-all-player: "&aYou have been given &e%time% &atimefly to all players!"
+  fly-time-removed-to-all-player: "&aYou have removed &e%time% &atimefly from all players!"
+  fly-time-reset-to-all-player: "&aYou have been given reset &atimefly to all players!"
+  get-player-fly-time: "&a%player% have %fly_remaining%"
+  exchange-receiver: "&a%donator% give you &e%time%"
+  exchange-donator: "&aYou have been given %time%s to %receiver%"
+  exchange-cannot-the-same: "&cYou cannot exchange time fly with you!"
+  only-get-his-fly-time: "&cYou cannot get other time fly than you."
+  have-your-fly-time: "&aYou have %fly_remaining%"
+  exchange-time-out: "&cYou cannot give too much!"
 
 
 

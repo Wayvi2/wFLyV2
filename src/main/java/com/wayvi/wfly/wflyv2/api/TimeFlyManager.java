@@ -10,9 +10,9 @@ import java.util.concurrent.CompletableFuture;
 
 public interface TimeFlyManager {
 
-    void addFlytime(Player player, int time) throws SQLException;
+    void addFlytime(Player player, int time);
 
-    boolean removeFlyTime(CommandSender sender, Player target, int time);
+    boolean removeFlyTime(Player target, int time);
 
     void resetFlytime(Player player);
 
@@ -35,5 +35,11 @@ public interface TimeFlyManager {
     void saveFlyTimeOnDisableOnline();
 
     void loadFlyTimesForPlayer(Player player);
+
+    void resetFlytimeForAllPlayers();
+
+    void addFlytimeForAllPlayers(int time);
+
+    void removeFlytimeForAllPlayers(int time);
 
 }
