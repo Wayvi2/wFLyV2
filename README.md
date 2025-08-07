@@ -8,8 +8,8 @@
 
 **wFly** is a lightweight and intuitive Minecraft plugin that adds a simple `/fly` command with full permission support, configurable cooldowns, customizable messages, and built-in database support.
 
-> ⚠️ Compatible with **Spigot**, **Paper**, and **Purpur**  
-> 🧪 Tested on versions **1.8 to 1.21.5**
+> ⚠️ Compatible with **Spigot**, **Paper**, and **Purpur**  and other fork of spigot..
+> 🧪 Tested on versions **1.8 to 1.21+**
 
 ---
 ## ✨ Key Features
