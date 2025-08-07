@@ -46,7 +46,7 @@ public class RemoveTimeCommand extends Command<WFlyV2> {
         Player target = args.get("player");
         int time = args.get("time");
 
-        if (WflyApi.get().getTimeFlyManager().removeFlyTime(sender, target, time)) {
+        if (WflyApi.get().getTimeFlyManager().removeFlyTime(target, time)) {
             ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
                     .getString("message.fly-time-removed")
                     .replace("%time%", String.valueOf(time)));

@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
 
+
 /**
  * This class manages the fly time for players and coordinates the decrement of fly time,
  * handles fly status, and manages saving/loading fly time from database.
@@ -124,12 +125,16 @@ public class WTimeFlyManager implements TimeFlyManager {
                 continue;
             }
 
+            if (getDecrementationDisable(player)) {
+                continue;
+            }
+
             decrementFlyTime(playerUUID, player, currentlyFlying);
         }
     }
 
     @Override
-    public void addFlytime(Player player, int time) throws SQLException {
+    public void addFlytime(Player player, int time) {
         UUID playerUUID = player.getUniqueId();
         int newTime = flyTimes.getOrDefault(playerUUID, 0) + time;
         flyTimes.put(playerUUID, newTime);
@@ -138,18 +143,9 @@ public class WTimeFlyManager implements TimeFlyManager {
     }
 
     @Override
-    public boolean removeFlyTime(CommandSender sender, Player target, int time) {
+    public boolean removeFlyTime( Player target, int time) {
         UUID senderUUID = null;
 
-        if (sender instanceof Player) {
-            Player playerSender = (Player) sender;
-            senderUUID = playerSender.getUniqueId();
-
-            if (!playerSender.hasPermission(Permissions.REMOVE_FLY_TIME.getPermission())) {
-                ColorSupportUtil.sendColorFormat(playerSender,configUtil.getCustomMessage().getString("message.no-permission"));
-                return false;
-            }
-        }
 
         int currentFlyTime = getTimeRemaining(target);
 
@@ -191,17 +187,13 @@ public class WTimeFlyManager implements TimeFlyManager {
     @Override
     public void addFlytimeForAllPlayers(int time) {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            try {
-                addFlytime(player, time);
-            } catch (SQLException e) {
-                WflyApi.get().getPlugin().getLogger().warning("Error adding flytime for player " + player.getName());
-            }
+            addFlytime(player, time);
         }
     }
     @Override
     public void removeFlytimeForAllPlayers(int time) {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            removeFlyTime(null, player, time);
+            removeFlyTime(player, time);
         }
     }
 
@@ -283,7 +275,49 @@ public class WTimeFlyManager implements TimeFlyManager {
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
+
+    // ---------- decrementation-disable-by-condition ----------
+
+    private boolean getDecrementationDisable(Player player) {
+        List<Map<?, ?>> conditions = configUtil.getCustomConfig().getMapList("decrementation-disable-by-condition");
+
+        for (Map<?, ?> entry : conditions) {
+            String condition = (String) entry.get("condition");
+            if (condition == null || !condition.contains("=")) continue;
+
+            String[] parts = condition.split("=", 2);
+            if (parts.length != 2) continue;
+
+            String left = parts[0].trim();
+            String right = parts[1].trim();
+
+            left = applyPlaceholders(player, left);
+            right = applyPlaceholders(player, right);
+
+            // Comparaison finale
+            if (left.equalsIgnoreCase(right)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
+
+
     // ---------- INTERNAL LOGIC HANDLERS ----------
+    private String applyPlaceholders(Player player, String text) {
+        if (text == null) return "";
+            try {
+                return me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, text);
+            } catch (Exception e) {
+                return text;
+            }
+    }
+
+
 
     private boolean isExemptFromFlyDecrement(Player player) {
         return player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp() || player.getGameMode() == GameMode.SPECTATOR;
@@ -318,13 +352,19 @@ public class WTimeFlyManager implements TimeFlyManager {
         ConfigurationSection conditionsSection = config.getConfigurationSection("commands-time-remaining");
         if (conditionsSection == null) return;
 
-        Map<Integer, String> timeCommandMap = new HashMap<>();
+        Map<Integer, List<String>> timeCommandMap = new HashMap<>();
+
         for (String key : conditionsSection.getKeys(false)) {
             try {
                 int timeKey = Integer.parseInt(key);
-                String command = conditionsSection.getString(key + ".commands");
-                if (command != null) {
-                    timeCommandMap.put(timeKey, command);
+                Object value = conditionsSection.get(key + ".commands");
+
+                if (value instanceof String) {
+                    timeCommandMap.put(timeKey, Collections.singletonList((String) value));
+                } else if (value instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<String> commands = (List<String>) value;
+                    timeCommandMap.put(timeKey, commands);
                 }
             } catch (NumberFormatException ignored) {}
         }
@@ -335,8 +375,8 @@ public class WTimeFlyManager implements TimeFlyManager {
 
             if (lastNotifiedTime.getOrDefault(playerUUID, -1) == playerTimeRemaining) continue;
 
-            String command = timeCommandMap.get(playerTimeRemaining);
-            if (command == null) continue;
+            List<String> commands = timeCommandMap.get(playerTimeRemaining);
+            if (commands == null) continue;
 
             Player player = Bukkit.getPlayer(playerUUID);
             if (player == null || !player.isOnline()) continue;
@@ -344,9 +384,13 @@ public class WTimeFlyManager implements TimeFlyManager {
             if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) continue;
 
             lastNotifiedTime.put(playerUUID, playerTimeRemaining);
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
+
+            for (String cmd : commands) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%player%", player.getName()));
+            }
         }
     }
+
 
     private boolean isExemptFromLastPosition(Player player) {
         if (player == null || !player.isOnline()) return true;
