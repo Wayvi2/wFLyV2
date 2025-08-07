@@ -294,7 +294,6 @@ public class WTimeFlyManager implements TimeFlyManager {
             left = applyPlaceholders(player, left);
             right = applyPlaceholders(player, right);
 
-            // Comparaison finale
             if (left.equalsIgnoreCase(right)) {
                 return true;
             }
