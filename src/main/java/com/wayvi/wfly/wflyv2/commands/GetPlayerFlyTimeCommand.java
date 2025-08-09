@@ -33,14 +33,15 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player target = arguments.get("target");
 
-        int flyRemaining = 0;
+        int flyRemaining = WflyApi.get().getTimeFlyManager().getTimeRemaining(target);
         if (!(commandSender instanceof Player)) {
             if (target == null) {
                 commandSender.sendMessage(ChatColor.DARK_RED + "You must specify a player when using this command from the console.");
                 return;
+            } else {
+                commandSender.sendMessage(ChatColor.DARK_RED + target.getName() + " has " + flyRemaining + " of fly time left.");
             }
 
-            flyRemaining = WflyApi.get().getTimeFlyManager().getTimeRemaining(target);
 
             if (target.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
                 String rawMessage = configUtil.getCustomMessage()
