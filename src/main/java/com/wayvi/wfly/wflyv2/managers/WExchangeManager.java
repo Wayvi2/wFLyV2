@@ -11,6 +11,8 @@ public class WExchangeManager implements ExchangeManager {
 
     @Override
     public void exchangeTimeFly(Player donator, Player receiver, int time) {
+        if (time < 1) return;
+
         WflyApi.get().getTimeFlyManager().removeFlyTime(donator, time);
         WflyApi.get().getTimeFlyManager().addFlytime(receiver, time);
     }

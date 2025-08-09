@@ -51,6 +51,20 @@ public class AddTimeCommand extends Command<WFlyV2> {
         Player target = arguments.get("player");
         int time = arguments.get("time");
 
+        if (target.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
+            if (commandSender instanceof Player) {
+                String unlimitedMsg = configUtil.getCustomMessage()
+                        .getString("message.cannot-add-time-unlimited");
+                ColorSupportUtil.sendColorFormat((Player) commandSender, unlimitedMsg);
+                return;
+
+
+            } else {
+                plugin.getLogger().info("You cannot add fly time to " + target.getName() + " because they have unlimited fly time.");
+                return;
+            }
+        }
+
         WflyApi.get().getTimeFlyManager().addFlytime(target, time);
 
         ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()

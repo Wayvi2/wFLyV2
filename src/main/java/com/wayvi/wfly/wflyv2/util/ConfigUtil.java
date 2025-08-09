@@ -7,9 +7,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * Utility class to handle the loading, saving, and managing of configuration files
@@ -382,32 +380,47 @@ public class ConfigUtil {
 
 
         if (!configConfig.contains("decrementation-disable-by-condition")) {
-            configConfig.set("decrementation-disable-by-condition", Collections.singletonList("%player_name%=%player_name%"));
-            changed = true;
-        }
-        if (!messageConfig.contains("exchange-time-out")) {
-            configConfig.set("exchange-time-out", "&cYou cannot give too much!");
-            changed = true;
-        }
-
-        if (!messageConfig.contains("fly-activated-player")) {
-            messageConfig.set("fly-activated-player", "&aYou have activated fly for %player%");
-            changed = true;
-        }
-
-        if (!messageConfig.contains("fly-deactivated-player")) {
-            messageConfig.set("fly-deactivated-player", "&cYou have deactivated fly for %player%");
-            changed = true;
-        }
-
-        if (!messageConfig.contains("player-not-in-fly")) {
-            messageConfig.set("player-not-in-fly", "&cThe %player% is not in fly!");
+            Map<String, Object> conditionMap = new HashMap<>();
+            conditionMap.put("condition", "%player_name%=Wayvi2");
+            configConfig.set("decrementation-disable-by-condition", Collections.singletonList(conditionMap));
             changed = true;
         }
 
 
-        if (!messageConfig.contains("help-message-player")) {
-            configConfig.set("help-message-player", Arrays.asList(
+        if (!messageConfig.contains("message.exchange-time-out")) {
+            messageConfig.set("message.exchange-time-out", "&cYou cannot give too much!");
+            changed = true;
+        }
+
+        if (!messageConfig.contains("message.fly-activated-player")) {
+            messageConfig.set("message.fly-activated-player", "&aYou have activated fly for %player%");
+            changed = true;
+        }
+
+        if (!messageConfig.contains("message.fly-deactivated-player")) {
+            messageConfig.set("message.fly-deactivated-player", "&cYou have deactivated fly for %player%");
+            changed = true;
+        }
+
+        if (!messageConfig.contains("message.player-not-in-fly")) {
+            messageConfig.set("message.player-not-in-fly", "&cThe %player% is not in fly!");
+            changed = true;
+        }
+
+        if (!messageConfig.contains("message.cannot-add-time-unlimited")) {
+            messageConfig.set("message.cannot-add-time-unlimited", "&cYou cannot add time to an unlimited player!");
+            changed = true;
+        }
+
+
+
+        if (!messageConfig.contains("message.exchange-time-zero")) {
+            messageConfig.set("message.exchange-time-zero", "&cYou cannot give zero and negative fly time!");
+            changed = true;
+        }
+
+        if (!messageConfig.contains("message.help-message-player")) {
+            messageConfig.set("message.help-message-player", Arrays.asList(
                     "&8&m──────&7 » &b&lw&bFlight &7Player &7« &8&m──────",
                     " &8| &b/fly",
                     " &8| &7Toggle between flight statuses.",
@@ -428,8 +441,8 @@ public class ConfigUtil {
             changed = true;
         }
 
-        if (!messageConfig.contains("help-message-admin")) {
-            configConfig.set("help-message-admin", Arrays.asList(
+        if (!messageConfig.contains("message.help-message-admin")) {
+            messageConfig.set("message.help-message-admin", Arrays.asList(
                     "&8&m──────&7 » &b&lw&bFlight &7Admin &7« &8&m──────",
                     " &8| &b/wfly addtime <player> <amount>",
                     " &8| &7Add flight time, in seconds, to a player.",
