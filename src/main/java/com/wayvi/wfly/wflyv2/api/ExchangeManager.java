@@ -4,6 +4,13 @@ import org.bukkit.entity.Player;
 
 public interface ExchangeManager {
 
-    public void exchangeTimeFly(Player donator, Player receiver, int time);
+    void exchangeTimeFly(Player donator, Player receiver, int time);
 
+    boolean canGiveHisTempFly(Player donator);
+
+    int getCooldown(Player player);
+
+    void setCooldown(Player player, Integer cooldownToSet);
+
+    void decrementCooldown(Player player);
 }

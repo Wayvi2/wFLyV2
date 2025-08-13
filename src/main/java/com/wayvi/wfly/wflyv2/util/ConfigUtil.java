@@ -466,8 +466,50 @@ public class ConfigUtil {
             changed = true;
         }
 
+        if (!configConfig.contains("cooldown-give.enabled")) {
+            configConfig.set("cooldown-give.enabled", false);
+            changed = true;
+        }
 
+        if (!configConfig.contains("cooldown-give.custom-cooldown.enabled")) {
+            configConfig.set("cooldown-give.custom-cooldown.enabled", false);
+            changed = true;
+        }
 
+        if (!configConfig.contains("cooldown-give.custom-cooldown.cooldown")) {
+            configConfig.set("cooldown-give.custom-cooldown.cooldown", 5);
+            changed = true;
+        }
+
+        if (!configConfig.contains("cooldown-give.limits.enabled")) {
+            configConfig.set("cooldown-give.limits.enabled", true);
+            changed = true;
+        }
+
+        if (!configConfig.contains("cooldown-give.limits.give-minimum-value")) {
+            configConfig.set("cooldown-give.limits.give-minimum-value", 5);
+            changed = true;
+        }
+
+        if (!configConfig.contains("cooldown-give.limits.give-maximum-value")) {
+            configConfig.set("cooldown-give.limits.give-maximum-value", 60);
+            changed = true;
+        }
+
+        if (!messageConfig.contains("message.cooldown-give")) {
+            messageConfig.set("message.cooldown-give", "&cYou must wait %seconds% before give fly again!");
+            changed = true;
+        }
+
+        if (!messageConfig.contains("message.exchange-time-below-minimum")) {
+            messageConfig.set("message.exchange-time-below-minimum", "&cYou must give at least %min% seconds of fly time.");
+            changed = true;
+        }
+
+        if (!messageConfig.contains("message.exchange-time-above-maximum")) {
+            messageConfig.set("message.exchange-time-above-maximum", "&cYou cannot give more than %max% seconds of fly time.");
+            changed = true;
+        }
 
         if (changed){
             saveCustomConfig();

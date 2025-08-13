@@ -69,8 +69,8 @@ public final class WFlyV2 extends JavaPlugin {
 
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
 
-        // INIT ConditionsManager
-        WExchangeManager exchangeManager = new WExchangeManager();
+        // INIT ExchangeManager
+        WExchangeManager exchangeManager = new WExchangeManager(this, configUtil);
         WflyApi.inject(exchangeManager);
 
         // INIT ConditionsManager

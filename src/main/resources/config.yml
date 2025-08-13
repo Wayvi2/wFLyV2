@@ -88,6 +88,14 @@ decrementation-disable-by-condition:
   - condition: "%player_name%=Wayvi2"
 
 
-
+cooldown-give:
+  enabled: false # If true, a cooldown is applied after giving fly time before you can give again.
+  custom-cooldown:
+    enabled: false # If true, allows setting a custom cooldown duration. Both must be enabled to activate.
+    cooldown: 5    # Custom cooldown time in seconds.
+  limits:
+    enabled: true
+    give-minimum-value: 5    # Minimum number of seconds a player can give.
+    give-maximum-value: 60   # Maximum number of seconds a player can give. Use "INFINITE" for no max limit.
 
 

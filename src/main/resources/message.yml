@@ -49,6 +49,9 @@ message:
   player-not-in-fly: "&cThe %player% is not in fly!"
   cannot-add-time-unlimited: "&cYou cannot add time to an unlimited player!"
   player-has-unlimited: "&a%player% has unlimited fly!"
+  cooldown-give: "&cYou must wait %seconds% before give fly again!"
+  exchange-time-below-minimum: "&cYou must give at least %min% seconds of fly time."
+  exchange-time-above-maximum: "&cYou cannot give more than %max% seconds of fly time."
 
   help-message-player:
     - "&8&m──────&7 » &b&lw&bFlight &7Player &7« &8&m──────"

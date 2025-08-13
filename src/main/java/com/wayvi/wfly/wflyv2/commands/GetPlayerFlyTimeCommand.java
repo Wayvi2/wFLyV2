@@ -12,6 +12,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Optional;
+
 public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
 
     private WFlyV2 plugin;
@@ -31,25 +33,26 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
 
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
-        Player target = arguments.get("target");
 
-        int flyRemaining = WflyApi.get().getTimeFlyManager().getTimeRemaining(target);
+        Optional<Player> targetOptional = arguments.getOptional("target");
+
+        Player target = targetOptional.orElse(null);
+
+        // Si on est en console et qu'aucun joueur n'est précisé ou que le joueur est hors ligne
         if (!(commandSender instanceof Player)) {
             if (target == null) {
-                commandSender.sendMessage(ChatColor.DARK_RED + "You must specify a player when using this command from the console.");
+                commandSender.sendMessage(ChatColor.DARK_RED + "You must specify a valid online player when using this command from the console.");
                 return;
-            } else {
-                commandSender.sendMessage(ChatColor.DARK_RED + target.getName() + " has " + flyRemaining + " of fly time left.");
             }
 
+            int flyRemaining = WflyApi.get().getTimeFlyManager().getTimeRemaining(target);
 
             if (target.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
                 String rawMessage = configUtil.getCustomMessage()
                         .getString("message.player-has-unlimited", "&cThe %player% has unlimited fly!");
 
-                String formattedMessage = rawMessage
-                        .replace("%player%", target.getName());
-                ColorSupportUtil.sendColorFormat(target, formattedMessage);
+                String formattedMessage = rawMessage.replace("%player%", target.getName());
+                ColorSupportUtil.sendColorFormat((Player) commandSender, formattedMessage);
                 return;
             }
 
@@ -60,9 +63,11 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
                     .replace("%player%", target.getName())
                     .replace("%fly_remaining%", placeholder.formatTime(flyRemaining));
 
-            ColorSupportUtil.sendColorFormat(target, formattedMessage);
+            ColorSupportUtil.sendColorFormat((Player) commandSender, formattedMessage);
             return;
         }
+
+        // Partie pour les joueurs
         Player sender = (Player) commandSender;
 
         if (target == null) {
@@ -76,13 +81,14 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
             return;
         }
 
+        int flyRemaining = WflyApi.get().getTimeFlyManager().getTimeRemaining(target);
+
         if (target.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
             String rawMessage = configUtil.getCustomMessage()
                     .getString("message.player-has-unlimited", "&cThe %player% has unlimited fly!");
 
-            String formattedMessage = rawMessage
-                    .replace("%player%", target.getName());
-            ColorSupportUtil.sendColorFormat(target, formattedMessage);
+            String formattedMessage = rawMessage.replace("%player%", target.getName());
+            ColorSupportUtil.sendColorFormat(sender, formattedMessage);
             return;
         }
 
@@ -96,4 +102,5 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
 
         ColorSupportUtil.sendColorFormat(sender, formattedMessage);
     }
+
 }

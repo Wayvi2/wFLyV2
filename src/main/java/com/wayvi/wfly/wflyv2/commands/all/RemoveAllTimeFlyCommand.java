@@ -26,7 +26,7 @@ public class RemoveAllTimeFlyCommand extends Command<WFlyV2> {
         setDescription("Manage fly time for all players");
         setUsage("/wfly addtime <player> <time>");
         addArgs("time", Integer.class);
-        setPermission(Permissions.ADD_FLY_TIME.getPermission());
+        setPermission(Permissions.REMOVE_FLY_TIME.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
     }
