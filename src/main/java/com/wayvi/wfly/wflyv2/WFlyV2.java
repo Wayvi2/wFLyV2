@@ -31,6 +31,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
 import java.util.concurrent.CompletionException;
+import java.util.logging.Logger;
 
 public final class WFlyV2 extends JavaPlugin {
 
@@ -68,8 +69,8 @@ public final class WFlyV2 extends JavaPlugin {
 
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(configUtil);
 
-        // INIT ConditionsManager
-        WExchangeManager exchangeManager = new WExchangeManager();
+        // INIT ExchangeManager
+        WExchangeManager exchangeManager = new WExchangeManager(this, configUtil);
         WflyApi.inject(exchangeManager);
 
         // INIT ConditionsManager
@@ -106,6 +107,9 @@ public final class WFlyV2 extends JavaPlugin {
         FlyCommand flyCommand = new FlyCommand(this, configUtil, pvpListener);
 
         // COMMANDS
+
+
+
         commandManager = new CommandManager<>(this);
         commandManager.setDebug(false);
 

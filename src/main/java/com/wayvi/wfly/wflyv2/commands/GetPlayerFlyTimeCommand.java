@@ -12,6 +12,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Optional;
+
 public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
 
     private WFlyV2 plugin;
@@ -19,7 +21,8 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
     private WFlyPlaceholder placeholder;
 
     public GetPlayerFlyTimeCommand(WFlyV2 plugin, ConfigUtil configUtil, WFlyPlaceholder placeholder) {
-        super(plugin, "flytime");
+        super(plugin, "fly.time");
+        addAlias("flytime");
         addOptionalArgs("target", Player.class);
         setPermission(Permissions.GET_FLY_TIME.getPermission());
 
@@ -30,21 +33,26 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
 
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
-        Player target = arguments.get("target");
 
-        // Si la commande est envoyée depuis la console
+        Optional<Player> targetOptional = arguments.getOptional("target");
+
+        Player target = targetOptional.orElse(null);
+
+        // Si on est en console et qu'aucun joueur n'est précisé ou que le joueur est hors ligne
         if (!(commandSender instanceof Player)) {
             if (target == null) {
-                commandSender.sendMessage(ChatColor.DARK_RED + "You must specify a player when using this command from the console.");
+                commandSender.sendMessage(ChatColor.DARK_RED + "You must specify a valid online player when using this command from the console.");
                 return;
             }
 
             int flyRemaining = WflyApi.get().getTimeFlyManager().getTimeRemaining(target);
 
             if (target.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                String unlimitedMsg = configUtil.getCustomConfig()
-                        .getString("format-placeholder.unlimited", "&aThis player has unlimited fly time.");
-                commandSender.sendMessage(ChatColor.stripColor(unlimitedMsg));
+                String rawMessage = configUtil.getCustomMessage()
+                        .getString("message.player-has-unlimited", "&cThe %player% has unlimited fly!");
+
+                String formattedMessage = rawMessage.replace("%player%", target.getName());
+                ColorSupportUtil.sendColorFormat((Player) commandSender, formattedMessage);
                 return;
             }
 
@@ -55,18 +63,17 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
                     .replace("%player%", target.getName())
                     .replace("%fly_remaining%", placeholder.formatTime(flyRemaining));
 
-            commandSender.sendMessage(ChatColor.stripColor(formattedMessage));
+            ColorSupportUtil.sendColorFormat((Player) commandSender, formattedMessage);
             return;
         }
 
-        // Sinon, c'est un joueur
+        // Partie pour les joueurs
         Player sender = (Player) commandSender;
 
         if (target == null) {
             target = sender;
         }
 
-        // Si la cible est différente du joueur
         if (!target.equals(sender) && !sender.hasPermission(Permissions.GET_FLY_TIME_ADMIN.getPermission())) {
             String noPermissionMsg = configUtil.getCustomMessage()
                     .getString("message.only-get-his-fly-time", "&cYou can only view your own fly time.");
@@ -77,9 +84,11 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
         int flyRemaining = WflyApi.get().getTimeFlyManager().getTimeRemaining(target);
 
         if (target.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-            String unlimitedMsg = configUtil.getCustomConfig()
-                    .getString("format-placeholder.unlimited", "&aYou have unlimited fly time.");
-            ColorSupportUtil.sendColorFormat(sender, unlimitedMsg);
+            String rawMessage = configUtil.getCustomMessage()
+                    .getString("message.player-has-unlimited", "&cThe %player% has unlimited fly!");
+
+            String formattedMessage = rawMessage.replace("%player%", target.getName());
+            ColorSupportUtil.sendColorFormat(sender, formattedMessage);
             return;
         }
 
@@ -93,4 +102,5 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
 
         ColorSupportUtil.sendColorFormat(sender, formattedMessage);
     }
+
 }

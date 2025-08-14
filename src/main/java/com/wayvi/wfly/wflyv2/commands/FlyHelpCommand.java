@@ -27,7 +27,7 @@ public class FlyHelpCommand extends Command<WFlyV2> {
      */
     public FlyHelpCommand(WFlyV2 plugin, ConfigUtil configUtil) {
         super(plugin, "wfly.help");
-        setPermission(Permissions.RELOAD.getPermission());
+        setPermission(Permissions.HELP_ADMIN.getPermission());
         this.plugin = plugin;
         this.configUtil = configUtil;
     }

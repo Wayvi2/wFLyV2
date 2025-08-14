@@ -2,6 +2,7 @@ package com.wayvi.wfly.wflyv2.commands;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
+import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
@@ -22,6 +23,7 @@ public class ExchangeCommand extends Command<WFlyV2> {
 
         this.plugin = plugin;
         this.configUtil = configUtil;
+        setPermission(Permissions.EXCHANGE_FLY_TIME.getPermission());
 
     }
 
@@ -31,6 +33,48 @@ public class ExchangeCommand extends Command<WFlyV2> {
         Player donator = (Player) commandSender;
         Player receiver = arguments.get("receiver");
         int time = arguments.get("time");
+
+
+        if (configUtil.getCustomConfig().getBoolean("cooldown-give.limits.enabled", false)) {
+            int min = configUtil.getCustomConfig().getInt("cooldown-give.limits.give-minimum-value", 5);
+            String maxRaw = configUtil.getCustomConfig().getString("cooldown-give.limits.give-maximum-value", "INFINITE");
+
+            if (time < min) {
+                String message = configUtil.getCustomMessage().getString("message.exchange-time-below-minimum");
+                ColorSupportUtil.sendColorFormat(donator, message.replace("%min%", String.valueOf(min)));
+                return;
+            }
+
+            if (!maxRaw.equalsIgnoreCase("INFINITE")) {
+                try {
+                    int max = Integer.parseInt(maxRaw);
+                    if (time > max) {
+                        String message = configUtil.getCustomMessage().getString("message.exchange-time-above-maximum");
+                        ColorSupportUtil.sendColorFormat(donator, message.replace("%max%", String.valueOf(max)));
+                        return;
+                    }
+                } catch (NumberFormatException ignored) {
+
+                }
+            }
+        }
+
+
+
+
+        boolean isInCooldown = WflyApi.get().getExchangeManager().getCooldown(donator) > 0;
+
+        if (isInCooldown) {
+            String message = configUtil.getCustomMessage().getString("message.cooldown-give");
+            ColorSupportUtil.sendColorFormat(donator, message);
+            return;
+        }
+
+        if (time < 1) {
+            String message = configUtil.getCustomMessage().getString("message.exchange-time-zero");
+            ColorSupportUtil.sendColorFormat(donator, message);
+            return;
+        }
 
         if (receiver == donator) {
             String message = configUtil.getCustomMessage().getString("message.exchange-cannot-the-same");
@@ -44,6 +88,7 @@ public class ExchangeCommand extends Command<WFlyV2> {
             WflyApi.get().getExchangeManager().exchangeTimeFly(donator, receiver, time);
         } else {
             ColorSupportUtil.sendColorFormat(donator, configUtil.getCustomMessage().getString("message.exchange-time-out"));
+            return;
         }
 
         // receiver
