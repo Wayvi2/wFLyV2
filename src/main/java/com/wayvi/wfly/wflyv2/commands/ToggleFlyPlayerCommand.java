@@ -3,19 +3,16 @@ package com.wayvi.wfly.wflyv2.commands;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
-import com.wayvi.wfly.wflyv2.constants.ToggleType;
+import com.wayvi.wfly.wflyv2.constants.commands.ToggleType;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
 

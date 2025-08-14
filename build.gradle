@@ -1,6 +1,6 @@
 plugins {
-    id 'com.gradleup.shadow' version '9.0.0-beta4'
     id 'java'
+    id 'com.gradleup.shadow' version '9.0.0-beta4'
 }
 
 group = 'com.wayvi.wfly'
@@ -23,7 +23,6 @@ repositories {
         url = uri("https://repo.papermc.io/repository/maven-public/")
     }
 
-    maven { url 'https://jitpack.io' }
 
     maven {
         url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
@@ -33,14 +32,8 @@ repositories {
         url = uri("https://repo.groupez.dev/releases")
     }
 
-
-
-    //maven {
-    //     url = "https://repo.codemc.io/repository/bentoboxworld/"
-    //}
+    maven { url 'https://jitpack.io' }
 }
-
-
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
@@ -49,7 +42,8 @@ dependencies {
     implementation 'com.github.Traqueur-dev.CommandsAPI:platform-spigot:4.2.1'
     implementation 'com.github.Traqueur-dev.CommandsAPI:core:4.2.1'
     implementation 'fr.maxlego08.sarah:sarah:1.18'
-    //compileOnly("io.papermc.paper:paper-api:1.8.1-R0.1-SNAPSHOT")
+
+    implementation 'com.github.Wayvi2:wConfigAPI:1.0.1'
     compileOnly 'io.github.electro2560:ClueScrollsAPI:master-SNAPSHOT'
 
 }
@@ -89,9 +83,7 @@ shadowJar {
 
     relocate 'fr.traqueur.commands', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.commands"
     relocate 'fr.maxlego08.sarah', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.sarah"
-    //relocate 'me.clip.placeholderapi', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.placeholderapi"
-    //relocate 'net.kyori.adventure', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.adventure"
-    //relocate 'net.kyori.adventure.text.minimessage', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.adventure.text.minimessage"
+    relocate 'com.wayvi.wconfigapi.wconfigapi', rootProject.group + "." + rootProject.name.toLowerCase() + '.api.wconfigapi'
 }
 
 

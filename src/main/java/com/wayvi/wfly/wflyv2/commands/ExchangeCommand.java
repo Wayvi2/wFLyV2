@@ -3,109 +3,91 @@ package com.wayvi.wfly.wflyv2.commands;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class ExchangeCommand extends Command<WFlyV2> {
 
-    private WFlyV2 plugin;
-    private ConfigUtil configUtil;
+    private final WFlyV2 plugin;
 
-    public ExchangeCommand(WFlyV2 plugin, ConfigUtil configUtil) {
+    public ExchangeCommand(WFlyV2 plugin) {
         super(plugin, "fly.give");
         addArgs("receiver", Player.class);
         addArgs("time", Integer.class);
 
         this.plugin = plugin;
-        this.configUtil = configUtil;
         setPermission(Permissions.EXCHANGE_FLY_TIME.getPermission());
-
     }
 
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
 
+        if (!(commandSender instanceof Player)) {
+            commandSender.sendMessage("This command can only be used by players.");
+            return;
+        }
+
         Player donator = (Player) commandSender;
         Player receiver = arguments.get("receiver");
         int time = arguments.get("time");
 
-
-        if (configUtil.getCustomConfig().getBoolean("cooldown-give.limits.enabled", false)) {
-            int min = configUtil.getCustomConfig().getInt("cooldown-give.limits.give-minimum-value", 5);
-            String maxRaw = configUtil.getCustomConfig().getString("cooldown-give.limits.give-maximum-value", "INFINITE");
+        if (plugin.getConfigFile().get(ConfigEnum.COOLDOWN_GIVE_LIMITS_ENABLED)) {
+            int min = plugin.getConfigFile().get(ConfigEnum.COOLDOWN_GIVE_MIN);
+            int max = plugin.getConfigFile().get(ConfigEnum.COOLDOWN_GIVE_MAX);
 
             if (time < min) {
-                String message = configUtil.getCustomMessage().getString("message.exchange-time-below-minimum");
+                String message = plugin.getMessageFile().get(MessageEnum.EXCHANGE_TIME_BELOW_MINIMUM);
+
                 ColorSupportUtil.sendColorFormat(donator, message.replace("%min%", String.valueOf(min)));
                 return;
             }
+            if (time > max) {
+                String message = plugin.getMessageFile().get(MessageEnum.EXCHANGE_TIME_ABOVE_MAXIMUM);
 
-            if (!maxRaw.equalsIgnoreCase("INFINITE")) {
-                try {
-                    int max = Integer.parseInt(maxRaw);
-                    if (time > max) {
-                        String message = configUtil.getCustomMessage().getString("message.exchange-time-above-maximum");
-                        ColorSupportUtil.sendColorFormat(donator, message.replace("%max%", String.valueOf(max)));
-                        return;
-                    }
-                } catch (NumberFormatException ignored) {
-
-                }
+                ColorSupportUtil.sendColorFormat(donator, message.replace("%max%", String.valueOf(max)));
+                return;
             }
-        }
+
+            if (WflyApi.get().getExchangeManager().getCooldown(donator) > 0) {
+                String message = plugin.getMessageFile().get(MessageEnum.COOLDOWN_GIVE);
+                ColorSupportUtil.sendColorFormat(donator, message);
+                return;
+            }
+
+            if (time < 1) {
+                String message = plugin.getMessageFile().get(MessageEnum.EXCHANGE_TIME_ZERO);
+                ColorSupportUtil.sendColorFormat(donator, message);
+                return;
+            }
+
+            if (receiver == donator) {
+                String message = plugin.getMessageFile().get(MessageEnum.EXCHANGE_CANNOT_THE_SAME);
+                ColorSupportUtil.sendColorFormat(donator, message);
+                return;
+            }
+
+            int tempflyDonator = WflyApi.get().getTimeFlyManager().getTimeRemaining(donator);
 
 
+            if (tempflyDonator < time) {
+                String message = plugin.getMessageFile().get(MessageEnum.EXCHANGE_TIME_OUT);
+                ColorSupportUtil.sendColorFormat(donator, message);
+                return;
+            }
 
 
-        boolean isInCooldown = WflyApi.get().getExchangeManager().getCooldown(donator) > 0;
-
-        if (isInCooldown) {
-            String message = configUtil.getCustomMessage().getString("message.cooldown-give");
-            ColorSupportUtil.sendColorFormat(donator, message);
-            return;
-        }
-
-        if (time < 1) {
-            String message = configUtil.getCustomMessage().getString("message.exchange-time-zero");
-            ColorSupportUtil.sendColorFormat(donator, message);
-            return;
-        }
-
-        if (receiver == donator) {
-            String message = configUtil.getCustomMessage().getString("message.exchange-cannot-the-same");
-            ColorSupportUtil.sendColorFormat(donator, message);
-            return;
-        }
-
-        int tempflyDonator = WflyApi.get().getTimeFlyManager().getTimeRemaining(donator);
-
-        if (tempflyDonator >= time) {
             WflyApi.get().getExchangeManager().exchangeTimeFly(donator, receiver, time);
-        } else {
-            ColorSupportUtil.sendColorFormat(donator, configUtil.getCustomMessage().getString("message.exchange-time-out"));
-            return;
+
+            String messageReceiver = plugin.getMessageFile().get(MessageEnum.EXCHANGE_RECEIVER);
+            ColorSupportUtil.sendColorFormat(receiver, messageReceiver.replace("%donator%", donator.getName()).replace("%time%", String.valueOf(time)));
+
+            String messageDonator = plugin.getMessageFile().get(MessageEnum.EXCHANGE_DONATOR);
+            ColorSupportUtil.sendColorFormat(donator, messageDonator.replace("%receiver%", receiver.getName()).replace("%time%", String.valueOf(time)));
         }
-
-        // receiver
-        String messageReceiver = configUtil.getCustomMessage()
-                .getString("message.exchange-receiver")
-                .replace("%donator%", donator.getName())
-                .replace("%time%", String.valueOf(time));
-
-        ColorSupportUtil.sendColorFormat(receiver, messageReceiver);
-
-        // donator
-        String messageDonator = configUtil.getCustomMessage()
-                .getString("message.exchange-donator")
-                .replace("%receiver%", receiver.getName())
-                .replace("%time%", String.valueOf(time));
-
-        ColorSupportUtil.sendColorFormat(donator, messageDonator);
     }
-
 }

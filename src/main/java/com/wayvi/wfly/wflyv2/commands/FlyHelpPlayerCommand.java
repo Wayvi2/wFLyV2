@@ -2,6 +2,7 @@ package com.wayvi.wfly.wflyv2.commands;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
@@ -41,7 +42,7 @@ public class FlyHelpPlayerCommand extends Command<WFlyV2> {
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
 
-        List<String> message = configUtil.getCustomMessage().getStringList("message.help-message-player");
+        List<String> message = plugin.getMessageFile().get(MessageEnum.HELP_MESSAGE_PLAYER);
         for (String s : message) {
             ColorSupportUtil.sendColorFormat((Player) commandSender, s);
         }

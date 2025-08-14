@@ -1,14 +1,12 @@
 package com.wayvi.wfly.wflyv2.commands.converter;
 
-import com.wayvi.wfly.wflyv2.constants.ToggleType;
+import com.wayvi.wfly.wflyv2.constants.commands.ToggleType;
 import fr.traqueur.commands.api.arguments.ArgumentConverter;
 import fr.traqueur.commands.api.arguments.TabCompleter;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ToggleTypeConverter implements ArgumentConverter<ToggleType>, TabCompleter<CommandSender>  {
     @Override

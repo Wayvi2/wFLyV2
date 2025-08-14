@@ -3,6 +3,7 @@ package com.wayvi.wfly.wflyv2.commands;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.listeners.PvPListener;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
@@ -17,7 +18,7 @@ import java.sql.SQLException;
 
 public class FlyPlayerCommands extends Command<WFlyV2> {
 
-
+    private final WFlyV2 plugin;
     private final ConfigUtil configUtil;
     private final PvPListener pvpListener;
     /**
@@ -33,6 +34,7 @@ public class FlyPlayerCommands extends Command<WFlyV2> {
         setDescription("Fly command");
         setUsage("/wfly fly <player>");
         setPermission(Permissions.MANAGE_FLY.getPermission());
+        this.plugin = plugin;
         this.configUtil = configUtil;
         this.pvpListener = pvpListener;
     }
@@ -50,19 +52,24 @@ public class FlyPlayerCommands extends Command<WFlyV2> {
         try {
             AccessPlayerDTO playersInFly = WflyApi.get().getFlyManager().getPlayerFlyData(player.getUniqueId());
 
+            String messageDeactivate = plugin.getMessageFile().get(MessageEnum.FLY_DEACTIVATED);
+            String messageActivate = plugin.getMessageFile().get(MessageEnum.FLY_ACTIVATED);
+
             String message = playersInFly.isinFly() ?
-                    configUtil.getCustomMessage().getString("message.fly-deactivated") :
-                    configUtil.getCustomMessage().getString("message.fly-activated");
+                    messageDeactivate :
+                    messageActivate;
 
             if (player.getGameMode() == GameMode.SPECTATOR) {
-                ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-spectator"));
+                String messageSpectator = plugin.getMessageFile().get(MessageEnum.NO_SPECTATOR);
+                ColorSupportUtil.sendColorFormat(player, messageSpectator);
                 return;
             }
             boolean hasInfiniteFly = player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp();
 
             if (!hasInfiniteFly) {
                 if (WflyApi.get().getTimeFlyManager().getTimeRemaining(player) == 0) {
-                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-timefly-remaining"));
+                    String messageNoTimeFly = plugin.getMessageFile().get(MessageEnum.NO_TIMEFLY_REMAINING);
+                    ColorSupportUtil.sendColorFormat(player, messageNoTimeFly);
                     return;
                 }
             }
@@ -71,12 +78,14 @@ public class FlyPlayerCommands extends Command<WFlyV2> {
 
             if (!hasBypass) {
                 if (pvpListener.HasNearbyPlayers(player)) {
-                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.player-in-range"));
+                    String messagePlayerInRange = plugin.getMessageFile().get(MessageEnum.PLAYER_IN_RANGE);
+                    ColorSupportUtil.sendColorFormat(player, messagePlayerInRange);
                     return;
                 }
 
                 if (!WflyApi.get().getConditionManager().isFlyAuthorized(player)) {
-                    ColorSupportUtil.sendColorFormat(player, configUtil.getCustomMessage().getString("message.no-fly-here"));
+                    String messageNoFlyHere = plugin.getMessageFile().get(MessageEnum.NO_FLY_HERE);
+                    ColorSupportUtil.sendColorFormat(player, messageNoFlyHere);
                     return;
                 }
             }

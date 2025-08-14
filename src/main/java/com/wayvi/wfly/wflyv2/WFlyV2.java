@@ -1,5 +1,6 @@
 package com.wayvi.wfly.wflyv2;
 
+import com.wayvi.wconfigapi.wconfigapi.ConfigAPI;
 import com.wayvi.wfly.wflyv2.api.FlyManager;
 import com.wayvi.wfly.wflyv2.api.TimeFlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
@@ -7,7 +8,9 @@ import com.wayvi.wfly.wflyv2.commands.all.RemoveAllTimeFlyCommand;
 import com.wayvi.wfly.wflyv2.commands.all.addAllTimeFlyCommand;
 import com.wayvi.wfly.wflyv2.commands.converter.ToggleTypeConverter;
 import com.wayvi.wfly.wflyv2.commands.other.MigrateTempFlyCommand;
-import com.wayvi.wfly.wflyv2.constants.ToggleType;
+import com.wayvi.wfly.wflyv2.constants.commands.ToggleType;
+import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.handlers.CustomMessageHandler;
 import com.wayvi.wfly.wflyv2.managers.WExchangeManager;
 import com.wayvi.wfly.wflyv2.pluginhook.cluescroll.FlyQuest;
@@ -26,18 +29,20 @@ import fr.maxlego08.sarah.RequestHelper;
 
 import fr.traqueur.commands.spigot.CommandManager;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.concurrent.CompletionException;
-import java.util.logging.Logger;
 
 public final class WFlyV2 extends JavaPlugin {
 
     private TimeFormatTranslatorUtil timeFormatTranslatorUtil;
     private boolean isStartup = false;
     private CommandManager<WFlyV2> commandManager;
+
+    private ConfigAPI<ConfigEnum> configFile;
+    private ConfigAPI<MessageEnum>  messageFile;
 
     @Override
     public void onEnable() {
@@ -47,14 +52,21 @@ public final class WFlyV2 extends JavaPlugin {
         // INIT METRICS FOR BSTATS
         Metrics metrics = new Metrics(this, 24609);
 
+
         // CONFIGS
+        configFile = new ConfigAPI<>(this, ConfigEnum.class, "config.yml");
+        messageFile  = new ConfigAPI<>(this, MessageEnum.class, "message.yml");
+
+
+
+
+
         ConfigUtil configUtil = new ConfigUtil(this);
         configUtil.createCustomConfig();
 
         // INIT DATABASE
         DatabaseService databaseService = new DatabaseService(this, configUtil);
         databaseService.initializeDatabase();
-
 
 
         // INIT miniMessageSupport
@@ -118,7 +130,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new ReloadCommand(this, configUtil, pvpListener, conditionManager));
         commandManager.registerCommand(flyCommand);
         commandManager.registerCommand(new FlySpeedCommand(this, flyManager));
-        commandManager.registerCommand(new AddTimeCommand(this, configUtil));
+        commandManager.registerCommand(new AddTimeCommand(this));
         commandManager.registerCommand(new ResetTimeCommand(this, configUtil));
         commandManager.registerCommand(new RemoveTimeCommand(this, configUtil));
         commandManager.setMessageHandler(new CustomMessageHandler(configUtil));
@@ -131,7 +143,7 @@ public final class WFlyV2 extends JavaPlugin {
             commandManager.registerCommand(new MigrateTempFlyCommand(this, storageAdapter));
         }
         commandManager.registerCommand(new GetPlayerFlyTimeCommand(this, configUtil, placeholerapiManager.getPlaceholder()));
-        commandManager.registerCommand(new ExchangeCommand(this, configUtil));
+        commandManager.registerCommand(new ExchangeCommand(this));
         commandManager.registerCommand(new FlyHelpPlayerCommand(this, configUtil));
         commandManager.registerCommand(new ToggleFlyPlayerCommand(this,configUtil, flyCommand));
 
@@ -156,14 +168,20 @@ public final class WFlyV2 extends JavaPlugin {
         getLogger().info("Plugin disabled");
     }
 
-    public boolean isStartup() {
-        return this.isStartup;
-    }
-    public void setStartup(boolean startup) {
-        this.isStartup = startup;
-    }
 
     public TimeFormatTranslatorUtil getTimeFormatTranslatorUtil() {
         return this.timeFormatTranslatorUtil;
     }
+
+
+    //getter config
+    public ConfigAPI<ConfigEnum> getConfigFile() {
+        return configFile;
+    }
+
+    public ConfigAPI<MessageEnum> getMessageFile() {
+        return messageFile;
+    }
+
+
 }

@@ -54,6 +54,9 @@ public class ReloadCommand extends Command<WFlyV2> {
         conditionManager.loadConditions();
         pvpListener.reloadConfigValues();
 
+        plugin.getMessageFile().reload();
+        plugin.getConfigFile().reload();
+
         // Log reload message
         String message = configUtil.getCustomMessage().getString("message.reload");
         plugin.getLogger().info("Plugin reloaded");
