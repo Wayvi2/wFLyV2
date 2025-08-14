@@ -19,7 +19,6 @@ import java.sql.SQLException;
 public class FlyPlayerCommands extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
-    private final ConfigUtil configUtil;
     private final PvPListener pvpListener;
     /**
      * Constructs the FlyCommand.
@@ -28,14 +27,13 @@ public class FlyPlayerCommands extends Command<WFlyV2> {
      * @param configUtil              Configuration utility for custom messages.
      * @param pvpListener             Listener to check for nearby players in PvP.
      */
-    public FlyPlayerCommands(WFlyV2 plugin, ConfigUtil configUtil, PvPListener pvpListener) {
+    public FlyPlayerCommands(WFlyV2 plugin, PvPListener pvpListener) {
         super(plugin, "wfly.fly");
         addArgs("player", Player.class);
         setDescription("Fly command");
         setUsage("/wfly fly <player>");
         setPermission(Permissions.MANAGE_FLY.getPermission());
         this.plugin = plugin;
-        this.configUtil = configUtil;
         this.pvpListener = pvpListener;
     }
 

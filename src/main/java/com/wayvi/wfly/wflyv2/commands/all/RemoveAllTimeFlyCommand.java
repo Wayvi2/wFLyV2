@@ -3,6 +3,7 @@ package com.wayvi.wfly.wflyv2.commands.all;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
@@ -13,22 +14,19 @@ import org.bukkit.entity.Player;
 public class RemoveAllTimeFlyCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
-    private ConfigUtil configUtil;
 
     /**
      * Constructs the AddTimeCommand.
      *
      * @param plugin     The main plugin instance.
-     * @param configUtil Configuration utility to manage custom messages.
      */
-    public RemoveAllTimeFlyCommand(WFlyV2 plugin, ConfigUtil configUtil) {
+    public RemoveAllTimeFlyCommand(WFlyV2 plugin) {
         super(plugin, "wfly.removeall");
         setDescription("Manage fly time for all players");
         setUsage("/wfly addtime <player> <time>");
         addArgs("time", Integer.class);
         setPermission(Permissions.REMOVE_FLY_TIME.getPermission());
         this.plugin = plugin;
-        this.configUtil = configUtil;
     }
 
     /**
@@ -42,17 +40,16 @@ public class RemoveAllTimeFlyCommand extends Command<WFlyV2> {
         int time = arguments.get("time");
 
         WflyApi.get().getTimeFlyManager().removeFlytimeForAllPlayers(time);
-
+        String message = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVED);
         for (Player target : plugin.getServer().getOnlinePlayers()) {
-            ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
-                    .getString("message.fly-time-removed")
-                    .replace("%time%", String.valueOf(time)));
+            ColorSupportUtil.sendColorFormat(target,message.replace("%time%", String.valueOf(time)));
         }
 
 
         if (commandSender instanceof Player) {
             Player playerSender = (Player) commandSender;
-            ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage().getString("message.fly-time-removed-to-all-player").replace("%time%", String.valueOf(time)));
+            String messageToSender = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVED_TO_ALL_PLAYER);
+            ColorSupportUtil.sendColorFormat(playerSender, messageToSender.replace("%time%", String.valueOf(time)));
         } else {
             plugin.getLogger().info("You have removed " + time + " fly time to all players");
         }

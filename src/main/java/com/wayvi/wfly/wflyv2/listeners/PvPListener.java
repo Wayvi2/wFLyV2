@@ -1,7 +1,9 @@
 package com.wayvi.wfly.wflyv2.listeners;
 
+import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -24,20 +26,16 @@ import java.util.UUID;
  */
 public class PvPListener implements Listener {
 
-    private final ConfigUtil configUtil;
-    private int FLY_DISABLE_RADIUS;
-    private boolean featureActive;
 
-    private final Map<UUID, Boolean> playerFlyState = new HashMap<>();
-    private final Map<UUID, Location> playerLastSafeLocation = new HashMap<>();
+    private WFlyV2 plugin;
+
+    private int FLY_DISABLE_RADIUS;
 
     /**
      * Constructs a PvPListener instance.
-     *
-     * @param configUtil The configuration utility.
      */
-    public PvPListener( ConfigUtil configUtil) {
-        this.configUtil = configUtil;
+    public PvPListener(WFlyV2 plugin) {
+        this.plugin = plugin;
         reloadConfigValues();
     }
 
@@ -45,7 +43,7 @@ public class PvPListener implements Listener {
      * Reloads the configuration values for the PvP feature.
      */
     public void reloadConfigValues() {
-        FLY_DISABLE_RADIUS = configUtil.getCustomConfig().getInt("pvp.fly-disable-radius");
+        FLY_DISABLE_RADIUS = plugin.getConfigFile().get(ConfigEnum.PVP_FLY_DISABLE_RADIUS);
     }
 
     /**
@@ -69,7 +67,7 @@ public class PvPListener implements Listener {
     }
 
     private boolean isPvPFeatureActive() {
-        return configUtil.getCustomConfig().getBoolean("pvp.enabled-permission-range");
+        return plugin.getConfigFile().get(ConfigEnum.PVP_ENABLED_PERMISSION_RANGE);
     }
 
     private boolean isInBypassMode(Player player) {
@@ -79,7 +77,7 @@ public class PvPListener implements Listener {
     }
 
     private boolean shouldDisableFly(Player player) {
-        List<String> bypassPlaceholders = configUtil.getCustomConfig().getStringList("pvp.bypass.placeholders");
+        List<String> bypassPlaceholders = plugin.getConfigFile().get(ConfigEnum.PVP_BYPASS_PLACEHOLDERS);
 
         for (Player nearbyPlayer : Bukkit.getOnlinePlayers()) {
             if (isPotentialThreat(player, nearbyPlayer)) {
@@ -130,7 +128,7 @@ public class PvPListener implements Listener {
     }
 
     private boolean hasNearbyThreat(Player player) {
-        List<String> bypassPlaceholders = configUtil.getCustomConfig().getStringList("pvp.bypass.placeholders");
+        List<String> bypassPlaceholders = plugin.getConfigFile().get(ConfigEnum.PVP_BYPASS_PLACEHOLDERS);
 
         return Bukkit.getOnlinePlayers().stream()
                 .filter(p -> isNearbyPlayerThreat(player, p))
@@ -151,7 +149,7 @@ public class PvPListener implements Listener {
      * @return The safe location for the player to teleport to.
      */
     private Location getSafeLocation(Player player) {
-        boolean tpOnFloorWhenFlyDisabled = configUtil.getCustomConfig().getBoolean("tp-on-floor-when-fly-disabled");
+        boolean tpOnFloorWhenFlyDisabled = plugin.getConfigFile().get(ConfigEnum.TP_ON_FLOOR_WHEN_FLY_DISABLED);
         if (!tpOnFloorWhenFlyDisabled) {
             return player.getLocation();
         }
@@ -174,7 +172,7 @@ public class PvPListener implements Listener {
      * @return True if there are nearby players who disable flight, otherwise false.
      */
     public boolean HasNearbyPlayers(Player player) {
-        List<String> bypassPlaceholders = configUtil.getCustomConfig().getStringList("pvp.bypass.placeholders");
+        List<String> bypassPlaceholders = plugin.getConfigFile().get(ConfigEnum.PVP_BYPASS_PLACEHOLDERS);
 
         return Bukkit.getOnlinePlayers().stream()
                 .filter(nearbyPlayer -> isValidNearbyPlayer(player, nearbyPlayer))

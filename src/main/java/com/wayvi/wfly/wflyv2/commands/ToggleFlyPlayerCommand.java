@@ -4,6 +4,7 @@ import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.commands.ToggleType;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
@@ -17,13 +18,11 @@ import java.sql.SQLException;
 public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
 
     private WFlyV2 plugin;
-    private final ConfigUtil configUtil;
     private FlyCommand flyCommand;
 
-    public ToggleFlyPlayerCommand(WFlyV2 plugin, ConfigUtil configUtil, FlyCommand flyCommand) {
+    public ToggleFlyPlayerCommand(WFlyV2 plugin, FlyCommand flyCommand) {
         super(plugin, "wfly");
         this.plugin = plugin;
-        this.configUtil = configUtil;
         this.flyCommand = flyCommand;
         addArgs("state", ToggleType.class);
         addArgs("player", Player.class);
@@ -37,7 +36,7 @@ public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
 
 
         if (state == null || targetPlayer == null) {
-            String message = configUtil.getCustomMessage().getString("message.arg-not-recognized");
+            String message = plugin.getMessageFile().get(MessageEnum.ARG_NOT_RECOGNIZED);
             if (sender instanceof Player) {
                 ColorSupportUtil.sendColorFormat((Player) sender, message);
             } else {
@@ -52,9 +51,8 @@ public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
             boolean activated = flyCommand.tryActivateFly(targetPlayer);
 
             if (activated) {
-                String msg = configUtil.getCustomMessage()
-                        .getString("message.fly-activated-player")
-                        .replace("%player%", targetPlayer.getName());
+                String message = plugin.getMessageFile().get(MessageEnum.FLY_ACTIVATED_PLAYER);
+                String msg = message.replace("%player%", targetPlayer.getName());
 
                 if (sender instanceof Player) {
                     ColorSupportUtil.sendColorFormat((Player) sender, msg);
@@ -73,23 +71,21 @@ public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
             }
 
             if (!playerFlyData.isinFly()) {
-                String notInFlyMessage = configUtil.getCustomMessage()
-                        .getString("message.player-not-in-fly")
-                        .replace("%player%", targetPlayer.getName());
+                String message = plugin.getMessageFile().get(MessageEnum.PLAYER_NOT_IN_FLY);
+
 
                 if (sender instanceof Player) {
-                    ColorSupportUtil.sendColorFormat((Player) sender, notInFlyMessage);
+                    ColorSupportUtil.sendColorFormat((Player) sender, message.replace("%player%", targetPlayer.getName()));
                 } else {
-                    plugin.getLogger().info(notInFlyMessage);
+                    plugin.getLogger().info(message.replace("%player%", targetPlayer.getName()));
                 }
                 return;
             }
 
             WflyApi.get().getFlyManager().manageFly(targetPlayer.getUniqueId(), false);
 
-            String msgSender = configUtil.getCustomMessage()
-                    .getString("message.fly-deactivated-player")
-                    .replace("%player%", targetPlayer.getName());
+            String message = plugin.getMessageFile().get(MessageEnum.FLY_DEACTIVATED_PLAYER);
+            String msgSender = message.replace("%player%", targetPlayer.getName());
 
             if (sender instanceof Player) {
                 ColorSupportUtil.sendColorFormat((Player) sender, msgSender);
@@ -97,7 +93,7 @@ public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
                 plugin.getLogger().info(msgSender);
             }
 
-            String msgTarget = configUtil.getCustomMessage().getString("message.fly-deactivated");
+            String msgTarget = plugin.getMessageFile().get(MessageEnum.FLY_DEACTIVATED);
             if (msgTarget != null) {
                 ColorSupportUtil.sendColorFormat(targetPlayer, msgTarget);
             }

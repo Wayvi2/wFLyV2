@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyv2.services;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
+import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.migrations.CreateUserTableMigration;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.maxlego08.sarah.*;
@@ -15,7 +16,6 @@ import static fr.maxlego08.sarah.database.DatabaseType.MYSQL;
  */
 public class DatabaseService {
 
-    private ConfigUtil configUtil;
     private File databaseFile;
     private DatabaseConnection connection;
     private final WFlyV2 plugin;
@@ -25,9 +25,8 @@ public class DatabaseService {
      *
      * @param plugin the main WFlyV2 plugin instance, used for accessing plugin methods and configurations
      */
-    public DatabaseService(WFlyV2 plugin, ConfigUtil configUtil) {
+    public DatabaseService(WFlyV2 plugin) {
         this.plugin = plugin;
-        this.configUtil = configUtil;
     }
 
     /**
@@ -52,14 +51,18 @@ public class DatabaseService {
                 }
             }
             // Configure and create a new SQLite database connection
-            if (configUtil.getCustomConfig().getBoolean("mysql.enabled")){
-                DatabaseConfiguration configuration = DatabaseConfiguration.create(configUtil.getCustomConfig().getString("mysql.username"),
-                                                                                   configUtil.getCustomConfig().getString("mysql.password"),
-                                                                                   configUtil.getCustomConfig().getInt("mysql.port"),
-                                                                                   configUtil.getCustomConfig().getString("mysql.host"),
-                                                                                   configUtil.getCustomConfig().getString("mysql.database"),
-                                                                             false,
-                                                                                   MYSQL);
+            if (plugin.getConfigFile().get(ConfigEnum.MYSQL_ENABLED)) {
+                DatabaseConfiguration configuration = DatabaseConfiguration.create(
+                        plugin.getConfigFile().get(ConfigEnum.MYSQL_USERNAME),
+                        plugin.getConfigFile().get(ConfigEnum.MYSQL_PASSWORD),
+                        plugin.getConfigFile().get(ConfigEnum.MYSQL_PORT),
+                        plugin.getConfigFile().get(ConfigEnum.MYSQL_HOST),
+                        plugin.getConfigFile().get(ConfigEnum.MYSQL_DATABASE),
+                        false,
+                        MYSQL
+                );
+
+
                 this.connection = new MySqlConnection(configuration);
             } else {
                 DatabaseConfiguration configuration = DatabaseConfiguration.sqlite(false);

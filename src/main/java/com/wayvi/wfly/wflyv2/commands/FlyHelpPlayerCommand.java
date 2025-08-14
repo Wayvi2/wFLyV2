@@ -19,18 +19,16 @@ import java.util.List;
 public class FlyHelpPlayerCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
-    private ConfigUtil configUtil;
 
     /**
      * Constructs the FlyHelpCommand.
      *
      * @param plugin The main plugin instance.
      */
-    public FlyHelpPlayerCommand(WFlyV2 plugin, ConfigUtil configUtil) {
+    public FlyHelpPlayerCommand(WFlyV2 plugin) {
         super(plugin, "fly.help");
         setPermission(Permissions.HELP_PLAYER.getPermission());
         this.plugin = plugin;
-        this.configUtil = configUtil;
     }
 
     /**

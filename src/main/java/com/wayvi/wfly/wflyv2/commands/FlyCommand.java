@@ -4,6 +4,7 @@ import com.wayvi.wfly.wflyv2.WFlyV2;
 
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.listeners.PvPListener;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
@@ -16,6 +17,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Command to toggle flight for a player.
@@ -23,27 +25,25 @@ import java.sql.SQLException;
 public class FlyCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
-    private final ConfigUtil configUtil;
     private final PvPListener pvpListener;
 
     /**
      * Constructs the FlyCommand.
      *
      * @param plugin      The main plugin instance.
-     * @param configUtil  Configuration utility for custom messages.
      * @param pvpListener Listener to check for nearby players in PvP.
      */
-    public FlyCommand(WFlyV2 plugin, ConfigUtil configUtil, PvPListener pvpListener) {
+    public FlyCommand(WFlyV2 plugin, PvPListener pvpListener) {
         super(plugin, "fly.fly");
         setDescription("Fly command");
         setUsage("/fly");
         setPermission(Permissions.FLY.getPermission());
-        this.configUtil = configUtil;
         this.pvpListener = pvpListener;
         this.plugin = plugin;
 
         //create alias by config
-        for (String s : configUtil.getCustomConfig().getStringList("command.alias")) {
+        List<String> lst = plugin.getConfigFile().get(ConfigEnum.COMMAND_ALIAS);
+        for (String s : lst) {
             s = s.replaceAll("\\s+", ".");
             addAlias(s);
         }

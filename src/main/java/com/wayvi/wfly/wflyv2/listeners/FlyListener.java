@@ -3,6 +3,8 @@ package com.wayvi.wfly.wflyv2.listeners;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.FlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
+import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
@@ -29,7 +31,6 @@ public class FlyListener implements Listener {
 
     private final WFlyV2 plugin;
     private final FlyManager flyManager;
-    private final ConfigUtil configUtil;
 
     // ══════════════════════════════════════════════════════
     //                 CONSTRUCTOR & INIT
@@ -40,12 +41,10 @@ public class FlyListener implements Listener {
      *
      * @param plugin     the main plugin instance
      * @param flyManager the FlyManager instance managing flight data
-     * @param configUtil the configuration utility for accessing config/messages
      */
-    public FlyListener(WFlyV2 plugin, FlyManager flyManager, ConfigUtil configUtil) {
+    public FlyListener(WFlyV2 plugin, FlyManager flyManager) {
         this.plugin = plugin;
         this.flyManager = flyManager;
-        this.configUtil = configUtil;
     }
 
     // ══════════════════════════════════════════════════════
@@ -86,7 +85,7 @@ public class FlyListener implements Listener {
 
         sendPluginInfo(player);
 
-        if (configUtil.getCustomConfig().getBoolean("mysql.enabled")) {
+        if (plugin.getConfigFile().get(ConfigEnum.MYSQL_ENABLED)) {
             WflyApi.get().getTimeFlyManager().loadFlyTimesForPlayer(player);
         }
 
@@ -144,12 +143,12 @@ public class FlyListener implements Listener {
                 if (playerData != null && playerData.isinFly()) {
                     flyManager.manageFly(player.getUniqueId(), authorized);
 
-                    String messageKey = authorized ? "message.fly-activated" : "message.fly-deactivated";
-                    String message = configUtil.getCustomMessage().getString(messageKey);
+                    String message = authorized ? plugin.getMessageFile().get(MessageEnum.FLY_ACTIVATED) : plugin.getMessageFile().get(MessageEnum.FLY_DEACTIVATED);
+
 
                     ColorSupportUtil.sendColorFormat(player, message);
-
-                    if (!authorized && configUtil.getCustomConfig().getBoolean("tp-on-floor-when-fly-disabled")) {
+                    boolean tpFloor = plugin.getConfigFile().get(ConfigEnum.TP_ON_FLOOR_WHEN_FLY_DISABLED);
+                    if (!authorized && tpFloor) {
                         Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
                         player.teleport(safeLoc);
                     }
