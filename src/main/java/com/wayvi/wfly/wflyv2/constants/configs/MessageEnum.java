@@ -22,7 +22,7 @@ public enum MessageEnum implements ConfigKey<Object> {
     RELOAD("message.reload", "&cPlugin has been reloaded!"),
     FLY_ACTIVATED("message.fly-activated", "&aYou have been set to fly! Use /fly to disable fly."),
     FLY_DEACTIVATED("message.fly-deactivated", "&cYou have been set to walk! Use /fly to enable fly."),
-    FLY_SPEED_TOO_HIGH("message.fly-speed-too-high", "&cSpeed too high! Maximum speed is %speed%"),
+    FLY_SPEED_TOO_HIGH("message.fly-speed-too-high", "&cSpeed too high! Maximum speed is 10"),
     FLY_SPEED("message.fly-speed", "&aYou have set your fly speed to &e%speed%"),
     FLY_SPEED_NO_PERMISSION("message.fly-speed-no-permission", "&cYou do not have permission to set your fly speed to &e%speed%"),
     NO_TIMEFLY_REMAINING("message.no-timefly-remaining", "&cYou have no timefly remaining!"),

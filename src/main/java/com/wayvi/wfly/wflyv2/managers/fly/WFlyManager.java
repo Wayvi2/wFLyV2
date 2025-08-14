@@ -64,27 +64,47 @@ public class WFlyManager implements FlyManager {
      * @param player the player whose fly speed is to be set
      * @param speed the desired fly speed (0–10)
      */
+    /**
+     * Sets the fly speed of the player, validating permissions and limits.
+     *
+     * @param player the player whose fly speed is to be set
+     * @param speed the desired fly speed (1–10)
+     */
     @Override
     public void manageFlySpeed(final Player player, double speed) {
-        final double normalizedSpeed = speed / 10.0;
 
-        if (normalizedSpeed > 1.0) {
-            String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED_TOO_HIGH);
-            ColorSupportUtil.sendColorFormat(player, message.replace("%speed%",String.valueOf(speed)));
-            return;
-        }
-
-        for (int i = (int) (normalizedSpeed * 10); i >= 1; i--) {
+        int maxAllowedSpeed = 0;
+        for (int i = 1; i <= 10; i++) {
             if (player.hasPermission("wfly.fly.speed." + i)) {
-                player.setFlySpeed(i / 10.0f);
-                String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED_NO_PERMISSION);
-                ColorSupportUtil.sendColorFormat(player, message.replace("%speed%",String.valueOf(i)));
-                return;
+                maxAllowedSpeed = i;
             }
         }
 
-        ColorSupportUtil.sendColorFormat(player, plugin.getMessageFile().get(MessageEnum.FLY_SPEED_NO_PERMISSION));
+        if (maxAllowedSpeed == 0) {
+            String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED_NO_PERMISSION);
+            ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf((int) speed)));
+            return;
+        }
+
+        if (speed < 1) speed = 1;
+        if (speed > maxAllowedSpeed) {
+            String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED_TOO_HIGH);
+            ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(maxAllowedSpeed)));
+            return;
+        }
+
+        int requestedSpeed = (int) speed;
+        player.setFlySpeed(requestedSpeed / 10.0f);
+
+        String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED);
+        ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(requestedSpeed)));
     }
+
+
+
+
+
+
 
 
 

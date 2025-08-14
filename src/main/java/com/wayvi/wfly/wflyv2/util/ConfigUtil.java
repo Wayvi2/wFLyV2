@@ -25,7 +25,7 @@ public class ConfigUtil {
     private File configFile;
     private FileConfiguration configConfig;
 
-    private String version = "1.0.2.4";
+    private String version = "1.0.2.6";
     private final Plugin plugin;
 
     /**

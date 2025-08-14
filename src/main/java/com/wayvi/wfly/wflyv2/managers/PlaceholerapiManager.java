@@ -20,7 +20,6 @@ public class PlaceholerapiManager {
      * Constructor to initialize the PlaceholderAPI manager.
      *
      * @param plugin    The WFlyV2 plugin instance.
-     * @param configutil The ConfigUtil instance for managing configurations.
      */
     public PlaceholerapiManager(WFlyV2 plugin) {
         this.plugin = plugin;
