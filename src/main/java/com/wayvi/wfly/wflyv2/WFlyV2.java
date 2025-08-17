@@ -13,6 +13,7 @@ import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.handlers.CustomMessageHandler;
 import com.wayvi.wfly.wflyv2.managers.WExchangeManager;
+import com.wayvi.wfly.wflyv2.messaging.BungeeMessenger;
 import com.wayvi.wfly.wflyv2.pluginhook.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyv2.commands.*;
 
@@ -29,10 +30,12 @@ import fr.maxlego08.sarah.RequestHelper;
 
 import fr.traqueur.commands.spigot.CommandManager;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletionException;
 
 public final class WFlyV2 extends JavaPlugin {
@@ -44,6 +47,8 @@ public final class WFlyV2 extends JavaPlugin {
     private ConfigAPI<ConfigEnum> configFile;
     private ConfigAPI<MessageEnum>  messageFile;
 
+    private UUID serverId;
+
     @Override
     public void onEnable() {
 
@@ -51,6 +56,8 @@ public final class WFlyV2 extends JavaPlugin {
 
         // INIT METRICS FOR BSTATS
         Metrics metrics = new Metrics(this, 24609);
+
+
 
 
         // CONFIGS
@@ -61,10 +68,6 @@ public final class WFlyV2 extends JavaPlugin {
         // INIT DATABASE
         DatabaseService databaseService = new DatabaseService(this);
         databaseService.initializeDatabase();
-
-
-        // INIT miniMessageSupport
-        ColorSupportUtil miniMessageSupportUtil = new ColorSupportUtil();
 
         PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this);
         placeholerapiManager.checkPlaceholderAPI();
@@ -99,6 +102,12 @@ public final class WFlyV2 extends JavaPlugin {
         } else {
             getLogger().info("ClueScrolls is not enabled: Skipping ClueScrolls integration");
         }
+
+        this.serverId = UUID.randomUUID();
+
+
+
+
 
         // INIT TimeFlyManager
         TimeFlyManager  timeFlyManager = new WTimeFlyManager(this,requestHelper);
@@ -149,6 +158,11 @@ public final class WFlyV2 extends JavaPlugin {
 
         getLogger().info("Plugin enabled");
         Bukkit.getScheduler().runTaskLater(this, () -> isStartup = true, 40L);
+
+
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new BungeeMessenger(this));
+
     }
 
     @Override
@@ -159,7 +173,15 @@ public final class WFlyV2 extends JavaPlugin {
         } catch (CompletionException e) {
             getLogger().severe("" + e.getCause());
         }
-        getLogger().info("Plugin disabled");
+
+
+        this.getServer().getMessenger().unregisterOutgoingPluginChannel(this, "BungeeCord");
+        this.getServer().getMessenger().unregisterIncomingPluginChannel(this, "BungeeCord");
+
+
+
+
+    getLogger().info("Plugin disabled");
     }
 
 
@@ -177,5 +199,8 @@ public final class WFlyV2 extends JavaPlugin {
         return messageFile;
     }
 
+    public UUID getServerId() {
+        return serverId;
+    }
 
 }

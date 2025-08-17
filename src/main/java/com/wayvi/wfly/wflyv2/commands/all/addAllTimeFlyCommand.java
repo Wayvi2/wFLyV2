@@ -1,5 +1,8 @@
 package com.wayvi.wfly.wflyv2.commands.all;
 
+import com.google.common.collect.Iterables;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
@@ -8,12 +11,14 @@ import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class addAllTimeFlyCommand  extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
+    private final String SERVER = Bukkit.getServer().getName();
 
 
     /**
@@ -40,7 +45,10 @@ public class addAllTimeFlyCommand  extends Command<WFlyV2> {
     public void execute(CommandSender commandSender, Arguments arguments) {
         int time = arguments.get("time");
 
-        WflyApi.get().getTimeFlyManager().addFlytimeForAllPlayers(time);
+        WflyApi.get().getTimeFlyManager().addFlytimeForAllPlayers(time); //to actual server
+        sendFlyTimeAllProxy(time); //to other proxy server
+
+
         String message = plugin.getMessageFile().get(MessageEnum.FLY_TIME_ADDED);
         for (Player target : plugin.getServer().getOnlinePlayers()) {
             ColorSupportUtil.sendColorFormat(target, message.replace("%time%", String.valueOf(time)));
@@ -55,4 +63,18 @@ public class addAllTimeFlyCommand  extends Command<WFlyV2> {
             plugin.getLogger().info("You have given " + time + " fly time to all players");
         }
     }
+
+    public void sendFlyTimeAllProxy(int time) {
+        Player player = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
+        if (player == null) return;
+
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Forward");
+        out.writeUTF("ALL");
+        out.writeUTF("flyAddAll");
+        out.writeUTF(plugin.getServerId() + ":" + time);
+
+        player.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
+    }
+
 }
