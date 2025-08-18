@@ -1,34 +1,37 @@
 package com.wayvi.wfly.wflyv2.commands.all;
 
+import com.google.common.collect.Iterables;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class addAllTimeFlyCommand  extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
-    private ConfigUtil configUtil;
+    private final String SERVER = Bukkit.getServer().getName();
+
 
     /**
      * Constructs the AddTimeCommand.
      *
      * @param plugin     The main plugin instance.
-     * @param configUtil Configuration utility to manage custom messages.
      */
-    public addAllTimeFlyCommand(WFlyV2 plugin, ConfigUtil configUtil) {
+    public addAllTimeFlyCommand(WFlyV2 plugin) {
         super(plugin, "wfly.addall");
         setDescription("Manage fly time for all players");
         setUsage("/wfly addtime <player> <time>");
         addArgs("time", Integer.class);
         setPermission(Permissions.ADD_FLY_TIME.getPermission());
         this.plugin = plugin;
-        this.configUtil = configUtil;
     }
 
     /**
@@ -41,20 +44,36 @@ public class addAllTimeFlyCommand  extends Command<WFlyV2> {
     public void execute(CommandSender commandSender, Arguments arguments) {
         int time = arguments.get("time");
 
-        WflyApi.get().getTimeFlyManager().addFlytimeForAllPlayers(time);
+        WflyApi.get().getTimeFlyManager().addFlytimeForAllPlayers(time); //to actual server
+        sendFlyTimeAllProxy(time); //to other proxy server
 
+
+        String message = plugin.getMessageFile().get(MessageEnum.FLY_TIME_ADDED);
         for (Player target : plugin.getServer().getOnlinePlayers()) {
-            ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage()
-                    .getString("message.fly-time-added")
-                    .replace("%time%", String.valueOf(time)));
+            ColorSupportUtil.sendColorFormat(target, message.replace("%time%", String.valueOf(time)));
         }
 
 
         if (commandSender instanceof Player) {
             Player playerSender = (Player) commandSender;
-            ColorSupportUtil.sendColorFormat(playerSender, configUtil.getCustomMessage().getString("message.fly-time-added-to-all-player").replace("%time%", String.valueOf(time)));
+            String messageToSender = plugin.getMessageFile().get(MessageEnum.FLY_TIME_ADDED_TO_ALL_PLAYER);
+            ColorSupportUtil.sendColorFormat(playerSender, messageToSender.replace("%time%", String.valueOf(time)));
         } else {
             plugin.getLogger().info("You have given " + time + " fly time to all players");
         }
     }
+
+    public void sendFlyTimeAllProxy(int time) {
+        Player player = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
+        if (player == null) return;
+
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Forward");
+        out.writeUTF("ALL");
+        out.writeUTF("flyAddAll");
+        out.writeUTF(plugin.getServerId() + ":" + time);
+
+        player.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
+    }
+
 }

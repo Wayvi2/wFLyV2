@@ -1,4 +1,4 @@
-package com.wayvi.wfly.wflyv2.constants;
+package com.wayvi.wfly.wflyv2.constants.commands;
 
 public enum ToggleType {
     ACTIVATE("activate"),

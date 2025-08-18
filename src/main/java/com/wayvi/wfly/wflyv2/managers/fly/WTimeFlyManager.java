@@ -1,16 +1,16 @@
 package com.wayvi.wfly.wflyv2.managers.fly;
 
+import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.TimeFlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
-import org.bukkit.command.CommandSender;
+import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
@@ -25,15 +25,14 @@ import java.util.concurrent.*;
 public class WTimeFlyManager implements TimeFlyManager {
 
     // ---------- FIELDS ----------
+    private WFlyV2 plugin;
     private final RequestHelper requestHelper;
-    private final ConfigUtil configUtil;
 
     private final Map<UUID, Integer> flyTimes = new ConcurrentHashMap<>();
     private Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> lastNotifiedTime = new ConcurrentHashMap<>();
     private final Set<UUID> needsUpdate = ConcurrentHashMap.newKeySet();
 
-    private Map<UUID, Location> lastSafeLocation = new HashMap<>();
     private final Map<UUID, Long> lastMovementTime = new HashMap<>();
     private final Map<UUID, Location> lastLocations = new HashMap<>();
 
@@ -41,15 +40,15 @@ public class WTimeFlyManager implements TimeFlyManager {
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(THREADS);
 
     static int threads = Runtime.getRuntime().availableProcessors();
-    public static ExecutorService sqlExecutor = Executors.newFixedThreadPool(threads);
+
 
     // ---------- CONSTRUCTOR & INIT ----------
     /**
      * Constructor to initialize the TimeFlyManager with dependencies and load fly times.
      */
-    public WTimeFlyManager(RequestHelper requestHelper, ConfigUtil configUtil) {
+    public WTimeFlyManager(WFlyV2 plugin,RequestHelper requestHelper) {
+        this.plugin = plugin;
         this.requestHelper = requestHelper;
-        this.configUtil = configUtil;
         loadFlyTimes();
         startDecrementTask();
     }
@@ -83,9 +82,9 @@ public class WTimeFlyManager implements TimeFlyManager {
 
     @Override
     public void saveFlyTimes() {
-        int seconds = configUtil.getCustomConfig().getInt("save-database-delay");
+        int seconds = plugin.getConfigFile().get(ConfigEnum.SAVE_DATABASE_DELAY);
         Bukkit.getScheduler().runTaskTimer(WflyApi.get().getPlugin(), () -> {
-            for (UUID playerUUID : needsUpdate) {
+            for (UUID ignored : needsUpdate) {
                 saveFlyTimeOnDisableOnline();
             }
             needsUpdate.clear();
@@ -102,7 +101,7 @@ public class WTimeFlyManager implements TimeFlyManager {
 
     @Override
     public void decrementTimeRemaining() throws SQLException {
-        String decrementMethod = configUtil.getCustomConfig().getString("fly-decrement-method", "PLAYER_FLY_MODE");
+        String decrementMethod = plugin.getConfigFile().get(ConfigEnum.FLY_DECREMENT_METHOD);
         for (UUID playerUUID : flyTimes.keySet()) {
 
             Player player = Bukkit.getPlayer(playerUUID);
@@ -119,8 +118,10 @@ public class WTimeFlyManager implements TimeFlyManager {
 
             if (timeRemaining <= 0) continue;
 
+
+            boolean flyDecrementStatic = plugin.getConfigFile().get(ConfigEnum.FLY_DECREMENT_DISABLED_BY_STATIC);
             if (isExemptFromLastPosition(player)
-                    && configUtil.getCustomConfig().getBoolean("fly-decrement-disabled-by-static")
+                    && flyDecrementStatic
                     && decrementMethod.equalsIgnoreCase("PLAYER_FLYING_MODE")) {
                 continue;
             }
@@ -150,20 +151,14 @@ public class WTimeFlyManager implements TimeFlyManager {
         int currentFlyTime = getTimeRemaining(target);
 
         if (time > currentFlyTime) {
-            ColorSupportUtil.sendColorFormat(target, configUtil.getCustomMessage().getString("message.fly-remove-too-high"));
+            ColorSupportUtil.sendColorFormat(target, plugin.getMessageFile().get(MessageEnum.FLY_REMOVE_TOO_HIGH));
             return false;
         }
 
-        if (senderUUID != null) {
-            int newTime = flyTimes.getOrDefault(senderUUID, 0) - time;
-            flyTimes.put(senderUUID, newTime);
-            needsUpdate.add(senderUUID);
-        } else {
-            UUID targetUUID = target.getUniqueId();
-            int newTime = flyTimes.getOrDefault(targetUUID, 0) - time;
-            flyTimes.put(targetUUID, newTime);
-            needsUpdate.add(targetUUID);
-        }
+        UUID targetUUID = target.getUniqueId();
+        int newTime = flyTimes.getOrDefault(targetUUID, 0) - time;
+        flyTimes.put(targetUUID, newTime);
+        needsUpdate.add(targetUUID);
 
         saveInDbFlyTime(target);
         return true;
@@ -279,7 +274,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     // ---------- decrementation-disable-by-condition ----------
 
     private boolean getDecrementationDisable(Player player) {
-        List<Map<?, ?>> conditions = configUtil.getCustomConfig().getMapList("decrementation-disable-by-condition");
+        List<Map<?, ?>> conditions = plugin.getConfigFile().get(ConfigEnum.DECREMENTATION_DISABLE_BY_CONDITION);
 
         for (Map<?, ?> entry : conditions) {
             String condition = (String) entry.get("condition");
@@ -330,7 +325,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     }
 
     private void decrementFlyTime(UUID playerUUID, Player player, boolean currentlyFlying) {
-        String decrementMethod = configUtil.getCustomConfig().getString("fly-decrement-method", "PLAYER_FLY_MODE");
+        String decrementMethod = plugin.getConfigFile().get(ConfigEnum.FLY_DECREMENT_METHOD);
 
         if (decrementMethod.equalsIgnoreCase("PLAYER_FLYING_MODE") && currentlyFlying && player.isFlying()) {
             decrementTimeForPlayer(playerUUID);
@@ -347,8 +342,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     }
 
     public void manageCommandMessageOnTimeLeft() throws SQLException {
-        FileConfiguration config = configUtil.getCustomMessage();
-        ConfigurationSection conditionsSection = config.getConfigurationSection("commands-time-remaining");
+        ConfigurationSection conditionsSection = plugin.getMessageFile().getRaw().getConfigurationSection("commands-time-remaining");
         if (conditionsSection == null) return;
 
         Map<Integer, List<String>> timeCommandMap = new HashMap<>();
@@ -407,7 +401,7 @@ public class WTimeFlyManager implements TimeFlyManager {
         Location lastLocation = lastLocations.get(uuid);
 
         long currentTime = System.currentTimeMillis();
-        int delayMillis = configUtil.getCustomConfig().getInt("delay", 3000);
+        int delayMillis = plugin.getConfigFile().get(ConfigEnum.DELAY);
 
         if (lastLocation == null || !locationsEqual(currentLocation, lastLocation)) {
             lastLocations.put(uuid, currentLocation.clone());
@@ -426,7 +420,8 @@ public class WTimeFlyManager implements TimeFlyManager {
     }
 
     public Location getSafeLocation(Player player) {
-        boolean tpOnFloor = configUtil.getCustomConfig().getBoolean("tp-on-floor-when-fly-disabled");
+        boolean tpOnFloor = plugin.getConfigFile().get(ConfigEnum.TP_ON_FLOOR_WHEN_FLY_DISABLED);
+
         if (!tpOnFloor) return player.getLocation();
 
         Location loc = player.getLocation();
@@ -441,7 +436,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     }
 
     private void startDecrementTask() {
-        int interval = configUtil.getCustomConfig().getInt("fly-decrement-interval", 20);
+
         Bukkit.getScheduler().runTaskTimer(WflyApi.get().getPlugin(), () -> {
             try {
                 decrementTimeRemaining();
@@ -449,7 +444,7 @@ public class WTimeFlyManager implements TimeFlyManager {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        }, 0L, interval);
+        }, 0L, 20);
     }
 
     // ---------- HELPER / UTILITY METHODS ----------

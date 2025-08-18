@@ -1,10 +1,11 @@
 package com.wayvi.wfly.wflyv2.managers;
 
+import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.ConditionManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.models.Condition;
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
@@ -14,9 +15,10 @@ import java.util.*;
 
 public class WConditionManager implements ConditionManager {
 
+    private WFlyV2 plugin;
+
     private List<Condition> authorizedConditions;
     private List<Condition> notAuthorizedConditions;
-    private final ConfigUtil configUtil;
     private final Map<UUID, Location> lastSafeLocation = new HashMap<>();
     private final Set<String> unregisteredPlaceholders = new HashSet<>();
     private final Map<UUID, Boolean> flyPermissionCache = new HashMap<>();
@@ -27,11 +29,9 @@ public class WConditionManager implements ConditionManager {
 
     /**
      * Creates a new WConditionManager with the given configuration utility.
-     *
-     * @param configUtil the utility for accessing custom config values
      */
-    public WConditionManager(ConfigUtil configUtil) {
-        this.configUtil = configUtil;
+    public WConditionManager(WFlyV2 plugin) {
+        this.plugin = plugin;
         loadConditions();
     }
 
@@ -54,7 +54,7 @@ public class WConditionManager implements ConditionManager {
     @Override
     public List<Condition> loadConditionsFromConfig(String path) {
         List<Condition> result = new ArrayList<>();
-        ConfigurationSection section = configUtil.getCustomConfig().getConfigurationSection(path);
+        ConfigurationSection section = plugin.getConfigFile().getRaw().getConfigurationSection(path);
         if (section != null) {
             for (String key : section.getKeys(false)) {
                 String placeholder = section.getString(key + ".placeholder");
@@ -127,7 +127,7 @@ public class WConditionManager implements ConditionManager {
      */
     @Override
     public Location getSafeLocation(Player player) {
-        boolean tpOnFloor = configUtil.getCustomConfig().getBoolean("tp-on-floor-when-fly-disabled");
+        boolean tpOnFloor = plugin.getConfigFile().get(ConfigEnum.TP_ON_FLOOR_WHEN_FLY_DISABLED);
         if (!tpOnFloor) return player.getLocation();
 
         Location loc = player.getLocation();

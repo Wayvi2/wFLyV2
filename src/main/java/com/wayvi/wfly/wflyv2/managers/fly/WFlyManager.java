@@ -1,10 +1,11 @@
 package com.wayvi.wfly.wflyv2.managers.fly;
 
+import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.FlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -21,21 +22,21 @@ import java.util.concurrent.Executors;
  */
 public class WFlyManager implements FlyManager {
 
+
+    private WFlyV2 plugin;
     private static final int THREADS = Runtime.getRuntime().availableProcessors();
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(THREADS);
 
     private final RequestHelper requestHelper;
-    private final ConfigUtil configUtil;
 
     /**
      * Constructs a new WFlyManager instance.
      *
      * @param requestHelper the database access helper
-     * @param configUtil the configuration utility for message and setting retrieval
      */
-    public WFlyManager(final RequestHelper requestHelper, final ConfigUtil configUtil) {
+    public WFlyManager(WFlyV2 plugin,final RequestHelper requestHelper) {
         this.requestHelper = requestHelper;
-        this.configUtil = configUtil;
+        this.plugin = plugin;
     }
 
     /**
@@ -62,38 +63,49 @@ public class WFlyManager implements FlyManager {
      * @param player the player whose fly speed is to be set
      * @param speed the desired fly speed (0–10)
      */
+    /**
+     * Sets the fly speed of the player, validating permissions and limits.
+     *
+     * @param player the player whose fly speed is to be set
+     * @param speed the desired fly speed (1–10)
+     */
     @Override
     public void manageFlySpeed(final Player player, double speed) {
-        final double normalizedSpeed = speed / 10.0;
 
-        if (normalizedSpeed > 1.0) {
-            sendFlySpeedMessage(player, "message.fly-speed-too-high", speed);
-            return;
-        }
-
-        for (int i = (int) (normalizedSpeed * 10); i >= 1; i--) {
+        int maxAllowedSpeed = 0;
+        for (int i = 1; i <= 10; i++) {
             if (player.hasPermission("wfly.fly.speed." + i)) {
-                player.setFlySpeed(i / 10.0f);
-                sendFlySpeedMessage(player, "message.fly-speed", i);
-                return;
+                maxAllowedSpeed = i;
             }
         }
 
-        sendFlySpeedMessage(player, "message.fly-speed-no-permission", speed);
+        if (maxAllowedSpeed == 0) {
+            String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED_NO_PERMISSION);
+            ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf((int) speed)));
+            return;
+        }
+
+        if (speed < 1) speed = 1;
+        if (speed > maxAllowedSpeed) {
+            String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED_TOO_HIGH);
+            ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(maxAllowedSpeed)));
+            return;
+        }
+
+        int requestedSpeed = (int) speed;
+        player.setFlySpeed(requestedSpeed / 10.0f);
+
+        String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED);
+        ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(requestedSpeed)));
     }
 
-    /**
-     * Sends a formatted message to the player regarding their fly speed.
-     *
-     * @param player the player to message
-     * @param key the config key for the message
-     * @param speed the speed value to inject into the message
-     */
-    private void sendFlySpeedMessage(final Player player, final String key, final double speed) {
-        final String message = configUtil.getCustomMessage().getString(key)
-                .replace("%speed%", String.valueOf(speed));
-        ColorSupportUtil.sendColorFormat(player, message);
-    }
+
+
+
+
+
+
+
 
     /**
      * Retrieves flight-related data for a specific player from the database.

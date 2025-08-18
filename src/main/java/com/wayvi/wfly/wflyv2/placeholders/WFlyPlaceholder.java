@@ -3,8 +3,8 @@ package com.wayvi.wfly.wflyv2.placeholders;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
@@ -24,17 +24,14 @@ import java.util.UUID;
 public class WFlyPlaceholder extends PlaceholderExpansion {
 
     private final WFlyV2 plugin;
-    private final ConfigUtil configUtil;
 
     /**
      * Constructs a new WFlyPlaceholder instance.
      *
      * @param plugin The main plugin instance.
-     * @param configUtil The configuration utility.
      */
-    public WFlyPlaceholder(WFlyV2 plugin, ConfigUtil configUtil) {
+    public WFlyPlaceholder(WFlyV2 plugin) {
         this.plugin = plugin;
-        this.configUtil = configUtil;
     }
 
     /**
@@ -58,7 +55,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      */
     @Override
     public @NotNull String getVersion() {
-        return "1.0.2.5";
+        return "1.0.2.7";
     }
 
     /**
@@ -87,7 +84,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                 case "fly_remaining":
                     int timeRemaining = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
                     if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
-                        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomConfig().getString("format-placeholder.unlimited"));
+                        return (String) ColorSupportUtil.convertColorFormat(plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_UNLIMITED));
                     }
                     return formatTime(timeRemaining);
                 case "fly_activate":
@@ -116,14 +113,18 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
     public String formatTime(int seconds) {
         Map<String, Boolean> enabledFormats = WflyApi.get().getPlugin().getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
         String format = WflyApi.get().getPlugin().getTimeFormatTranslatorUtil().getPlaceholderFormat();
-        boolean autoFormat = configUtil.getCustomConfig().getBoolean("format-placeholder.auto-format");
-        boolean removeNullValues = configUtil.getCustomConfig().getBoolean("format-placeholder.remove-null-values.enabled");
-        String nullValue = configUtil.getCustomConfig().getString("format-placeholder.remove-null-values.value", "0");
 
-        String secondsSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.seconds_suffixe", "s");
-        String minutesSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.minutes_suffixe", "m");
-        String hoursSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.hours_suffixe", "h");
-        String daysSuffix = configUtil.getCustomConfig().getString("format-placeholder.other-format.days_suffixe", "j");
+
+
+        boolean autoFormat = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_AUTO_FORMAT);
+        boolean removeNullValues = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_REMOVE_NULL_ENABLED);
+        String nullValue = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_REMOVE_NULL_VALUE);
+
+        String secondsSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_SECONDS);
+        String minutesSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_MINUTES);
+        String hoursSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_HOURS);
+        String daysSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_DAYS);
+
 
         int days = seconds / 86400;
         int hours = (seconds % 86400) / 3600;

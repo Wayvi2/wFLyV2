@@ -2,6 +2,7 @@ package com.wayvi.wfly.wflyv2.commands;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.listeners.PvPListener;
 import com.wayvi.wfly.wflyv2.managers.WConditionManager;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
@@ -9,14 +10,12 @@ import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 
 /**
  * Command to reload the plugin configuration files.
  */
 public class ReloadCommand extends Command<WFlyV2> {
 
-    private final ConfigUtil configUtil;
     private final WFlyV2 plugin;
     private final PvPListener pvpListener;
     private final WConditionManager conditionManager;
@@ -25,17 +24,15 @@ public class ReloadCommand extends Command<WFlyV2> {
      * Constructs the ReloadCommand.
      *
      * @param plugin            The main plugin instance.
-     * @param configUtil        Utility class for managing configuration files.
      * @param pvPListener       PvP listener to reload its configuration values.
      * @param conditionManager  Manager handling fly conditions.
      */
-    public ReloadCommand(WFlyV2 plugin, ConfigUtil configUtil, PvPListener pvPListener, WConditionManager conditionManager) {
+    public ReloadCommand(WFlyV2 plugin, PvPListener pvPListener, WConditionManager conditionManager) {
         super(plugin, "wfly.reload");
         setDescription("Reload file of the plugin.");
         setUsage("/wfly reload");
         setPermission(Permissions.RELOAD.getPermission());
         this.plugin = plugin;
-        this.configUtil = configUtil;
         this.pvpListener = pvPListener;
         this.conditionManager = conditionManager;
     }
@@ -50,15 +47,16 @@ public class ReloadCommand extends Command<WFlyV2> {
     public void execute(CommandSender commandSender, Arguments arguments) {
         // Reload configurations
 
-        configUtil.reloadCustomConfig();
         conditionManager.loadConditions();
         pvpListener.reloadConfigValues();
 
-        // Log reload message
-        String message = configUtil.getCustomMessage().getString("message.reload");
+        plugin.getMessageFile().reload();
+        plugin.getConfigFile().reload();
+
+        String message = plugin.getMessageFile().get(MessageEnum.RELOAD);
         plugin.getLogger().info("Plugin reloaded");
 
-        // Notify player if applicable
+
         if (commandSender instanceof Player) {
             ColorSupportUtil.sendColorFormat((Player) commandSender, message);
         }

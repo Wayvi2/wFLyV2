@@ -1,6 +1,7 @@
 package com.wayvi.wfly.wflyv2.handlers;
 
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
+import com.wayvi.wfly.wflyv2.WFlyV2;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.logging.MessageHandler;
 
@@ -9,15 +10,15 @@ import fr.traqueur.commands.api.logging.MessageHandler;
  */
 public class CustomMessageHandler implements MessageHandler {
 
-    private final ConfigUtil configUtil;
+    private WFlyV2 plugin;
 
     /**
      * Constructs the CustomMessageHandler.
      *
      * @param configUtil Utility class for managing configuration files.
      */
-    public CustomMessageHandler(ConfigUtil configUtil) {
-        this.configUtil = configUtil;
+    public CustomMessageHandler(WFlyV2 plugin) {
+        this.plugin = plugin;
     }
 
     /**
@@ -27,7 +28,7 @@ public class CustomMessageHandler implements MessageHandler {
      */
     @Override
     public String getNoPermissionMessage() {
-        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomMessage().getString("message.no-permission"));
+        return (String) ColorSupportUtil.convertColorFormat(plugin.getMessageFile().get(MessageEnum.NO_PERMISSION));
     }
 
     /**
@@ -37,7 +38,7 @@ public class CustomMessageHandler implements MessageHandler {
      */
     @Override
     public String getOnlyInGameMessage() {
-        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomMessage().getString("message.only-in-game"));
+        return (String) ColorSupportUtil.convertColorFormat(plugin.getMessageFile().get(MessageEnum.ONLY_IN_GAME));
     }
 
 
@@ -48,7 +49,7 @@ public class CustomMessageHandler implements MessageHandler {
      */
     @Override
     public String getArgNotRecognized() {
-        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomMessage().getString("message.arg-not-recognized"));
+        return (String) ColorSupportUtil.convertColorFormat(plugin.getMessageFile().get(MessageEnum.ARG_NOT_RECOGNIZED));
     }
 
     /**
@@ -58,6 +59,6 @@ public class CustomMessageHandler implements MessageHandler {
      */
     @Override
     public String getRequirementMessage() {
-        return (String) ColorSupportUtil.convertColorFormat(configUtil.getCustomMessage().getString("message.message-requirement"));
+        return (String) ColorSupportUtil.convertColorFormat(plugin.getMessageFile().get(MessageEnum.MESSAGE_REQUIREMENT));
     }
 }
