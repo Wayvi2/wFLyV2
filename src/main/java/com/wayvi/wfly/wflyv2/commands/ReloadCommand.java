@@ -10,7 +10,6 @@ import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 
 /**
  * Command to reload the plugin configuration files.

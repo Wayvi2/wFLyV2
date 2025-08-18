@@ -2,7 +2,6 @@ package com.wayvi.wfly.wflyv2.handlers;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.logging.MessageHandler;
 

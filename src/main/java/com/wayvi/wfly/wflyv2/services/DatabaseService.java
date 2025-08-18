@@ -3,7 +3,6 @@ package com.wayvi.wfly.wflyv2.services;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.migrations.CreateUserTableMigration;
-import com.wayvi.wfly.wflyv2.util.ConfigUtil;
 import fr.maxlego08.sarah.*;
 
 import java.io.File;
