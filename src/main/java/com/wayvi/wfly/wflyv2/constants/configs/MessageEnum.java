@@ -104,6 +104,7 @@ public enum MessageEnum implements ConfigKey<Object> {
             "&r"
     ));
 
+
     private final String path;
     private final Object defaultValue;
 

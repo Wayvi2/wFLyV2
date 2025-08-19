@@ -2,11 +2,14 @@ package com.wayvi.wfly.wflyv2.util;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
@@ -63,4 +66,46 @@ public class VersionCheckerUtil {
             }
         });
     }
+
+    public void sendAboutMessage(CommandSender sender, String developer, String version, String storageType, String serverType, String serverVersion) {
+        List<String> aboutMessage = new ArrayList<>();
+        aboutMessage.add("&7==== &bAdminFly Debug Info &7====");
+        aboutMessage.add("&eDeveloper: &f" + developer);
+        aboutMessage.add("&eVersion: &f" + version);
+        aboutMessage.add("&eStorage Type: &f" + storageType);
+        aboutMessage.add("&eServer Type: &f" + serverType);
+        aboutMessage.add("&eServer Version: &f" + serverVersion);
+
+        // Récupère la dernière version et complète le message
+        getLatestVersion(latestVersion -> {
+            int current = parseVersion(version);
+            int latest = parseVersion(latestVersion);
+            String versionStatus;
+
+            if (current < latest) {
+                int behind = latest - current;
+                versionStatus = "&cOutdated! " + behind + " version(s) behind (Latest: " + latestVersion + ")";
+            } else {
+                versionStatus = "&aUp to date (Latest: " + latestVersion + ")";
+            }
+
+            aboutMessage.add("&eUpdate Status: &f" + versionStatus);
+
+            // Envoie le message complet
+            for (String message : aboutMessage) {
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    ColorSupportUtil.sendColorFormat(player, message);
+                } else {
+                    sender.sendMessage(stripColorCodes(message));
+                }
+            }
+        });
+    }
+
+    /** Méthode utilitaire pour retirer les codes couleur pour la console */
+    private String stripColorCodes(String message) {
+        return message.replaceAll("&[0-9a-fk-or]", "");
+    }
+
 }

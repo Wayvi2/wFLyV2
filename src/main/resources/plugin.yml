@@ -4,3 +4,4 @@ main: com.wayvi.wfly.wflyv2.WFlyV2
 api-version: 1.13
 depend: [PlaceholderAPI]
 softdepend: [ClueScrolls, TempFly]
+author: Wayvi2

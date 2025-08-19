@@ -20,7 +20,6 @@ public class TimeFormatTranslatorUtil {
     /**
      * Constructs a new TimeFormatTranslatorUtil instance.
      *
-     * @param configUtil the ConfigUtil instance used to retrieve configuration data
      */
     public TimeFormatTranslatorUtil(WFlyV2 plugin) {
         this.plugin = plugin;

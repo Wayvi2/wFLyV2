@@ -45,7 +45,9 @@ public final class WFlyV2 extends JavaPlugin {
     private CommandManager<WFlyV2> commandManager;
 
     private ConfigAPI<ConfigEnum> configFile;
-    private ConfigAPI<MessageEnum>  messageFile;
+    private ConfigAPI<MessageEnum> messageFile;
+
+    DatabaseService databaseService;
 
     private UUID serverId;
 
@@ -58,15 +60,13 @@ public final class WFlyV2 extends JavaPlugin {
         Metrics metrics = new Metrics(this, 24609);
 
 
-
-
         // CONFIGS
         configFile = new ConfigAPI<>(this, ConfigEnum.class, "config.yml");
-        messageFile  = new ConfigAPI<>(this, MessageEnum.class, "message.yml");
+        messageFile = new ConfigAPI<>(this, MessageEnum.class, "message.yml");
 
 
         // INIT DATABASE
-        DatabaseService databaseService = new DatabaseService(this);
+        databaseService = new DatabaseService(this);
         databaseService.initializeDatabase();
 
         PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this);
@@ -91,7 +91,7 @@ public final class WFlyV2 extends JavaPlugin {
         PvPListener pvpListener = new PvPListener(this);
 
         // INIT FlyManager
-        FlyManager flyManager = new WFlyManager(this,requestHelper);
+        FlyManager flyManager = new WFlyManager(this, requestHelper);
         WflyApi.inject(flyManager);
 
         // INIT FlyQuest
@@ -106,11 +106,8 @@ public final class WFlyV2 extends JavaPlugin {
         this.serverId = UUID.randomUUID();
 
 
-
-
-
         // INIT TimeFlyManager
-        TimeFlyManager  timeFlyManager = new WTimeFlyManager(this,requestHelper);
+        TimeFlyManager timeFlyManager = new WTimeFlyManager(this, requestHelper);
         WflyApi.inject(timeFlyManager);
         try {
             timeFlyManager.decrementTimeRemaining();
@@ -122,7 +119,6 @@ public final class WFlyV2 extends JavaPlugin {
         FlyCommand flyCommand = new FlyCommand(this, pvpListener);
 
         // COMMANDS
-
 
 
         commandManager = new CommandManager<>(this);
@@ -149,7 +145,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new ExchangeCommand(this));
         commandManager.registerCommand(new FlyHelpPlayerCommand(this));
         commandManager.registerCommand(new ToggleFlyPlayerCommand(this, flyCommand));
-
+        commandManager.registerCommand(new AboutCommand(this));
         // LISTENER
         getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager), this);
         getServer().getPluginManager().registerEvents(new PvPListener(this), this);
@@ -179,9 +175,7 @@ public final class WFlyV2 extends JavaPlugin {
         this.getServer().getMessenger().unregisterIncomingPluginChannel(this, "BungeeCord");
 
 
-
-
-    getLogger().info("Plugin disabled");
+        getLogger().info("Plugin disabled");
     }
 
 
@@ -201,6 +195,10 @@ public final class WFlyV2 extends JavaPlugin {
 
     public UUID getServerId() {
         return serverId;
+    }
+
+    public DatabaseService getDatabaseService() {
+        return databaseService;
     }
 
 }

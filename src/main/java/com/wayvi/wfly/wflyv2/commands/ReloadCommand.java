@@ -5,6 +5,7 @@ import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.listeners.PvPListener;
 import com.wayvi.wfly.wflyv2.managers.WConditionManager;
+import com.wayvi.wfly.wflyv2.services.DatabaseService;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
@@ -19,6 +20,7 @@ public class ReloadCommand extends Command<WFlyV2> {
     private final WFlyV2 plugin;
     private final PvPListener pvpListener;
     private final WConditionManager conditionManager;
+    private DatabaseService databaseService;
 
     /**
      * Constructs the ReloadCommand.
@@ -35,6 +37,7 @@ public class ReloadCommand extends Command<WFlyV2> {
         this.plugin = plugin;
         this.pvpListener = pvPListener;
         this.conditionManager = conditionManager;
+
     }
 
     /**
@@ -45,13 +48,15 @@ public class ReloadCommand extends Command<WFlyV2> {
      */
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
-        // Reload configurations
+
 
         conditionManager.loadConditions();
         pvpListener.reloadConfigValues();
 
         plugin.getMessageFile().reload();
         plugin.getConfigFile().reload();
+
+        plugin.getDatabaseService().initializeDatabase();
 
         String message = plugin.getMessageFile().get(MessageEnum.RELOAD);
         plugin.getLogger().info("Plugin reloaded");
