@@ -3,8 +3,7 @@ package com.wayvi.wfly.wflyv2.commands;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
-import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
-import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
+
 import com.wayvi.wfly.wflyv2.util.VersionCheckerUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
@@ -12,8 +11,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class AboutCommand extends Command<WFlyV2> {
 
@@ -30,7 +27,7 @@ public class AboutCommand extends Command<WFlyV2> {
     public void execute(CommandSender sender, Arguments arguments) {
 
         String version = plugin.getDescription().getVersion();
-        String developer = "Wayvi2"; // fixé en dur
+        String developer = "Wayvi2";
         boolean mysqlEnabled = plugin.getConfigFile().get(ConfigEnum.MYSQL_ENABLED);
         String storageType = mysqlEnabled ? "MySQL" : "SQLite";
         String serverType = Bukkit.getServer().getName();
