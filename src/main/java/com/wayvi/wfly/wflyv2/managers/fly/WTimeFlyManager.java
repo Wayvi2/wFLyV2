@@ -7,6 +7,7 @@ import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyv2.storage.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.*;
@@ -25,30 +26,24 @@ import java.util.concurrent.*;
 public class WTimeFlyManager implements TimeFlyManager {
 
     // ---------- FIELDS ----------
-    private WFlyV2 plugin;
-    private final RequestHelper requestHelper;
+    private final WFlyV2 plugin;
+    private final FlyTimeRepository flyTimeRepository;
 
     private final Map<UUID, Integer> flyTimes = new ConcurrentHashMap<>();
-    private Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
+    private final Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> lastNotifiedTime = new ConcurrentHashMap<>();
     private final Set<UUID> needsUpdate = ConcurrentHashMap.newKeySet();
 
     private final Map<UUID, Long> lastMovementTime = new HashMap<>();
     private final Map<UUID, Location> lastLocations = new HashMap<>();
 
-    private static final int THREADS = Runtime.getRuntime().availableProcessors();
-    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(THREADS);
-
-    static int threads = Runtime.getRuntime().availableProcessors();
-
-
     // ---------- CONSTRUCTOR & INIT ----------
     /**
      * Constructor to initialize the TimeFlyManager with dependencies and load fly times.
      */
-    public WTimeFlyManager(WFlyV2 plugin,RequestHelper requestHelper) {
+    public WTimeFlyManager(WFlyV2 plugin, FlyTimeRepository flyTimeRepository) {
         this.plugin = plugin;
-        this.requestHelper = requestHelper;
+        this.flyTimeRepository = flyTimeRepository;
         loadFlyTimes();
         startDecrementTask();
     }
@@ -57,7 +52,7 @@ public class WTimeFlyManager implements TimeFlyManager {
      * Loads fly time data from the database into memory.
      */
     public void loadFlyTimes() {
-        List<AccessPlayerDTO> flyData = this.requestHelper.selectAll("fly", AccessPlayerDTO.class);
+        List<AccessPlayerDTO> flyData = flyTimeRepository.selectAll("fly", AccessPlayerDTO.class);
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
             flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             isFlying.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.isinFly());
@@ -67,7 +62,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     @Override
     public void loadFlyTimesForPlayer(Player player) {
         UUID playerUUID = player.getUniqueId();
-        List<AccessPlayerDTO> flyData = this.requestHelper.selectAll("fly", AccessPlayerDTO.class);
+        List<AccessPlayerDTO> flyData = flyTimeRepository.selectAll("fly", AccessPlayerDTO.class);
 
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
             if (accessPlayerDTO.uniqueId().equals(playerUUID)) {
@@ -81,6 +76,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     // ---------- PUBLIC MAIN METHODS ----------
 
     @Override
+
     public void saveFlyTimes() {
         int seconds = plugin.getConfigFile().get(ConfigEnum.SAVE_DATABASE_DELAY);
         Bukkit.getScheduler().runTaskTimer(WflyApi.get().getPlugin(), () -> {
@@ -94,7 +90,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     @Override
     public void saveFlyTimeOnDisableOnline() {
         for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
-            saveInDbFlyTime(Bukkit.getPlayer(entry.getKey()));
+            flyTimeRepository.save(Bukkit.getPlayer(entry.getKey()));
         }
         WflyApi.get().getPlugin().getLogger().info("Fly time saved");
     }
@@ -140,7 +136,7 @@ public class WTimeFlyManager implements TimeFlyManager {
         int newTime = flyTimes.getOrDefault(playerUUID, 0) + time;
         flyTimes.put(playerUUID, newTime);
         needsUpdate.add(playerUUID);
-        saveInDbFlyTime(player);
+        flyTimeRepository.save(player);
     }
 
     @Override
@@ -160,7 +156,7 @@ public class WTimeFlyManager implements TimeFlyManager {
         flyTimes.put(targetUUID, newTime);
         needsUpdate.add(targetUUID);
 
-        saveInDbFlyTime(target);
+        flyTimeRepository.save(target);
         return true;
     }
 
@@ -169,7 +165,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     public void resetFlytime(Player player) {
         flyTimes.put(player.getUniqueId(), 0);
         needsUpdate.add(player.getUniqueId());
-        saveInDbFlyTime(player);
+        flyTimeRepository.save(player);
     }
 
     // ---------- ADD/REMOVE/RESET FOR ALL PLAYERS -----------
@@ -207,54 +203,6 @@ public class WTimeFlyManager implements TimeFlyManager {
         return this.isFlying.getOrDefault(playerUUID, false);
     }
 
-    @Override
-    public void saveInDbFlyTime(Player player) {
-        if (player == null) return;
-        EXECUTOR.execute(() -> {
-            final UUID uuid = player.getUniqueId();
-            final List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
-                    table -> table.where("uniqueId", uuid));
-
-            if (records.isEmpty()) {
-                requestHelper.insert("fly", table -> {
-                    table.uuid("uniqueId", uuid).primary();
-                    table.bool("isinFly", getIsFlying(uuid));
-                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
-                });
-            } else {
-                requestHelper.update("fly", table -> {
-                    table.where("uniqueId", uuid);
-                    table.bool("isinFly", getIsFlying(uuid));
-                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
-                });
-            }
-        });
-    }
-
-    @Override
-    public CompletableFuture<Void> saveInDbFlyTimeDisable(Player player) {
-        if (player == null) return CompletableFuture.completedFuture(null);
-
-        return CompletableFuture.runAsync(() -> {
-            final UUID uuid = player.getUniqueId();
-            final List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
-                    table -> table.where("uniqueId", uuid));
-
-            if (records.isEmpty()) {
-                requestHelper.insert("fly", table -> {
-                    table.uuid("uniqueId", uuid).primary();
-                    table.bool("isinFly", getIsFlying(uuid));
-                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
-                });
-            } else {
-                requestHelper.update("fly", table -> {
-                    table.where("uniqueId", uuid);
-                    table.bool("isinFly", getIsFlying(uuid));
-                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
-                });
-            }
-        }, EXECUTOR);
-    }
 
     @Override
     public CompletableFuture<Void> saveFlyTimeOnDisable() {
@@ -263,7 +211,7 @@ public class WTimeFlyManager implements TimeFlyManager {
         for (UUID playerUUID : flyTimes.keySet()) {
             Player player = Bukkit.getPlayer(playerUUID);
             if (player != null) {
-                futures.add(saveInDbFlyTimeDisable(player));
+                futures.add(flyTimeRepository.saveAsync(player));
             }
         }
 
@@ -304,11 +252,11 @@ public class WTimeFlyManager implements TimeFlyManager {
     // ---------- INTERNAL LOGIC HANDLERS ----------
     private String applyPlaceholders(Player player, String text) {
         if (text == null) return "";
-            try {
-                return me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, text);
-            } catch (Exception e) {
-                return text;
-            }
+        try {
+            return me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, text);
+        } catch (Exception e) {
+            return text;
+        }
     }
 
 
