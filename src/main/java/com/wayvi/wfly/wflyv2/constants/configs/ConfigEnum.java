@@ -6,6 +6,7 @@ package com.wayvi.wfly.wflyv2.constants.configs;
 import com.wayvi.wconfigapi.wconfigapi.ConfigKey;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public enum ConfigEnum implements ConfigKey<Object> {
 
@@ -39,13 +40,13 @@ public enum ConfigEnum implements ConfigKey<Object> {
     FORMAT_PLACEHOLDER_OTHER_DAYS("format-placeholder.other-format.days_suffixe", "days"),
 
     COMMAND_ALIAS("command.alias", Arrays.asList("wfly", "fly")),
+    CONDITIONS("conditions", Collections.singletonList("")),
+//    CONDITIONS_NOT_AUTHORIZED("conditions.not-authorized.my-first-conditions.placeholder", "%multiverse_world_alias%"),
+//    CONDITIONS_NOT_AUTHORIZED_EQUALS("conditions.not-authorized.my-first-conditions.equals", "world"),
+//    CONDITIONS_NOT_AUTHORIZED_COMMANDS("conditions.not-authorized.my-first-conditions.commands", "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000"),
 
-    CONDITIONS_NOT_AUTHORIZED("conditions.not-authorized.my-first-conditions.placeholder", "%multiverse_world_alias%"),
-    CONDITIONS_NOT_AUTHORIZED_EQUALS("conditions.not-authorized.my-first-conditions.equals", "world"),
-    CONDITIONS_NOT_AUTHORIZED_COMMANDS("conditions.not-authorized.my-first-conditions.commands", "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000"),
-
-    CONDITIONS_AUTHORIZED("conditions.authorized.my-seconds-conditions.placeholder", "%multiverse_world_alias%"),
-    CONDITIONS_AUTHORIZED_EQUALS("conditions.authorized.my-seconds-conditions.equals", "world_nether"),
+//    CONDITIONS_AUTHORIZED("conditions.authorized.my-seconds-conditions.placeholder", "%multiverse_world_alias%"),
+//    CONDITIONS_AUTHORIZED_EQUALS("conditions.authorized.my-seconds-conditions.equals", "world_nether"),
 
     TP_ON_FLOOR_WHEN_FLY_DISABLED("tp-on-floor-when-fly-disabled", true),
 

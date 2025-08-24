@@ -49,12 +49,11 @@ public class ReloadCommand extends Command<WFlyV2> {
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
 
+        plugin.getMessageFile().reload();
+        plugin.getConfigFile().reload();
 
         conditionManager.loadConditions();
         pvpListener.reloadConfigValues();
-
-        plugin.getMessageFile().reload();
-        plugin.getConfigFile().reload();
 
         plugin.getDatabaseService().initializeDatabase();
 
