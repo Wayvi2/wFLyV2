@@ -1,14 +1,12 @@
 package com.wayvi.wfly.wflyv2.tempfly;
 
-import com.wayvi.wfly.wflyv2.ConsoleColors;
+import com.wayvi.wfly.wflyv2.util.ConsoleColorsUtil;
 import com.wayvi.wfly.wflyv2.WFlyV2;
-import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.List;
@@ -47,17 +45,17 @@ public class StorageAdapter {
     }
 
     public void migrateTempFly() {
-        plugin.getLogger().info(ConsoleColors.GRAY + "[" + ConsoleColors.CYAN + "TempFly Migrator" + ConsoleColors.GRAY + "] " + ConsoleColors.GREEN + "Starting migration..." + ConsoleColors.RESET);
+        plugin.getLogger().info(ConsoleColorsUtil.GRAY + "[" + ConsoleColorsUtil.CYAN + "TempFly Migrator" + ConsoleColorsUtil.GRAY + "] " + ConsoleColorsUtil.GREEN + "Starting migration..." + ConsoleColorsUtil.RESET);
         long start = System.currentTimeMillis();
 
         if (!data.contains("players")) {
-            plugin.getLogger().warning(ConsoleColors.GRAY + "[" + ConsoleColors.CYAN + "TempFly Migrator" + ConsoleColors.GRAY + "] " + ConsoleColors.RED + "No 'players' section found in TempFly's data.yml!" + ConsoleColors.RESET);
+            plugin.getLogger().warning(ConsoleColorsUtil.GRAY + "[" + ConsoleColorsUtil.CYAN + "TempFly Migrator" + ConsoleColorsUtil.GRAY + "] " + ConsoleColorsUtil.RED + "No 'players' section found in TempFly's data.yml!" + ConsoleColorsUtil.RESET);
             return;
         }
 
         Set<String> keys = data.getConfigurationSection("players").getKeys(false);
         if (keys.isEmpty()) {
-            plugin.getLogger().info(ConsoleColors.GRAY + "[" + ConsoleColors.CYAN + "TempFly Migrator" + ConsoleColors.GRAY + "] " + ConsoleColors.YELLOW + "No players found to migrate." + ConsoleColors.RESET);
+            plugin.getLogger().info(ConsoleColorsUtil.GRAY + "[" + ConsoleColorsUtil.CYAN + "TempFly Migrator" + ConsoleColorsUtil.GRAY + "] " + ConsoleColorsUtil.YELLOW + "No players found to migrate." + ConsoleColorsUtil.RESET);
             return;
         }
 
@@ -87,14 +85,14 @@ public class StorageAdapter {
                         });
                     }
 
-                    plugin.getLogger().info(ConsoleColors.GRAY + "[" + ConsoleColors.CYAN + "TempFly Migrator" + ConsoleColors.GRAY + "] " +
-                            ConsoleColors.YELLOW + uuid + " " + ConsoleColors.GREEN + "→ Time: " + ConsoleColors.CYAN + time + "s " +
-                            ConsoleColors.GREEN + "| Flying: " + ConsoleColors.CYAN + isFlying + ConsoleColors.RESET);
+                    plugin.getLogger().info(ConsoleColorsUtil.GRAY + "[" + ConsoleColorsUtil.CYAN + "TempFly Migrator" + ConsoleColorsUtil.GRAY + "] " +
+                            ConsoleColorsUtil.YELLOW + uuid + " " + ConsoleColorsUtil.GREEN + "→ Time: " + ConsoleColorsUtil.CYAN + time + "s " +
+                            ConsoleColorsUtil.GREEN + "| Flying: " + ConsoleColorsUtil.CYAN + isFlying + ConsoleColorsUtil.RESET);
                     migratedCount.incrementAndGet();
 
                 } catch (IllegalArgumentException ex) {
-                    plugin.getLogger().warning(ConsoleColors.GRAY + "[" + ConsoleColors.CYAN + "TempFly Migrator" + ConsoleColors.GRAY + "] " +
-                            ConsoleColors.RED + "Invalid UUID: " + uuidStr + ConsoleColors.RESET);
+                    plugin.getLogger().warning(ConsoleColorsUtil.GRAY + "[" + ConsoleColorsUtil.CYAN + "TempFly Migrator" + ConsoleColorsUtil.GRAY + "] " +
+                            ConsoleColorsUtil.RED + "Invalid UUID: " + uuidStr + ConsoleColorsUtil.RESET);
                 } finally {
                     latch.countDown();
                 }
@@ -107,17 +105,17 @@ public class StorageAdapter {
                 long end = System.currentTimeMillis();
                 long duration = end - start;
 
-                plugin.getLogger().info(ConsoleColors.GRAY + "[" + ConsoleColors.CYAN + "TempFly Migrator" + ConsoleColors.GRAY + "] " +
-                        ConsoleColors.GREEN + "Migration completed successfully!" + ConsoleColors.RESET);
-                plugin.getLogger().info(ConsoleColors.GRAY + "[" + ConsoleColors.CYAN + "TempFly Migrator" + ConsoleColors.GRAY + "] " +
-                        ConsoleColors.GREEN + migratedCount.get() + " player(s) migrated." + ConsoleColors.RESET);
-                plugin.getLogger().info(ConsoleColors.GRAY + "[" + ConsoleColors.CYAN + "TempFly Migrator" + ConsoleColors.GRAY + "] " +
-                        ConsoleColors.GREEN + "Elapsed time: " + ConsoleColors.CYAN + (duration / 1000.0) + " seconds." + ConsoleColors.RESET);
-                plugin.getLogger().info(ConsoleColors.GRAY + "[" + ConsoleColors.CYAN + "TempFly Migrator" + ConsoleColors.GRAY + "] " +
-                        ConsoleColors.GOLD + "Please restart the server to apply all changes properly." + ConsoleColors.RESET);
+                plugin.getLogger().info(ConsoleColorsUtil.GRAY + "[" + ConsoleColorsUtil.CYAN + "TempFly Migrator" + ConsoleColorsUtil.GRAY + "] " +
+                        ConsoleColorsUtil.GREEN + "Migration completed successfully!" + ConsoleColorsUtil.RESET);
+                plugin.getLogger().info(ConsoleColorsUtil.GRAY + "[" + ConsoleColorsUtil.CYAN + "TempFly Migrator" + ConsoleColorsUtil.GRAY + "] " +
+                        ConsoleColorsUtil.GREEN + migratedCount.get() + " player(s) migrated." + ConsoleColorsUtil.RESET);
+                plugin.getLogger().info(ConsoleColorsUtil.GRAY + "[" + ConsoleColorsUtil.CYAN + "TempFly Migrator" + ConsoleColorsUtil.GRAY + "] " +
+                        ConsoleColorsUtil.GREEN + "Elapsed time: " + ConsoleColorsUtil.CYAN + (duration / 1000.0) + " seconds." + ConsoleColorsUtil.RESET);
+                plugin.getLogger().info(ConsoleColorsUtil.GRAY + "[" + ConsoleColorsUtil.CYAN + "TempFly Migrator" + ConsoleColorsUtil.GRAY + "] " +
+                        ConsoleColorsUtil.GOLD + "Please restart the server to apply all changes properly." + ConsoleColorsUtil.RESET);
             } catch (InterruptedException e) {
-                plugin.getLogger().severe(ConsoleColors.GRAY + "[" + ConsoleColors.CYAN + "TempFly Migrator" + ConsoleColors.GRAY + "] " +
-                        ConsoleColors.RED + "Migration was interrupted." + ConsoleColors.RESET);
+                plugin.getLogger().severe(ConsoleColorsUtil.GRAY + "[" + ConsoleColorsUtil.CYAN + "TempFly Migrator" + ConsoleColorsUtil.GRAY + "] " +
+                        ConsoleColorsUtil.RED + "Migration was interrupted." + ConsoleColorsUtil.RESET);
             }
         });
     }

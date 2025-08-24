@@ -62,7 +62,6 @@ public class BungeeMessenger implements PluginMessageListener {
     private void handleFlyRemoveAll(ByteArrayDataInput in) {
         String data = in.readUTF();
         String[] parts = data.split(":", 2);
-
         try {
             UUID senderId = UUID.fromString(parts[0]);
             if (senderId.equals(plugin.getServerId())) return;

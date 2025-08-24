@@ -58,7 +58,9 @@ public enum Permissions {
 
     EXCHANGE_FLY_TIME("wfly.give.fly.time"),
 
-    HELP_ADMIN("wfly.help.admin");
+    HELP_ADMIN("wfly.help.admin"),
+
+    WFLY_ABOUT("wfly.about");
 
     private final String permission;
 

@@ -4,8 +4,10 @@ import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.migrations.CreateUserTableMigration;
 import fr.maxlego08.sarah.*;
+import org.bukkit.Bukkit;
 
 import java.io.File;
+import java.sql.SQLException;
 
 import static fr.maxlego08.sarah.database.DatabaseType.MYSQL;
 
@@ -49,7 +51,7 @@ public class DatabaseService {
                     plugin.getLogger().info("Database file created successfully!");
                 }
             }
-            // Configure and create a new SQLite database connection
+
             if (plugin.getConfigFile().get(ConfigEnum.MYSQL_ENABLED)) {
                 DatabaseConfiguration configuration = DatabaseConfiguration.create(
                         plugin.getConfigFile().get(ConfigEnum.MYSQL_USERNAME),
@@ -69,10 +71,10 @@ public class DatabaseService {
 
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Bukkit.getLogger().warning("Cause: " + e.getMessage());
+
         }
 
-        // Register and execute migrations
         MigrationManager.registerMigration(new CreateUserTableMigration());
         MigrationManager.execute(this.connection, plugin.getLogger()::info);
     }

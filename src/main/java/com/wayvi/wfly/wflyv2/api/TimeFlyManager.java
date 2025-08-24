@@ -16,8 +16,6 @@ public interface TimeFlyManager {
 
     void resetFlytime(Player player);
 
-    void saveInDbFlyTime(Player player);
-
     int getTimeRemaining(Player player);
 
     void decrementTimeRemaining() throws SQLException;
@@ -29,8 +27,6 @@ public interface TimeFlyManager {
     boolean getIsFlying(UUID playerUUID);
 
     CompletableFuture<Void> saveFlyTimeOnDisable();
-
-    CompletableFuture<Void> saveInDbFlyTimeDisable(Player player);
 
     void saveFlyTimeOnDisableOnline();
 

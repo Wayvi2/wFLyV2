@@ -12,11 +12,6 @@ public interface FlyManager {
 
     void manageFlySpeed(Player player, double speed);
 
-    AccessPlayerDTO getPlayerFlyData(UUID player) throws SQLException;
-
-    void upsertFlyStatus(Player player, boolean isFlying);
-
-    void createNewPlayer(UUID player) throws SQLException;
 
 
 }

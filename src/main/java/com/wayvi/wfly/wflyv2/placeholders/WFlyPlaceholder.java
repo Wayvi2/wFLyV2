@@ -5,6 +5,7 @@ import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyv2.storage.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
@@ -24,6 +25,12 @@ import java.util.UUID;
 public class WFlyPlaceholder extends PlaceholderExpansion {
 
     private final WFlyV2 plugin;
+    private FlyTimeRepository flyTimeRepository;
+
+    public WFlyPlaceholder(WFlyV2 plugin, FlyTimeRepository flyTimeRepository){
+        this.plugin = plugin;
+        this.flyTimeRepository = flyTimeRepository;
+    }
 
     /**
      * Constructs a new WFlyPlaceholder instance.
@@ -55,7 +62,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      */
     @Override
     public @NotNull String getVersion() {
-        return "1.0.2.7";
+        return "1.0.2.8";
     }
 
     /**
@@ -88,16 +95,9 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                     }
                     return formatTime(timeRemaining);
                 case "fly_activate":
-                    try {
-                        UUID player1 = offlinePlayer.getUniqueId();
-                        AccessPlayerDTO isFlying = WflyApi.get().getFlyManager().getPlayerFlyData(player1);
-                        return String.valueOf(isFlying.isinFly());
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                case "fly_remaining_seconds":
                     UUID player1 = offlinePlayer.getUniqueId();
-                    return String.valueOf(WflyApi.get().getTimeFlyManager().getTimeRemaining(Bukkit.getPlayer(player1)));
+                    AccessPlayerDTO isFlying = flyTimeRepository.getPlayerFlyData(player.getUniqueId());
+                    return String.valueOf(isFlying.isinFly());
             }
         }
         return null;

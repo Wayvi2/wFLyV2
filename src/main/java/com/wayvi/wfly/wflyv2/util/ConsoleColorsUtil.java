@@ -1,6 +1,6 @@
-package com.wayvi.wfly.wflyv2;
+package com.wayvi.wfly.wflyv2.util;
 
-public class ConsoleColors {
+public class ConsoleColorsUtil {
     public static final String RESET = "\u001B[0m";
 
     public static final String GRAY = "\u001B[90m";
