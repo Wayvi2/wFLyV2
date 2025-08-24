@@ -69,6 +69,7 @@ public final class WFlyV2 extends JavaPlugin {
         // CONFIGS
         configFile = new ConfigAPI<>(this, ConfigEnum.class, "config.yml");
         messageFile = new ConfigAPI<>(this, MessageEnum.class, "message.yml");
+        getConfigFile().set(ConfigEnum.VERSION, this.getDescription().getVersion());
 
 
         // INIT DATABASE

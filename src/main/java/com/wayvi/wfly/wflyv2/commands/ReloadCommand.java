@@ -11,6 +11,7 @@ import com.wayvi.wfly.wflyv2.services.DatabaseService;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -56,9 +57,9 @@ public class ReloadCommand extends Command<WFlyV2> {
         plugin.getMessageFile().reload();
         plugin.getConfigFile().reload();
 
-
-
         pvpListener.reloadConfigValues();
+
+        plugin.getConfigFile().set(ConfigEnum.VERSION, plugin.getDescription().getVersion());
 
         plugin.getDatabaseService().initializeDatabase();
 
