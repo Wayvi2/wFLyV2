@@ -7,6 +7,7 @@ import com.wayvi.wconfigapi.wconfigapi.ConfigKey;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 
 public enum ConfigEnum implements ConfigKey<Object> {
 
@@ -54,9 +55,13 @@ public enum ConfigEnum implements ConfigKey<Object> {
     PVP_FLY_DISABLE_RADIUS("pvp.fly-disable-radius", 5),
     PVP_BYPASS_PLACEHOLDERS("pvp.bypass.placeholders", Arrays.asList("%lands_land_name_plain%")),
 
-    DECREMENTATION_DISABLE_BY_CONDITION("decrementation-disable-by-condition", Arrays.asList("%player_name%=Wayvi2")),
+    DECREMENTATION_DISABLE_BY_CONDITION(
+            "decrementation-disable-by-condition",
+            Collections.singletonList(Collections.singletonMap("condition", "%player_name%=Wayvi2"))
+    ),
 
     COOLDOWN_GIVE_ENABLED("cooldown-give.enabled", false),
+
     COOLDOWN_GIVE_CUSTOM_ENABLED("cooldown-give.custom-cooldown.enabled", false),
     COOLDOWN_GIVE_CUSTOM_TIME("cooldown-give.custom-cooldown.cooldown", 5),
     COOLDOWN_GIVE_LIMITS_ENABLED("cooldown-give.limits.enabled", true),
