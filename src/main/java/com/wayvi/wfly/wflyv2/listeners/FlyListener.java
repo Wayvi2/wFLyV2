@@ -6,6 +6,7 @@ import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyv2.storage.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -29,6 +30,7 @@ public class FlyListener implements Listener {
 
     private final WFlyV2 plugin;
     private final FlyManager flyManager;
+    private final FlyTimeRepository flyTimeRepository;
 
     // ══════════════════════════════════════════════════════
     //                 CONSTRUCTOR & INIT
@@ -40,9 +42,10 @@ public class FlyListener implements Listener {
      * @param plugin     the main plugin instance
      * @param flyManager the FlyManager instance managing flight data
      */
-    public FlyListener(WFlyV2 plugin, FlyManager flyManager) {
+    public FlyListener(WFlyV2 plugin, FlyManager flyManager, FlyTimeRepository flyTimeRepository) {
         this.plugin = plugin;
         this.flyManager = flyManager;
+        this.flyTimeRepository = flyTimeRepository;
     }
 
     // ══════════════════════════════════════════════════════
@@ -59,14 +62,9 @@ public class FlyListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
-        try {
-            AccessPlayerDTO playerData = flyManager.getPlayerFlyData(player.getUniqueId());
-            if (playerData != null) {
-                WflyApi.get().getTimeFlyManager().saveInDbFlyTime(player);
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Failed to save flight time for player " + player.getName() + ": " + e.getMessage());
-            e.printStackTrace();
+        AccessPlayerDTO playerData = flyTimeRepository.getPlayerFlyData(player.getUniqueId());
+        if (playerData != null) {
+            flyTimeRepository.save(player);
         }
     }
 
@@ -87,17 +85,12 @@ public class FlyListener implements Listener {
             WflyApi.get().getTimeFlyManager().loadFlyTimesForPlayer(player);
         }
 
-        try {
-            AccessPlayerDTO playerData = flyManager.getPlayerFlyData(player.getUniqueId());
+        AccessPlayerDTO playerData = flyTimeRepository.getPlayerFlyData(player.getUniqueId());
 
-            if (playerData == null) {
-                flyManager.createNewPlayer(player.getUniqueId());
-            } else if (playerData.isinFly()) {
-                flyManager.manageFly(player.getUniqueId(), true);
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Failed to restore fly state for player " + player.getName() + ": " + e.getMessage());
-            e.printStackTrace();
+        if (playerData == null) {
+            flyTimeRepository.createNewPlayer(player.getUniqueId());
+        } else if (playerData.isinFly()) {
+            flyManager.manageFly(player.getUniqueId(), true);
         }
     }
 
@@ -134,30 +127,25 @@ public class FlyListener implements Listener {
         Player player = event.getPlayer();
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            try {
-                boolean authorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
-                AccessPlayerDTO playerData = flyManager.getPlayerFlyData(player.getUniqueId());
+            boolean authorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
+            AccessPlayerDTO playerData = flyTimeRepository.getPlayerFlyData(player.getUniqueId());
 
-                if (playerData != null && playerData.isinFly()) {
-                    flyManager.manageFly(player.getUniqueId(), authorized);
+            if (playerData != null && playerData.isinFly()) {
+                flyManager.manageFly(player.getUniqueId(), authorized);
 
-                    String message = authorized ? plugin.getMessageFile().get(MessageEnum.FLY_ACTIVATED) : plugin.getMessageFile().get(MessageEnum.FLY_DEACTIVATED);
+                String message = authorized ? plugin.getMessageFile().get(MessageEnum.FLY_ACTIVATED) : plugin.getMessageFile().get(MessageEnum.FLY_DEACTIVATED);
 
 
-                    ColorSupportUtil.sendColorFormat(player, message);
-                    boolean tpFloor = plugin.getConfigFile().get(ConfigEnum.TP_ON_FLOOR_WHEN_FLY_DISABLED);
-                    if (!authorized && tpFloor) {
-                        Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
-                        player.teleport(safeLoc);
-                    }
-
-                    if (!authorized) {
-                        WflyApi.get().getConditionManager().executeNotAuthorizedCommands(player);
-                    }
+                ColorSupportUtil.sendColorFormat(player, message);
+                boolean tpFloor = plugin.getConfigFile().get(ConfigEnum.TP_ON_FLOOR_WHEN_FLY_DISABLED);
+                if (!authorized && tpFloor) {
+                    Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
+                    player.teleport(safeLoc);
                 }
-            } catch (SQLException e) {
-                plugin.getLogger().severe("Error during world change for player " + player.getName() + ": " + e.getMessage());
-                e.printStackTrace();
+
+                if (!authorized) {
+                    WflyApi.get().getConditionManager().executeNotAuthorizedCommands(player);
+                }
             }
         }, 5L);
     }

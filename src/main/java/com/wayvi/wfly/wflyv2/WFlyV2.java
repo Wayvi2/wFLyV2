@@ -24,6 +24,7 @@ import com.wayvi.wfly.wflyv2.managers.fly.WFlyManager;
 import com.wayvi.wfly.wflyv2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyv2.managers.fly.WTimeFlyManager;
 import com.wayvi.wfly.wflyv2.services.DatabaseService;
+import com.wayvi.wfly.wflyv2.storage.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.tempfly.StorageAdapter;
 import com.wayvi.wfly.wflyv2.util.*;
 import fr.maxlego08.sarah.RequestHelper;
@@ -37,6 +38,8 @@ import java.sql.SQLException;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public final class WFlyV2 extends JavaPlugin {
 
@@ -46,6 +49,9 @@ public final class WFlyV2 extends JavaPlugin {
 
     private ConfigAPI<ConfigEnum> configFile;
     private ConfigAPI<MessageEnum> messageFile;
+
+    private static final int THREADS = Runtime.getRuntime().availableProcessors();
+    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(THREADS);
 
     DatabaseService databaseService;
 
@@ -90,8 +96,11 @@ public final class WFlyV2 extends JavaPlugin {
         //INIT PvPListener
         PvPListener pvpListener = new PvPListener(this);
 
+        FlyTimeRepository flyTimeRepository = new FlyTimeRepository(requestHelper, EXECUTOR);
+
+
         // INIT FlyManager
-        FlyManager flyManager = new WFlyManager(this, requestHelper);
+        FlyManager flyManager = new WFlyManager(this, flyTimeRepository);
         WflyApi.inject(flyManager);
 
         // INIT FlyQuest
@@ -107,7 +116,7 @@ public final class WFlyV2 extends JavaPlugin {
 
 
         // INIT TimeFlyManager
-        TimeFlyManager timeFlyManager = new WTimeFlyManager(this, requestHelper);
+        TimeFlyManager timeFlyManager = new WTimeFlyManager(this, flyTimeRepository);
         WflyApi.inject(timeFlyManager);
         try {
             timeFlyManager.decrementTimeRemaining();
@@ -116,7 +125,7 @@ public final class WFlyV2 extends JavaPlugin {
             throw new RuntimeException(e);
         }
 
-        FlyCommand flyCommand = new FlyCommand(this, pvpListener);
+        FlyCommand flyCommand = new FlyCommand(this, pvpListener, flyTimeRepository);
 
         // COMMANDS
 
@@ -134,7 +143,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new RemoveTimeCommand(this));
         commandManager.setMessageHandler(new CustomMessageHandler(this));
         commandManager.registerCommand(new FlyHelpCommand(this));
-        commandManager.registerCommand(new FlyPlayerCommands(this, pvpListener));
+        commandManager.registerCommand(new FlyPlayerCommands(this, pvpListener, flyTimeRepository));
         commandManager.registerCommand(new addAllTimeFlyCommand(this));
         commandManager.registerCommand(new RemoveAllTimeFlyCommand(this));
         if (getServer().getPluginManager().isPluginEnabled("TempFly")) {
@@ -144,10 +153,10 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new GetPlayerFlyTimeCommand(this, placeholerapiManager.getPlaceholder()));
         commandManager.registerCommand(new ExchangeCommand(this));
         commandManager.registerCommand(new FlyHelpPlayerCommand(this));
-        commandManager.registerCommand(new ToggleFlyPlayerCommand(this, flyCommand));
+        commandManager.registerCommand(new ToggleFlyPlayerCommand(this, flyCommand, flyTimeRepository));
         commandManager.registerCommand(new AboutCommand(this));
         // LISTENER
-        getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager), this);
+        getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, flyTimeRepository), this);
         getServer().getPluginManager().registerEvents(new PvPListener(this), this);
 
         new VersionCheckerUtil(this, 118465).checkAndNotify();

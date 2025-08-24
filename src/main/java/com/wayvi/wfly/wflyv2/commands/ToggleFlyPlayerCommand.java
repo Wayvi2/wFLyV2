@@ -6,6 +6,7 @@ import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.commands.ToggleType;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyv2.storage.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
@@ -16,13 +17,15 @@ import java.sql.SQLException;
 
 public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
 
-    private WFlyV2 plugin;
-    private FlyCommand flyCommand;
+    private final WFlyV2 plugin;
+    private final FlyCommand flyCommand;
+    private final FlyTimeRepository flyTimeRepository;
 
-    public ToggleFlyPlayerCommand(WFlyV2 plugin, FlyCommand flyCommand) {
+    public ToggleFlyPlayerCommand(WFlyV2 plugin, FlyCommand flyCommand, FlyTimeRepository flyTimeRepository) {
         super(plugin, "wfly");
         this.plugin = plugin;
         this.flyCommand = flyCommand;
+        this.flyTimeRepository = flyTimeRepository;
         addArgs("state", ToggleType.class);
         addArgs("player", Player.class);
         setPermission(Permissions.TOGGLE_FLY.getPermission());
@@ -62,12 +65,7 @@ public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
 
         } else {
             AccessPlayerDTO playerFlyData;
-            try {
-                playerFlyData = WflyApi.get().getFlyManager().getPlayerFlyData(targetPlayer.getUniqueId());
-            } catch (SQLException e) {
-                plugin.getLogger().warning("Error : " + e.getMessage());
-                return;
-            }
+            playerFlyData = flyTimeRepository.getPlayerFlyData(targetPlayer.getUniqueId());
 
             if (!playerFlyData.isinFly()) {
                 String message = plugin.getMessageFile().get(MessageEnum.PLAYER_NOT_IN_FLY);

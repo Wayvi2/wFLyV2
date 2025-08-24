@@ -5,6 +5,7 @@ import com.wayvi.wfly.wflyv2.api.FlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyv2.storage.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
@@ -23,20 +24,19 @@ import java.util.concurrent.Executors;
 public class WFlyManager implements FlyManager {
 
 
-    private WFlyV2 plugin;
-    private static final int THREADS = Runtime.getRuntime().availableProcessors();
-    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(THREADS);
+    private final WFlyV2 plugin;
 
-    private final RequestHelper requestHelper;
+    private final FlyTimeRepository flyTimeRepository;
+
+
+
 
     /**
      * Constructs a new WFlyManager instance.
-     *
-     * @param requestHelper the database access helper
      */
-    public WFlyManager(WFlyV2 plugin,final RequestHelper requestHelper) {
-        this.requestHelper = requestHelper;
+    public WFlyManager(WFlyV2 plugin, FlyTimeRepository flyTimeRepository) {
         this.plugin = plugin;
+        this.flyTimeRepository = flyTimeRepository;
     }
 
     /**
@@ -54,7 +54,7 @@ public class WFlyManager implements FlyManager {
         player.setFlying(fly);
 
         WflyApi.get().getTimeFlyManager().updateFlyStatus(uuid, fly);
-        upsertFlyStatus(player, fly);
+        flyTimeRepository.upsertFlyStatus(player, fly);
     }
 
     /**
@@ -99,69 +99,4 @@ public class WFlyManager implements FlyManager {
         ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(requestedSpeed)));
     }
 
-
-
-
-
-
-
-
-
-    /**
-     * Retrieves flight-related data for a specific player from the database.
-     *
-     * @param uuid the UUID of the player
-     * @return an {@link AccessPlayerDTO} containing player flight data
-     * @throws SQLException if the database query fails
-     */
-    @Override
-    public AccessPlayerDTO getPlayerFlyData(final UUID uuid) throws SQLException {
-        final List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
-                table -> table.where("uniqueId", uuid));
-
-        return records.isEmpty() ? new AccessPlayerDTO(uuid, false, 0) : records.get(0);
-    }
-
-    /**
-     * Inserts or updates the player's current fly state and remaining fly time in the database.
-     *
-     * @param player the player whose data is being updated
-     * @param isFlying whether the player is currently flying
-     */
-    @Override
-    public void upsertFlyStatus(final Player player, final boolean isFlying) {
-        EXECUTOR.execute(() -> {
-            final UUID uuid = player.getUniqueId();
-            final List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
-                    table -> table.where("uniqueId", uuid));
-
-            if (records.isEmpty()) {
-                requestHelper.insert("fly", table -> {
-                    table.uuid("uniqueId", uuid).primary();
-                    table.bool("isinFly", isFlying);
-                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
-                });
-            } else {
-                requestHelper.update("fly", table -> {
-                    table.where("uniqueId", uuid);
-                    table.bool("isinFly", isFlying);
-                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
-                });
-            }
-        });
-    }
-
-    /**
-     * Creates a new database entry for a player when they are first seen.
-     *
-     * @param uuid the UUID of the new player
-     */
-    @Override
-    public void createNewPlayer(final UUID uuid) {
-        requestHelper.insert("fly", table -> {
-            table.uuid("uniqueId", uuid).primary();
-            table.bool("isinFly", false);
-            table.bigInt("FlyTimeRemaining", 0);
-        });
-    }
 }
