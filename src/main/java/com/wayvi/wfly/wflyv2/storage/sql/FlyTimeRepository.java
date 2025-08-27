@@ -2,7 +2,7 @@ package com.wayvi.wfly.wflyv2.storage.sql;
 
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.api.storage.FlyTimeStorage;
-import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyv2.storage.models.AccessPlayerDTO;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.entity.Player;
 

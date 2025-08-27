@@ -3,7 +3,7 @@ package com.wayvi.wfly.wflyv2.storage.redis;
 import com.google.gson.Gson;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.api.storage.FlyTimeStorage;
-import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyv2.storage.models.AccessPlayerDTO;
 import org.bukkit.entity.Player;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;

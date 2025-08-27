@@ -1,6 +1,6 @@
 package com.wayvi.wfly.wflyv2.api.storage;
 
-import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyv2.storage.models.AccessPlayerDTO;
 import org.bukkit.entity.Player;
 
 import java.util.List;

@@ -15,7 +15,7 @@ import java.util.*;
 
 public class WConditionManager implements ConditionManager {
 
-    private WFlyV2 plugin;
+    private final WFlyV2 plugin;
 
     private List<Condition> authorizedConditions;
     private List<Condition> notAuthorizedConditions;
