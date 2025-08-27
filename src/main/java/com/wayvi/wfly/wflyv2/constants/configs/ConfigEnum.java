@@ -41,13 +41,6 @@ public enum ConfigEnum implements ConfigKey<Object> {
     FORMAT_PLACEHOLDER_OTHER_DAYS("format-placeholder.other-format.days_suffixe", "days"),
 
     COMMAND_ALIAS("command.alias", Arrays.asList("wfly", "fly")),
-    CONDITIONS("conditions", Collections.singletonList("")),
-//    CONDITIONS_NOT_AUTHORIZED("conditions.not-authorized.my-first-conditions.placeholder", "%multiverse_world_alias%"),
-//    CONDITIONS_NOT_AUTHORIZED_EQUALS("conditions.not-authorized.my-first-conditions.equals", "world"),
-//    CONDITIONS_NOT_AUTHORIZED_COMMANDS("conditions.not-authorized.my-first-conditions.commands", "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000"),
-
-//    CONDITIONS_AUTHORIZED("conditions.authorized.my-seconds-conditions.placeholder", "%multiverse_world_alias%"),
-//    CONDITIONS_AUTHORIZED_EQUALS("conditions.authorized.my-seconds-conditions.equals", "world_nether"),
 
     TP_ON_FLOOR_WHEN_FLY_DISABLED("tp-on-floor-when-fly-disabled", true),
 
@@ -66,7 +59,19 @@ public enum ConfigEnum implements ConfigKey<Object> {
     COOLDOWN_GIVE_CUSTOM_TIME("cooldown-give.custom-cooldown.cooldown", 5),
     COOLDOWN_GIVE_LIMITS_ENABLED("cooldown-give.limits.enabled", true),
     COOLDOWN_GIVE_MIN("cooldown-give.limits.give-minimum-value", 5),
-    COOLDOWN_GIVE_MAX("cooldown-give.limits.give-maximum-value", 60);
+    COOLDOWN_GIVE_MAX("cooldown-give.limits.give-maximum-value", 60),
+
+
+    REDIS_ENABLED("redis.enabled", true),
+    REDIS_HOST("redis.host", "127.0.0.1"),
+    REDIS_PORT("redis.port", 6379),
+    REDIS_PASSWORD("redis.password", ""),
+    REDIS_DATABASE("redis.database", 0),
+    REDIS_TIMEOUT("redis.timeout", 2000),
+
+    REDIS_POOL_MAX_TOTAL("redis.pool.maxTotal", 8),
+    REDIS_POOL_MAX_IDLE("redis.pool.maxIdle", 8),
+    REDIS_POOL_MIN_IDLE("redis.pool.minIdle", 0);
 
     private final String path;
     private final Object defaultValue;

@@ -5,16 +5,14 @@ import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
-import com.wayvi.wfly.wflyv2.storage.FlyTimeRepository;
+import com.wayvi.wfly.wflyv2.storage.sql.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -62,7 +60,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      */
     @Override
     public @NotNull String getVersion() {
-        return "1.0.2.8";
+        return "1.0.2.9";
     }
 
     /**

@@ -6,7 +6,7 @@ import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
-import com.wayvi.wfly.wflyv2.storage.FlyTimeRepository;
+import com.wayvi.wfly.wflyv2.storage.sql.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -19,7 +19,6 @@ import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.sql.SQLException;
 import java.util.UUID;
 
 public class FlyListener implements Listener {
@@ -30,7 +29,6 @@ public class FlyListener implements Listener {
 
     private final WFlyV2 plugin;
     private final FlyManager flyManager;
-    private final FlyTimeRepository flyTimeRepository;
 
     // ══════════════════════════════════════════════════════
     //                 CONSTRUCTOR & INIT
@@ -42,10 +40,9 @@ public class FlyListener implements Listener {
      * @param plugin     the main plugin instance
      * @param flyManager the FlyManager instance managing flight data
      */
-    public FlyListener(WFlyV2 plugin, FlyManager flyManager, FlyTimeRepository flyTimeRepository) {
+    public FlyListener(WFlyV2 plugin, FlyManager flyManager) {
         this.plugin = plugin;
         this.flyManager = flyManager;
-        this.flyTimeRepository = flyTimeRepository;
     }
 
     // ══════════════════════════════════════════════════════
@@ -62,9 +59,9 @@ public class FlyListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
-        AccessPlayerDTO playerData = flyTimeRepository.getPlayerFlyData(player.getUniqueId());
+        AccessPlayerDTO playerData = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
         if (playerData != null) {
-            flyTimeRepository.save(player);
+            plugin.getStorage().save(player);
         }
     }
 
@@ -85,10 +82,10 @@ public class FlyListener implements Listener {
             WflyApi.get().getTimeFlyManager().loadFlyTimesForPlayer(player);
         }
 
-        AccessPlayerDTO playerData = flyTimeRepository.getPlayerFlyData(player.getUniqueId());
+        AccessPlayerDTO playerData = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
 
         if (playerData == null) {
-            flyTimeRepository.createNewPlayer(player.getUniqueId());
+            plugin.getStorage().createNewPlayer(player.getUniqueId());
         } else if (playerData.isinFly()) {
             flyManager.manageFly(player.getUniqueId(), true);
         }
@@ -128,7 +125,7 @@ public class FlyListener implements Listener {
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             boolean authorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
-            AccessPlayerDTO playerData = flyTimeRepository.getPlayerFlyData(player.getUniqueId());
+            AccessPlayerDTO playerData = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
 
             if (playerData != null && playerData.isinFly()) {
                 flyManager.manageFly(player.getUniqueId(), authorized);

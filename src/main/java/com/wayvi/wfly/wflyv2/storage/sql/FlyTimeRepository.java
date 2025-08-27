@@ -1,6 +1,8 @@
-package com.wayvi.wfly.wflyv2.storage;
+package com.wayvi.wfly.wflyv2.storage.sql;
 
 import com.wayvi.wfly.wflyv2.api.WflyApi;
+import com.wayvi.wfly.wflyv2.api.storage.FlyTimeStorage;
+import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.entity.Player;
 
@@ -9,7 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
-public class FlyTimeRepository {
+public class FlyTimeRepository implements FlyTimeStorage {
 
     private final RequestHelper requestHelper;
     private final ExecutorService executor;
@@ -19,6 +21,7 @@ public class FlyTimeRepository {
         this.executor = executor;
     }
 
+    @Override
     public void save(Player player) {
         if (player == null) return;
 
@@ -44,13 +47,14 @@ public class FlyTimeRepository {
         }
     }
 
-
+    @Override
     public CompletableFuture<Void> saveAsync(Player player) {
         if (player == null) return CompletableFuture.completedFuture(null);
 
         return CompletableFuture.runAsync(() -> save(player), executor);
     }
 
+    @Override
     public void upsertFlyStatus(final Player player, final boolean isFlying) {
         executor.execute(() -> {
             final UUID uuid = player.getUniqueId();
@@ -79,6 +83,7 @@ public class FlyTimeRepository {
      * @param uuid the UUID of the player
      * @return an {@link AccessPlayerDTO} containing player flight data
      */
+    @Override
     public AccessPlayerDTO getPlayerFlyData(final UUID uuid) {
         final List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
                 table -> table.where("uniqueId", uuid));
@@ -99,6 +104,8 @@ public class FlyTimeRepository {
         });
     }
 
+
+    @Override
     public List<AccessPlayerDTO> selectAll(String tableName, Class<?> clazz){
         return this.requestHelper.selectAll(tableName, AccessPlayerDTO.class);
     }

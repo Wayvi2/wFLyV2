@@ -4,18 +4,12 @@ import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.FlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
-import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
-import com.wayvi.wfly.wflyv2.storage.FlyTimeRepository;
+import com.wayvi.wfly.wflyv2.storage.sql.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
-import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.sql.SQLException;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Fly manager implementation responsible for handling flight permissions,
@@ -26,17 +20,12 @@ public class WFlyManager implements FlyManager {
 
     private final WFlyV2 plugin;
 
-    private final FlyTimeRepository flyTimeRepository;
-
-
-
 
     /**
      * Constructs a new WFlyManager instance.
      */
-    public WFlyManager(WFlyV2 plugin, FlyTimeRepository flyTimeRepository) {
+    public WFlyManager(WFlyV2 plugin) {
         this.plugin = plugin;
-        this.flyTimeRepository = flyTimeRepository;
     }
 
     /**
@@ -54,7 +43,7 @@ public class WFlyManager implements FlyManager {
         player.setFlying(fly);
 
         WflyApi.get().getTimeFlyManager().updateFlyStatus(uuid, fly);
-        flyTimeRepository.upsertFlyStatus(player, fly);
+        plugin.getStorage().upsertFlyStatus(player, fly);
     }
 
     /**
