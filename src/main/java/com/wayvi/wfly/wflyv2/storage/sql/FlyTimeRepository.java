@@ -110,5 +110,26 @@ public class FlyTimeRepository implements FlyTimeStorage {
         return this.requestHelper.selectAll(tableName, AccessPlayerDTO.class);
     }
 
+    @Override
+    public void saveDTO(AccessPlayerDTO playerData) {
+        List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
+                table -> table.where("uniqueId", playerData.uniqueId()));
+
+        if (records.isEmpty()) {
+            requestHelper.insert("fly", table -> {
+                table.uuid("uniqueId", playerData.uniqueId()).primary();
+                table.bool("isinFly", playerData.isinFly());
+                table.bigInt("FlyTimeRemaining", playerData.FlyTimeRemaining());
+            });
+        } else {
+            requestHelper.update("fly", table -> {
+                table.where("uniqueId", playerData.uniqueId());
+                table.bool("isinFly", playerData.isinFly());
+                table.bigInt("FlyTimeRemaining", playerData.FlyTimeRemaining());
+            });
+        }
+    }
+
+
 }
 

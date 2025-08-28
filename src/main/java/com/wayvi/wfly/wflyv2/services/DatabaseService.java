@@ -59,7 +59,7 @@ public class DatabaseService {
                         plugin.getConfigFile().get(ConfigEnum.MYSQL_PORT),
                         plugin.getConfigFile().get(ConfigEnum.MYSQL_HOST),
                         plugin.getConfigFile().get(ConfigEnum.MYSQL_DATABASE),
-                        false,
+                        true,
                         MYSQL
                 );
 

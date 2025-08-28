@@ -202,6 +202,8 @@ public class WTimeFlyManager implements TimeFlyManager {
 
     @Override
     public CompletableFuture<Void> saveFlyTimeOnDisable() {
+
+
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         for (UUID playerUUID : flyTimes.keySet()) {

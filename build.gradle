@@ -93,6 +93,8 @@ shadowJar {
     // Relocate Jedis
     relocate 'redis.clients', rootProject.group + "." + rootProject.name.toLowerCase() + ".libs.redis.clients"
     relocate 'org.apache.commons.pool2', rootProject.group + "." + rootProject.name.toLowerCase() + ".libs.commons.pool2"
+
+    minimize()
 }
 
 

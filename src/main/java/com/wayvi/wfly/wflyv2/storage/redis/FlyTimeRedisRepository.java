@@ -143,4 +143,18 @@ public class FlyTimeRedisRepository implements FlyTimeStorage {
 
         return players;
     }
+
+    @Override
+    public void saveDTO(AccessPlayerDTO playerData) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            String key = FLY_KEY_PREFIX + playerData.uniqueId().toString();
+            String jsonData = gson.toJson(playerData);
+
+            jedis.hset(key, "data", jsonData);
+            jedis.sadd(FLY_ALL_PLAYERS, playerData.uniqueId().toString());
+        } catch (JedisException e) {
+            logger.log(Level.SEVERE, "Error saving Redis for player " + playerData.uniqueId(), e);
+        }
+    }
+
 }

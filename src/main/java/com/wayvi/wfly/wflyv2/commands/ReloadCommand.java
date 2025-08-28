@@ -2,6 +2,7 @@ package com.wayvi.wfly.wflyv2.commands;
 
 import com.wayvi.wconfigapi.wconfigapi.ConfigAPI;
 import com.wayvi.wfly.wflyv2.WFlyV2;
+import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
@@ -22,7 +23,7 @@ public class ReloadCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
     private final PvPListener pvpListener;
-    private final WConditionManager conditionManager;
+    private WConditionManager conditionManager;
     private DatabaseService databaseService;
 
     /**
@@ -57,7 +58,13 @@ public class ReloadCommand extends Command<WFlyV2> {
         plugin.getMessageFile().reload();
         plugin.getConfigFile().reload();
 
-        conditionManager.loadConditions();
+        if (conditionManager != null) {
+            WflyApi.uninjectConditionManager();
+        }
+
+        conditionManager = new WConditionManager(plugin);
+        conditionManager.checkCanFly();
+        WflyApi.inject(conditionManager);
 
         pvpListener.reloadConfigValues();
 

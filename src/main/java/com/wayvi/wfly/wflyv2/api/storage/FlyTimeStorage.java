@@ -21,4 +21,6 @@ public interface FlyTimeStorage {
 
     List<AccessPlayerDTO> selectAll(String tableName, Class<?> clazz);
 
+    void saveDTO(AccessPlayerDTO playerData);
+
 }

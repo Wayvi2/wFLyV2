@@ -62,7 +62,7 @@ public enum ConfigEnum implements ConfigKey<Object> {
     COOLDOWN_GIVE_MAX("cooldown-give.limits.give-maximum-value", 60),
 
 
-    REDIS_ENABLED("redis.enabled", true),
+    REDIS_ENABLED("redis.enabled", false),
     REDIS_HOST("redis.host", "127.0.0.1"),
     REDIS_PORT("redis.port", 6379),
     REDIS_PASSWORD("redis.password", ""),

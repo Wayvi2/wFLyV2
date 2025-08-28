@@ -25,6 +25,8 @@ import com.wayvi.wfly.wflyv2.managers.fly.WFlyManager;
 import com.wayvi.wfly.wflyv2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyv2.managers.fly.WTimeFlyManager;
 import com.wayvi.wfly.wflyv2.services.DatabaseService;
+import com.wayvi.wfly.wflyv2.storage.FlyTimeHybridRepository;
+import com.wayvi.wfly.wflyv2.storage.FlyTimeStorageFactory;
 import com.wayvi.wfly.wflyv2.storage.redis.FlyTimeRedisRepository;
 import com.wayvi.wfly.wflyv2.storage.sql.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.tempfly.StorageAdapter;
@@ -42,6 +44,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static com.wayvi.wfly.wflyv2.storage.FlyTimeStorageFactory.saveDisableWithRedisAndMysql;
 
 public final class WFlyV2 extends JavaPlugin {
 
@@ -72,6 +76,8 @@ public final class WFlyV2 extends JavaPlugin {
         Metrics metrics = new Metrics(this, 24609);
 
 
+
+
         // CONFIGS
         configFile = new ConfigAPI<>(this, ConfigEnum.class, "config.yml");
         messageFile = new ConfigAPI<>(this, MessageEnum.class, "message.yml");
@@ -91,30 +97,13 @@ public final class WFlyV2 extends JavaPlugin {
         // INIT RequestHelper
         RequestHelper requestHelper = new RequestHelper(databaseService.getConnection(), this.getLogger()::info);
 
+        boolean mysqlEnabled = getConfigFile().get(ConfigEnum.MYSQL_ENABLED);
+        boolean redisEnabled = getConfigFile().get(ConfigEnum.REDIS_ENABLED);
 
-        if (getConfigFile().get(ConfigEnum.REDIS_ENABLED)) {
-            String host = getConfigFile().get(ConfigEnum.REDIS_HOST);
-            int port = getConfigFile().get(ConfigEnum.REDIS_PORT);
-            String password = getConfigFile().get(ConfigEnum.REDIS_PASSWORD);
-            int database = getConfigFile().get(ConfigEnum.REDIS_DATABASE);
-            int timeout = getConfigFile().get(ConfigEnum.REDIS_TIMEOUT);
+        this.storage = FlyTimeStorageFactory.create(this, requestHelper, EXECUTOR, mysqlEnabled, redisEnabled);
 
-            JedisPoolConfig poolConfig = new JedisPoolConfig();
-            poolConfig.setMaxTotal(getConfigFile().get(ConfigEnum.REDIS_POOL_MAX_TOTAL));
-            poolConfig.setMaxIdle(getConfigFile().get(ConfigEnum.REDIS_POOL_MAX_IDLE));
-            poolConfig.setMinIdle(getConfigFile().get(ConfigEnum.REDIS_POOL_MIN_IDLE));
 
-            if (password != null && !password.isEmpty()) {
-                jedisPool = new JedisPool(poolConfig, host, port, timeout, password, database);
-            } else {
-                jedisPool = new JedisPool(poolConfig, host, port, timeout, null, database);
-            }
 
-            this.storage = new FlyTimeRedisRepository(jedisPool, EXECUTOR);
-
-        } else {
-            this.storage = new FlyTimeRepository(requestHelper, EXECUTOR);
-        }
 
 
 
@@ -209,14 +198,20 @@ public final class WFlyV2 extends JavaPlugin {
     public void onDisable() {
         try {
             WflyApi.get().getTimeFlyManager().saveFlyTimeOnDisable().join();
+
+            FlyTimeStorageFactory.saveDisableWithRedisAndMysql(this.getStorage());
+
             getLogger().info("Fly time saved");
         } catch (CompletionException e) {
             getLogger().severe("" + e.getCause());
         }
 
 
+
         this.getServer().getMessenger().unregisterOutgoingPluginChannel(this, "BungeeCord");
         this.getServer().getMessenger().unregisterIncomingPluginChannel(this, "BungeeCord");
+
+
 
 
         getLogger().info("Plugin disabled");

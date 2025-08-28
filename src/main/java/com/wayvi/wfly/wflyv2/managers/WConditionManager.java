@@ -5,7 +5,9 @@ import com.wayvi.wfly.wflyv2.api.ConditionManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
+import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.models.Condition;
+import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
@@ -188,6 +190,7 @@ public class WConditionManager implements ConditionManager {
      */
     private void deactivateFlyForPlayer(Player player) {
         WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
+        ColorSupportUtil.sendColorFormat(player, plugin.getMessageFile().get(MessageEnum.NO_FLY_HERE));
 
         Location safeLocation = getSafeLocation(player);
         if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
