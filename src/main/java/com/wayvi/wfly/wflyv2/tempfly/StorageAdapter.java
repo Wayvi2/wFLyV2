@@ -2,7 +2,7 @@ package com.wayvi.wfly.wflyv2.tempfly;
 
 import com.wayvi.wfly.wflyv2.util.ConsoleColorsUtil;
 import com.wayvi.wfly.wflyv2.WFlyV2;
-import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
+import com.wayvi.wfly.wflyv2.storage.models.AccessPlayerDTO;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;

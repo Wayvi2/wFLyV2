@@ -4,6 +4,7 @@ import com.wayvi.wconfigapi.wconfigapi.ConfigAPI;
 import com.wayvi.wfly.wflyv2.api.FlyManager;
 import com.wayvi.wfly.wflyv2.api.TimeFlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
+import com.wayvi.wfly.wflyv2.api.storage.FlyTimeStorage;
 import com.wayvi.wfly.wflyv2.commands.all.RemoveAllTimeFlyCommand;
 import com.wayvi.wfly.wflyv2.commands.all.addAllTimeFlyCommand;
 import com.wayvi.wfly.wflyv2.commands.converter.ToggleTypeConverter;
@@ -24,22 +25,27 @@ import com.wayvi.wfly.wflyv2.managers.fly.WFlyManager;
 import com.wayvi.wfly.wflyv2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyv2.managers.fly.WTimeFlyManager;
 import com.wayvi.wfly.wflyv2.services.DatabaseService;
-import com.wayvi.wfly.wflyv2.storage.FlyTimeRepository;
+import com.wayvi.wfly.wflyv2.storage.FlyTimeHybridRepository;
+import com.wayvi.wfly.wflyv2.storage.FlyTimeStorageFactory;
+import com.wayvi.wfly.wflyv2.storage.redis.FlyTimeRedisRepository;
+import com.wayvi.wfly.wflyv2.storage.sql.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.tempfly.StorageAdapter;
 import com.wayvi.wfly.wflyv2.util.*;
 import fr.maxlego08.sarah.RequestHelper;
 
 import fr.traqueur.commands.spigot.CommandManager;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 import java.sql.SQLException;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static com.wayvi.wfly.wflyv2.storage.FlyTimeStorageFactory.saveDisableWithRedisAndMysql;
 
 public final class WFlyV2 extends JavaPlugin {
 
@@ -52,6 +58,10 @@ public final class WFlyV2 extends JavaPlugin {
 
     private static final int THREADS = Runtime.getRuntime().availableProcessors();
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(THREADS);
+
+    private FlyTimeStorage storage;
+    private JedisPool jedisPool;
+    private ExecutorService executor;
 
     DatabaseService databaseService;
 
@@ -66,10 +76,14 @@ public final class WFlyV2 extends JavaPlugin {
         Metrics metrics = new Metrics(this, 24609);
 
 
+
+
         // CONFIGS
         configFile = new ConfigAPI<>(this, ConfigEnum.class, "config.yml");
         messageFile = new ConfigAPI<>(this, MessageEnum.class, "message.yml");
         getConfigFile().set(ConfigEnum.VERSION, this.getDescription().getVersion());
+
+
 
 
         // INIT DATABASE
@@ -82,6 +96,16 @@ public final class WFlyV2 extends JavaPlugin {
 
         // INIT RequestHelper
         RequestHelper requestHelper = new RequestHelper(databaseService.getConnection(), this.getLogger()::info);
+
+        boolean mysqlEnabled = getConfigFile().get(ConfigEnum.MYSQL_ENABLED);
+        boolean redisEnabled = getConfigFile().get(ConfigEnum.REDIS_ENABLED);
+
+        this.storage = FlyTimeStorageFactory.create(this, requestHelper, EXECUTOR, mysqlEnabled, redisEnabled);
+
+
+
+
+
 
         this.timeFormatTranslatorUtil = new TimeFormatTranslatorUtil(this);
 
@@ -97,11 +121,10 @@ public final class WFlyV2 extends JavaPlugin {
         //INIT PvPListener
         PvPListener pvpListener = new PvPListener(this);
 
-        FlyTimeRepository flyTimeRepository = new FlyTimeRepository(requestHelper, EXECUTOR);
 
 
         // INIT FlyManager
-        FlyManager flyManager = new WFlyManager(this, flyTimeRepository);
+        FlyManager flyManager = new WFlyManager(this);
         WflyApi.inject(flyManager);
 
         // INIT FlyQuest
@@ -117,7 +140,7 @@ public final class WFlyV2 extends JavaPlugin {
 
 
         // INIT TimeFlyManager
-        TimeFlyManager timeFlyManager = new WTimeFlyManager(this, flyTimeRepository);
+        TimeFlyManager timeFlyManager = new WTimeFlyManager(this);
         WflyApi.inject(timeFlyManager);
         try {
             timeFlyManager.decrementTimeRemaining();
@@ -126,7 +149,7 @@ public final class WFlyV2 extends JavaPlugin {
             throw new RuntimeException(e);
         }
 
-        FlyCommand flyCommand = new FlyCommand(this, pvpListener, flyTimeRepository);
+        FlyCommand flyCommand = new FlyCommand(this, pvpListener);
 
         // COMMANDS
 
@@ -144,7 +167,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new RemoveTimeCommand(this));
         commandManager.setMessageHandler(new CustomMessageHandler(this));
         commandManager.registerCommand(new FlyHelpCommand(this));
-        commandManager.registerCommand(new FlyPlayerCommands(this, pvpListener, flyTimeRepository));
+        commandManager.registerCommand(new FlyPlayerCommands(this, pvpListener));
         commandManager.registerCommand(new addAllTimeFlyCommand(this));
         commandManager.registerCommand(new RemoveAllTimeFlyCommand(this));
         if (getServer().getPluginManager().isPluginEnabled("TempFly")) {
@@ -154,10 +177,10 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new GetPlayerFlyTimeCommand(this, placeholerapiManager.getPlaceholder()));
         commandManager.registerCommand(new ExchangeCommand(this));
         commandManager.registerCommand(new FlyHelpPlayerCommand(this));
-        commandManager.registerCommand(new ToggleFlyPlayerCommand(this, flyCommand, flyTimeRepository));
+        commandManager.registerCommand(new ToggleFlyPlayerCommand(this, flyCommand));
         commandManager.registerCommand(new AboutCommand(this));
         // LISTENER
-        getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager, flyTimeRepository), this);
+        getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager), this);
         getServer().getPluginManager().registerEvents(new PvPListener(this), this);
 
         new VersionCheckerUtil(this, 118465).checkAndNotify();
@@ -175,14 +198,20 @@ public final class WFlyV2 extends JavaPlugin {
     public void onDisable() {
         try {
             WflyApi.get().getTimeFlyManager().saveFlyTimeOnDisable().join();
+
+            FlyTimeStorageFactory.saveDisableWithRedisAndMysql(this.getStorage());
+
             getLogger().info("Fly time saved");
         } catch (CompletionException e) {
             getLogger().severe("" + e.getCause());
         }
 
 
+
         this.getServer().getMessenger().unregisterOutgoingPluginChannel(this, "BungeeCord");
         this.getServer().getMessenger().unregisterIncomingPluginChannel(this, "BungeeCord");
+
+
 
 
         getLogger().info("Plugin disabled");
@@ -209,6 +238,10 @@ public final class WFlyV2 extends JavaPlugin {
 
     public DatabaseService getDatabaseService() {
         return databaseService;
+    }
+
+    public FlyTimeStorage getStorage(){
+        return storage;
     }
 
 }

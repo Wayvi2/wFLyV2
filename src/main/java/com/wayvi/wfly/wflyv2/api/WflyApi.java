@@ -38,6 +38,41 @@ public class WflyApi {
         WflyApi.exchangeManager = exchangeManager;
     }
 
+    // ---------------------- UNINJECT ----------------------
+    @ApiStatus.Internal
+    public static void uninjectPlugin() {
+        plugin = null;
+    }
+
+    @ApiStatus.Internal
+    public static void uninjectFlyManager() {
+        flyManager = null;
+    }
+
+    @ApiStatus.Internal
+    public static void uninjectTimeFlyManager() {
+        timeFlyManager = null;
+    }
+
+    @ApiStatus.Internal
+    public static void uninjectConditionManager() {
+        conditionManager = null;
+    }
+
+    @ApiStatus.Internal
+    public static void uninjectExchangeManager() {
+        exchangeManager = null;
+    }
+
+    @ApiStatus.Internal
+    public static void uninjectAll() {
+        plugin = null;
+        flyManager = null;
+        timeFlyManager = null;
+        conditionManager = null;
+        exchangeManager = null;
+    }
+    // ------------------------------------------------------
 
     public static WflyApi get() {
         return INSTANCE;
@@ -59,6 +94,7 @@ public class WflyApi {
         return conditionManager;
     }
 
-    public ExchangeManager getExchangeManager() {return exchangeManager;}
-
+    public ExchangeManager getExchangeManager() {
+        return exchangeManager;
+    }
 }

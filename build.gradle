@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.wayvi.wfly'
-version = '1.0.2.8'
+version = '1.0.3.0'
 
 repositories {
     mavenCentral()
@@ -24,6 +24,8 @@ repositories {
     }
 
 
+
+
     maven {
         url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
     }
@@ -40,6 +42,7 @@ dependencies {
     //compileOnly('world.bentobox:bentobox:3.2.3-20250101.170024-4')
     compileOnly('me.clip:placeholderapi:2.11.6')
     implementation 'com.github.Traqueur-dev.CommandsAPI:platform-spigot:4.2.1'
+    implementation("redis.clients:jedis:6.0.0")
     implementation 'com.github.Traqueur-dev.CommandsAPI:core:4.2.1'
     implementation 'fr.maxlego08.sarah:sarah:1.18'
 
@@ -86,6 +89,12 @@ shadowJar {
     relocate 'fr.traqueur.commands', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.commands"
     relocate 'fr.maxlego08.sarah', rootProject.group + "." + rootProject.name.toLowerCase() + ".api.sarah"
     relocate 'com.wayvi.wconfigapi.wconfigapi', rootProject.group + "." + rootProject.name.toLowerCase() + '.api.wconfigapi'
+
+    // Relocate Jedis
+    relocate 'redis.clients', rootProject.group + "." + rootProject.name.toLowerCase() + ".libs.redis.clients"
+    relocate 'org.apache.commons.pool2', rootProject.group + "." + rootProject.name.toLowerCase() + ".libs.commons.pool2"
+
+    minimize()
 }
 
 

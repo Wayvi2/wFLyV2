@@ -5,16 +5,14 @@ import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.listeners.PvPListener;
-import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
-import com.wayvi.wfly.wflyv2.storage.FlyTimeRepository;
+import com.wayvi.wfly.wflyv2.storage.models.AccessPlayerDTO;
+import com.wayvi.wfly.wflyv2.storage.sql.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.sql.SQLException;
 
 public class FlyPlayerCommands extends Command<WFlyV2> {
 
@@ -27,7 +25,7 @@ public class FlyPlayerCommands extends Command<WFlyV2> {
      * @param plugin                 The main plugin instance.
      * @param pvpListener             Listener to check for nearby players in PvP.
      */
-    public FlyPlayerCommands(WFlyV2 plugin, PvPListener pvpListener, FlyTimeRepository flyTimeRepository) {
+    public FlyPlayerCommands(WFlyV2 plugin, PvPListener pvpListener) {
         super(plugin, "wfly.fly");
         addArgs("player", Player.class);
         setDescription("Fly command");

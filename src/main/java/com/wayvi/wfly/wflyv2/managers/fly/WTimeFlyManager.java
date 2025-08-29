@@ -6,10 +6,8 @@ import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
-import com.wayvi.wfly.wflyv2.storage.AccessPlayerDTO;
-import com.wayvi.wfly.wflyv2.storage.FlyTimeRepository;
+import com.wayvi.wfly.wflyv2.storage.models.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
-import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -27,7 +25,6 @@ public class WTimeFlyManager implements TimeFlyManager {
 
     // ---------- FIELDS ----------
     private final WFlyV2 plugin;
-    private final FlyTimeRepository flyTimeRepository;
 
     private final Map<UUID, Integer> flyTimes = new ConcurrentHashMap<>();
     private final Map<UUID, Boolean> isFlying = new ConcurrentHashMap<>();
@@ -41,9 +38,8 @@ public class WTimeFlyManager implements TimeFlyManager {
     /**
      * Constructor to initialize the TimeFlyManager with dependencies and load fly times.
      */
-    public WTimeFlyManager(WFlyV2 plugin, FlyTimeRepository flyTimeRepository) {
+    public WTimeFlyManager(WFlyV2 plugin) {
         this.plugin = plugin;
-        this.flyTimeRepository = flyTimeRepository;
         loadFlyTimes();
         startDecrementTask();
     }
@@ -52,7 +48,7 @@ public class WTimeFlyManager implements TimeFlyManager {
      * Loads fly time data from the database into memory.
      */
     public void loadFlyTimes() {
-        List<AccessPlayerDTO> flyData = flyTimeRepository.selectAll("fly", AccessPlayerDTO.class);
+        List<AccessPlayerDTO> flyData = plugin.getStorage().selectAll("fly", AccessPlayerDTO.class);
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
             flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
             isFlying.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.isinFly());
@@ -62,7 +58,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     @Override
     public void loadFlyTimesForPlayer(Player player) {
         UUID playerUUID = player.getUniqueId();
-        List<AccessPlayerDTO> flyData = flyTimeRepository.selectAll("fly", AccessPlayerDTO.class);
+        List<AccessPlayerDTO> flyData = plugin.getStorage().selectAll("fly", AccessPlayerDTO.class);
 
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
             if (accessPlayerDTO.uniqueId().equals(playerUUID)) {
@@ -90,7 +86,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     @Override
     public void saveFlyTimeOnDisableOnline() {
         for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
-            flyTimeRepository.save(Bukkit.getPlayer(entry.getKey()));
+            plugin.getStorage().save(Bukkit.getPlayer(entry.getKey()));
         }
         WflyApi.get().getPlugin().getLogger().info("Fly time saved");
     }
@@ -136,7 +132,7 @@ public class WTimeFlyManager implements TimeFlyManager {
         int newTime = flyTimes.getOrDefault(playerUUID, 0) + time;
         flyTimes.put(playerUUID, newTime);
         needsUpdate.add(playerUUID);
-        flyTimeRepository.save(player);
+        plugin.getStorage().save(player);
     }
 
     @Override
@@ -156,7 +152,7 @@ public class WTimeFlyManager implements TimeFlyManager {
         flyTimes.put(targetUUID, newTime);
         needsUpdate.add(targetUUID);
 
-        flyTimeRepository.save(target);
+        plugin.getStorage().save(target);
         return true;
     }
 
@@ -165,7 +161,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     public void resetFlytime(Player player) {
         flyTimes.put(player.getUniqueId(), 0);
         needsUpdate.add(player.getUniqueId());
-        flyTimeRepository.save(player);
+        plugin.getStorage().save(player);
     }
 
     // ---------- ADD/REMOVE/RESET FOR ALL PLAYERS -----------
@@ -206,12 +202,14 @@ public class WTimeFlyManager implements TimeFlyManager {
 
     @Override
     public CompletableFuture<Void> saveFlyTimeOnDisable() {
+
+
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         for (UUID playerUUID : flyTimes.keySet()) {
             Player player = Bukkit.getPlayer(playerUUID);
             if (player != null) {
-                futures.add(flyTimeRepository.saveAsync(player));
+                futures.add(plugin.getStorage().saveAsync(player));
             }
         }
 

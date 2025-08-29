@@ -1,4 +1,4 @@
-package com.wayvi.wfly.wflyv2.storage;
+package com.wayvi.wfly.wflyv2.storage.models;
 
 import fr.maxlego08.sarah.Column;
 
