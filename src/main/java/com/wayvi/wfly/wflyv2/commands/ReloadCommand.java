@@ -57,14 +57,7 @@ public class ReloadCommand extends Command<WFlyV2> {
 
         plugin.getMessageFile().reload();
         plugin.getConfigFile().reload();
-
-        if (conditionManager != null) {
-            WflyApi.uninjectConditionManager();
-        }
-
-        conditionManager = new WConditionManager(plugin);
-        conditionManager.checkCanFly();
-        WflyApi.inject(conditionManager);
+        plugin.getItemsFile().reload();
 
         pvpListener.reloadConfigValues();
 

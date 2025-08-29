@@ -1,0 +1,15 @@
+items:
+  fly-token:
+    items:
+      fly-token:
+        name: "&bFly Token &7(%time%)"
+        lore:
+          - "&7Right-click to claim"
+          - "&e%time% &7of fly time."
+          - "&8Tradable and exchangeable."
+        material: PAPER
+        custom-model-data: 12345
+        messages:
+          give: "&aYou received a &bFly Token &7(%time%)"
+          use: "&aYou gained &e%time% &aof fly time!"
+          error: "&cThis item is not valid."

@@ -22,6 +22,10 @@ repositories {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
     }
+    maven {
+        name = "CodeMC"
+        url = uri("https://repo.codemc.io/repository/maven-public/")
+    }
 
 
 
@@ -42,12 +46,14 @@ dependencies {
     //compileOnly('world.bentobox:bentobox:3.2.3-20250101.170024-4')
     compileOnly('me.clip:placeholderapi:2.11.6')
     implementation 'com.github.Traqueur-dev.CommandsAPI:platform-spigot:4.2.1'
+
     implementation("redis.clients:jedis:6.0.0")
     implementation 'com.github.Traqueur-dev.CommandsAPI:core:4.2.1'
     implementation 'fr.maxlego08.sarah:sarah:1.18'
 
     //implementation 'com.github.Wayvi2:wConfigAPI:1.0.1'
     implementation files("H:/wConfigAPI/build/libs/wConfigAPI-1.0.1.jar")
+    implementation("de.tr7zw:item-nbt-api:2.15.2")
 
     compileOnly 'io.github.electro2560:ClueScrollsAPI:master-SNAPSHOT'
 
@@ -93,6 +99,7 @@ shadowJar {
     // Relocate Jedis
     relocate 'redis.clients', rootProject.group + "." + rootProject.name.toLowerCase() + ".libs.redis.clients"
     relocate 'org.apache.commons.pool2', rootProject.group + "." + rootProject.name.toLowerCase() + ".libs.commons.pool2"
+    relocate("de.tr7zw.changeme.nbtapi", rootProject.group + "." + rootProject.name.toLowerCase() + ".api.nbtapi")
 
     minimize()
 }
