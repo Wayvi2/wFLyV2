@@ -60,7 +60,9 @@ public enum Permissions {
 
     HELP_ADMIN("wfly.help.admin"),
 
-    WFLY_ABOUT("wfly.about");
+    WFLY_ABOUT("wfly.about"),
+
+    FLY_TOKEN("wfly.fly.token");
 
     private final String permission;
 

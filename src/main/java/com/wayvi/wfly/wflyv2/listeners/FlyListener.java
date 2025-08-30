@@ -86,7 +86,9 @@ public class FlyListener implements Listener {
         if (playerData == null) {
             plugin.getStorage().createNewPlayer(player.getUniqueId());
         } else if (playerData.isinFly()) {
-            flyManager.manageFly(player.getUniqueId(), true);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), true);
+            }, 1L);
         }
     }
 

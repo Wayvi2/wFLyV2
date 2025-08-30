@@ -8,12 +8,16 @@ import com.wayvi.wfly.wflyv2.api.storage.FlyTimeStorage;
 import com.wayvi.wfly.wflyv2.commands.all.RemoveAllTimeFlyCommand;
 import com.wayvi.wfly.wflyv2.commands.all.addAllTimeFlyCommand;
 import com.wayvi.wfly.wflyv2.commands.converter.ToggleTypeConverter;
+import com.wayvi.wfly.wflyv2.commands.items.GiveFlyTokenCommand;
 import com.wayvi.wfly.wflyv2.commands.other.MigrateTempFlyCommand;
 import com.wayvi.wfly.wflyv2.constants.commands.ToggleType;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
+import com.wayvi.wfly.wflyv2.constants.configs.ItemsEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.handlers.CustomMessageHandler;
+import com.wayvi.wfly.wflyv2.listeners.FlyTokenListener;
 import com.wayvi.wfly.wflyv2.managers.WExchangeManager;
+import com.wayvi.wfly.wflyv2.managers.WItemsManager;
 import com.wayvi.wfly.wflyv2.messaging.BungeeMessenger;
 import com.wayvi.wfly.wflyv2.pluginhook.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyv2.commands.*;
@@ -25,10 +29,7 @@ import com.wayvi.wfly.wflyv2.managers.fly.WFlyManager;
 import com.wayvi.wfly.wflyv2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyv2.managers.fly.WTimeFlyManager;
 import com.wayvi.wfly.wflyv2.services.DatabaseService;
-import com.wayvi.wfly.wflyv2.storage.FlyTimeHybridRepository;
 import com.wayvi.wfly.wflyv2.storage.FlyTimeStorageFactory;
-import com.wayvi.wfly.wflyv2.storage.redis.FlyTimeRedisRepository;
-import com.wayvi.wfly.wflyv2.storage.sql.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.tempfly.StorageAdapter;
 import com.wayvi.wfly.wflyv2.util.*;
 import fr.maxlego08.sarah.RequestHelper;
@@ -37,7 +38,6 @@ import fr.traqueur.commands.spigot.CommandManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 
 import java.sql.SQLException;
 import java.util.UUID;
@@ -45,7 +45,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.wayvi.wfly.wflyv2.storage.FlyTimeStorageFactory.saveDisableWithRedisAndMysql;
+
 
 public final class WFlyV2 extends JavaPlugin {
 
@@ -55,6 +55,7 @@ public final class WFlyV2 extends JavaPlugin {
 
     private ConfigAPI<ConfigEnum> configFile;
     private ConfigAPI<MessageEnum> messageFile;
+    private ConfigAPI<ItemsEnum> itemsFile;
 
     private static final int THREADS = Runtime.getRuntime().availableProcessors();
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(THREADS);
@@ -81,6 +82,7 @@ public final class WFlyV2 extends JavaPlugin {
         // CONFIGS
         configFile = new ConfigAPI<>(this, ConfigEnum.class, "config.yml");
         messageFile = new ConfigAPI<>(this, MessageEnum.class, "message.yml");
+        itemsFile = new ConfigAPI<>(this, ItemsEnum.class , "items.yml");
         getConfigFile().set(ConfigEnum.VERSION, this.getDescription().getVersion());
 
 
@@ -113,13 +115,16 @@ public final class WFlyV2 extends JavaPlugin {
         WExchangeManager exchangeManager = new WExchangeManager(this);
         WflyApi.inject(exchangeManager);
 
-        // INIT ConditionsManager
         WConditionManager conditionManager = new WConditionManager(this);
-        conditionManager.checkCanFly();
         WflyApi.inject(conditionManager);
+
+        WflyApi.get().getConditionManager().checkCanFly();
 
         //INIT PvPListener
         PvPListener pvpListener = new PvPListener(this);
+
+        WItemsManager wItemsManager = new WItemsManager(this);
+
 
 
 
@@ -179,9 +184,13 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new FlyHelpPlayerCommand(this));
         commandManager.registerCommand(new ToggleFlyPlayerCommand(this, flyCommand));
         commandManager.registerCommand(new AboutCommand(this));
+        commandManager.registerCommand(new GiveFlyTokenCommand(this, wItemsManager));
+
+
         // LISTENER
         getServer().getPluginManager().registerEvents(new FlyListener(this, flyManager), this);
         getServer().getPluginManager().registerEvents(new PvPListener(this), this);
+        getServer().getPluginManager().registerEvents(new FlyTokenListener(this), this);
 
         new VersionCheckerUtil(this, 118465).checkAndNotify();
 
@@ -231,6 +240,8 @@ public final class WFlyV2 extends JavaPlugin {
     public ConfigAPI<MessageEnum> getMessageFile() {
         return messageFile;
     }
+
+    public ConfigAPI<ItemsEnum> getItemsFile(){ return itemsFile;}
 
     public UUID getServerId() {
         return serverId;

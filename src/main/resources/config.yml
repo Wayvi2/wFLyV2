@@ -9,7 +9,7 @@
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
 
-version: '1.0.2.9'
+version: '1.0.3.1'
 
 mysql:
   enabled: false
@@ -19,17 +19,16 @@ mysql:
   username: root
   password: root
 
-
 redis:
   enabled: false
   host: "127.0.0.1"
   port: 6379
-  password: ""      # vide si pas de mot de passe
-  database: 0       # par défaut 0
-  timeout: 2000     # timeout en ms
+  password: ""
+  database: 0
+  timeout: 2000
   pool:
-    maxTotal: 8     # nombre max de connexions dans le pool
-    maxIdle: 8      # connexions inactives max
+    maxTotal: 8
+    maxIdle: 8
     minIdle: 0
 
 
@@ -66,8 +65,6 @@ command:
   alias:
     - "wfly"
     - "fly"
-
-
 
 #conditions: {} if you don't want to use conditions
 conditions:

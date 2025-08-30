@@ -4,6 +4,7 @@ import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
+import com.wayvi.wfly.wflyv2.storage.FlyTimeHybridRepository;
 import com.wayvi.wfly.wflyv2.storage.models.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.storage.sql.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
@@ -23,11 +24,11 @@ import java.util.UUID;
 public class WFlyPlaceholder extends PlaceholderExpansion {
 
     private final WFlyV2 plugin;
-    private FlyTimeRepository flyTimeRepository;
+    private FlyTimeHybridRepository flyTimeHybridRepository;
+
 
     public WFlyPlaceholder(WFlyV2 plugin, FlyTimeRepository flyTimeRepository){
         this.plugin = plugin;
-        this.flyTimeRepository = flyTimeRepository;
     }
 
     /**
@@ -60,7 +61,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      */
     @Override
     public @NotNull String getVersion() {
-        return "1.0.2.9";
+        return "1.0.3.1";
     }
 
     /**
@@ -91,10 +92,10 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                     if (player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
                         return (String) ColorSupportUtil.convertColorFormat(plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_UNLIMITED));
                     }
-                    return formatTime(timeRemaining);
+                    return formatTime(plugin,timeRemaining);
                 case "fly_activate":
                     UUID player1 = offlinePlayer.getUniqueId();
-                    AccessPlayerDTO isFlying = flyTimeRepository.getPlayerFlyData(player.getUniqueId());
+                    AccessPlayerDTO isFlying = flyTimeHybridRepository.getPlayerFlyData(player.getUniqueId());
                     return String.valueOf(isFlying.isinFly());
             }
         }
@@ -108,11 +109,9 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      * @param seconds The time in seconds to be formatted.
      * @return A formatted string representing the time.
      */
-    public String formatTime(int seconds) {
+    public static String formatTime(WFlyV2 plugin, int seconds) {
         Map<String, Boolean> enabledFormats = WflyApi.get().getPlugin().getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
         String format = WflyApi.get().getPlugin().getTimeFormatTranslatorUtil().getPlaceholderFormat();
-
-
 
         boolean autoFormat = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_AUTO_FORMAT);
         boolean removeNullValues = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_REMOVE_NULL_ENABLED);
@@ -123,6 +122,10 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
         String hoursSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_HOURS);
         String daysSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_DAYS);
 
+        secondsSuffix = secondsSuffix.trim();
+        minutesSuffix = minutesSuffix.trim();
+        hoursSuffix = hoursSuffix.trim();
+        daysSuffix = daysSuffix.trim();
 
         int days = seconds / 86400;
         int hours = (seconds % 86400) / 3600;
@@ -154,25 +157,32 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
             hours %= 24;
         }
 
+        // Amélioration : gestion intelligente des placeholders vides
+        boolean showDays = days > 0 || !removeNullValues;
+        boolean showHours = hours > 0 || !removeNullValues;
+        boolean showMinutes = minutes > 0 || !removeNullValues;
+        boolean showSeconds = sec > 0 || !removeNullValues;
+
         if (autoFormat) {
-            if (!enabledFormats.getOrDefault("days", false)) {
-                format = format.replace("%days%", "").replace("%days_suffixe%", "");
+            if (!enabledFormats.getOrDefault("days", false) || !showDays) {
+
+                format = format.replaceAll("\\s*%days%\\s*", "").replaceAll("\\s*%days_suffixe%\\s*", "");
             }
-            if (!enabledFormats.getOrDefault("hours", false)) {
-                format = format.replace("%hours%", "").replace("%hours_suffixe%", "");
+            if (!enabledFormats.getOrDefault("hours", false) || !showHours) {
+                format = format.replaceAll("\\s*%hours%\\s*", "").replaceAll("\\s*%hours_suffixe%\\s*", "");
             }
-            if (!enabledFormats.getOrDefault("minutes", false)) {
-                format = format.replace("%minutes%", "").replace("%minutes_suffixe%", "");
+            if (!enabledFormats.getOrDefault("minutes", false) || !showMinutes) {
+                format = format.replaceAll("\\s*%minutes%\\s*", "").replaceAll("\\s*%minutes_suffixe%\\s*", "");
             }
-            if (!enabledFormats.getOrDefault("seconds", false)) {
-                format = format.replace("%seconds%", "").replace("%seconds_suffixe%", "");
+            if (!enabledFormats.getOrDefault("seconds", false) || !showSeconds) {
+                format = format.replaceAll("\\s*%seconds%\\s*", "").replaceAll("\\s*%seconds_suffixe%\\s*", "");
             }
         }
 
-        String finalDays = (removeNullValues && days == 0) ? "" : String.valueOf(days);
-        String finalHours = (removeNullValues && hours == 0) ? "" : String.valueOf(hours);
-        String finalMinutes = (removeNullValues && minutes == 0) ? "" : String.valueOf(minutes);
-        String finalSeconds = (removeNullValues && sec == 0) ? "" : String.valueOf(sec);
+        String finalDays = showDays ? String.valueOf(days) : "";
+        String finalHours = showHours ? String.valueOf(hours) : "";
+        String finalMinutes = showMinutes ? String.valueOf(minutes) : "";
+        String finalSeconds = showSeconds ? String.valueOf(sec) : "";
 
         String finalFormat = format
                 .replace("%seconds%", finalSeconds)
@@ -184,11 +194,19 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                 .replace("%hours_suffixe%", finalHours.isEmpty() ? "" : hoursSuffix)
                 .replace("%days_suffixe%", finalDays.isEmpty() ? "" : daysSuffix);
 
+        // Si tous les éléments sont vides, retourner la valeur null configurée
         if (finalDays.isEmpty() && finalHours.isEmpty() && finalMinutes.isEmpty() && finalSeconds.isEmpty()) {
             finalFormat = nullValue;
         }
 
-        finalFormat = finalFormat.replaceAll("\\s+", " ").trim();
+        // Nettoyage amélioré des espaces
+        finalFormat = finalFormat
+                .replaceAll("\\r?\\n", "")
+                .replaceAll("\\t", "")
+                .replaceAll("\\s{2,}", " ")
+                .replaceAll("^\\s+|\\s+$", "")
+                .replaceAll("\\s+([#&§])", "$1")
+                .replaceAll("([#&§][0-9a-fA-F])\\s+", "$1");
 
         return (String) ColorSupportUtil.convertColorFormat(finalFormat);
     }
