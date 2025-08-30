@@ -61,7 +61,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      */
     @Override
     public @NotNull String getVersion() {
-        return "1.0.2.9";
+        return "1.0.3.1";
     }
 
     /**
@@ -165,7 +165,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
 
         if (autoFormat) {
             if (!enabledFormats.getOrDefault("days", false) || !showDays) {
-                // Suppression intelligente : on enlève aussi les espaces avant/après
+
                 format = format.replaceAll("\\s*%days%\\s*", "").replaceAll("\\s*%days_suffixe%\\s*", "");
             }
             if (!enabledFormats.getOrDefault("hours", false) || !showHours) {
@@ -201,12 +201,12 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
 
         // Nettoyage amélioré des espaces
         finalFormat = finalFormat
-                .replaceAll("\\r?\\n", "")           // Supprime les retours à la ligne
-                .replaceAll("\\t", "")               // Supprime les tabulations
-                .replaceAll("\\s{2,}", " ")          // Remplace plusieurs espaces consécutifs par un seul
-                .replaceAll("^\\s+|\\s+$", "")       // Supprime les espaces en début et fin
-                .replaceAll("\\s+([#&§])", "$1")     // Supprime les espaces avant les codes couleur
-                .replaceAll("([#&§][0-9a-fA-F])\\s+", "$1"); // Supprime les espaces après les codes couleur
+                .replaceAll("\\r?\\n", "")
+                .replaceAll("\\t", "")
+                .replaceAll("\\s{2,}", " ")
+                .replaceAll("^\\s+|\\s+$", "")
+                .replaceAll("\\s+([#&§])", "$1")
+                .replaceAll("([#&§][0-9a-fA-F])\\s+", "$1");
 
         return (String) ColorSupportUtil.convertColorFormat(finalFormat);
     }

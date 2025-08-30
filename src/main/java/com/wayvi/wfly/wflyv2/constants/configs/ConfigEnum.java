@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 public enum ConfigEnum implements ConfigKey<Object> {
 
-    VERSION("version", "1.0.2.5"),
+    VERSION("version", "1.0.3.1"),
 
     MYSQL_ENABLED("mysql.enabled", false),
     MYSQL_HOST("mysql.host", "localhost"),

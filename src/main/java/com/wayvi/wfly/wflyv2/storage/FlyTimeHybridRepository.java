@@ -47,7 +47,7 @@ public class FlyTimeHybridRepository implements FlyTimeStorage {
     public void save(Player player) {
         if (redisEnabled) {
             redisRepository.save(player);
-        } else if (mysqlEnabled) {
+        } else {
             mysqlRepository.save(player);
         }
     }
@@ -56,17 +56,15 @@ public class FlyTimeHybridRepository implements FlyTimeStorage {
     public CompletableFuture<Void> saveAsync(Player player) {
         if (redisEnabled) {
             return redisRepository.saveAsync(player);
-        } else if (mysqlEnabled) {
-            return mysqlRepository.saveAsync(player);
         }
-        return CompletableFuture.completedFuture(null);
+        return mysqlRepository.saveAsync(player);
     }
 
     @Override
     public void upsertFlyStatus(Player player, boolean isFlying) {
         if (redisEnabled) {
             redisRepository.upsertFlyStatus(player, isFlying);
-        } else if (mysqlEnabled) {
+        } else {
             mysqlRepository.upsertFlyStatus(player, isFlying);
         }
     }
@@ -75,17 +73,16 @@ public class FlyTimeHybridRepository implements FlyTimeStorage {
     public AccessPlayerDTO getPlayerFlyData(UUID uuid) {
         if (redisEnabled) {
             return redisRepository.getPlayerFlyData(uuid);
-        } else if (mysqlEnabled) {
-            return mysqlRepository.getPlayerFlyData(uuid);
         }
-        return new AccessPlayerDTO(uuid, false, 0);
+        return mysqlRepository.getPlayerFlyData(uuid);
     }
+
 
     @Override
     public void createNewPlayer(UUID uuid) {
         if (redisEnabled) {
             redisRepository.createNewPlayer(uuid);
-        } else if (mysqlEnabled) {
+        } else {
             mysqlRepository.createNewPlayer(uuid);
         }
     }
@@ -94,17 +91,16 @@ public class FlyTimeHybridRepository implements FlyTimeStorage {
     public List<AccessPlayerDTO> selectAll(String tableName, Class<?> clazz) {
         if (redisEnabled) {
             return redisRepository.selectAll(tableName, clazz);
-        } else if (mysqlEnabled) {
-            return mysqlRepository.selectAll(tableName, clazz);
         }
-        return new ArrayList<>();
+        return mysqlRepository.selectAll(tableName, clazz);
     }
+
 
     @Override
     public void saveDTO(AccessPlayerDTO playerData) {
         if (redisEnabled) {
             redisRepository.saveDTO(playerData);
-        } else if (mysqlEnabled) {
+        } else {
             mysqlRepository.saveDTO(playerData);
         }
     }
