@@ -10,6 +10,7 @@ import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -128,6 +129,11 @@ public class FlyListener implements Listener {
             boolean authorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
             AccessPlayerDTO playerData = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
 
+            if (playerData != null && !playerData.isinFly()){
+                Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
+                player.teleport(safeLoc);
+            }
+
             if (playerData != null && playerData.isinFly()) {
                 flyManager.manageFly(player.getUniqueId(), authorized);
 
@@ -136,9 +142,13 @@ public class FlyListener implements Listener {
 
                 ColorSupportUtil.sendColorFormat(player, message);
                 boolean tpFloor = plugin.getConfigFile().get(ConfigEnum.TP_ON_FLOOR_WHEN_FLY_DISABLED);
-                if (!authorized && tpFloor) {
+                Location locBelow = player.getLocation().clone().add(0, -1, 0);
+                Material blockBelow = locBelow.getBlock().getType();
+
+                if ((!authorized && tpFloor) ) {
                     Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
                     player.teleport(safeLoc);
+                    ColorSupportUtil.sendColorFormat(player, plugin.getMessageFile().get(MessageEnum.NO_FLY_HERE));
                 }
 
                 if (!authorized) {

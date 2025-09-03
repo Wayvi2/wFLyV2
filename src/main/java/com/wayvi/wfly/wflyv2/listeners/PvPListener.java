@@ -56,7 +56,7 @@ public class PvPListener implements Listener {
 
         if (shouldDisableFly(player) && player.isFlying()) {
             WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
-            Location location = getSafeLocation(player);
+            Location location = WflyApi.get().getConditionManager().getSafeLocation(player);
             player.teleport(location);
         }
     }
@@ -137,28 +137,6 @@ public class PvPListener implements Listener {
     }
 
 
-    /**
-     * Gets a safe location for the player to teleport to if they need to be grounded.
-     *
-     * @param player The player to find a safe location for.
-     * @return The safe location for the player to teleport to.
-     */
-    private Location getSafeLocation(Player player) {
-        boolean tpOnFloorWhenFlyDisabled = plugin.getConfigFile().get(ConfigEnum.TP_ON_FLOOR_WHEN_FLY_DISABLED);
-        if (!tpOnFloorWhenFlyDisabled) {
-            return player.getLocation();
-        }
-
-        Location loc = player.getLocation();
-        World world = player.getWorld();
-        int y = loc.getBlockY();
-
-        while (world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType() == Material.AIR) {
-            y--;
-        }
-
-        return new Location(world, loc.getX(), y + 1, loc.getZ(), loc.getYaw(), loc.getPitch());
-    }
 
     /**
      * Checks if there are any nearby players that would disable the player's flying.
