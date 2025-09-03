@@ -71,6 +71,13 @@ public final class WFlyV2 extends JavaPlugin {
     @Override
     public void onEnable() {
 
+        if (!MCLicense.validateKey(this, "yourPluginId")) {
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+        Bukkit.getPluginManager().addPermission();
+
+
         WflyApi.inject(this);
 
         // INIT METRICS FOR BSTATS
@@ -92,17 +99,22 @@ public final class WFlyV2 extends JavaPlugin {
         databaseService = new DatabaseService(this);
         databaseService.initializeDatabase();
 
-        PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this);
-        placeholerapiManager.checkPlaceholderAPI();
-        placeholerapiManager.initialize();
-
         // INIT RequestHelper
         RequestHelper requestHelper = new RequestHelper(databaseService.getConnection(), this.getLogger()::info);
+
 
         boolean mysqlEnabled = getConfigFile().get(ConfigEnum.MYSQL_ENABLED);
         boolean redisEnabled = getConfigFile().get(ConfigEnum.REDIS_ENABLED);
 
+
         this.storage = FlyTimeStorageFactory.create(this, requestHelper, EXECUTOR, mysqlEnabled, redisEnabled);
+
+
+        PlaceholerapiManager placeholerapiManager = new PlaceholerapiManager(this);
+        placeholerapiManager.checkPlaceholderAPI();
+        placeholerapiManager.initialize();
+
+
 
 
 

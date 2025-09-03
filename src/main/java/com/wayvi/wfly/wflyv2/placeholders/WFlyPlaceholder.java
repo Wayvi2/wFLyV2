@@ -24,21 +24,13 @@ import java.util.UUID;
 public class WFlyPlaceholder extends PlaceholderExpansion {
 
     private final WFlyV2 plugin;
-    private FlyTimeHybridRepository flyTimeHybridRepository;
 
 
-    public WFlyPlaceholder(WFlyV2 plugin, FlyTimeRepository flyTimeRepository){
+    public WFlyPlaceholder(WFlyV2 plugin){
         this.plugin = plugin;
     }
 
-    /**
-     * Constructs a new WFlyPlaceholder instance.
-     *
-     * @param plugin The main plugin instance.
-     */
-    public WFlyPlaceholder(WFlyV2 plugin) {
-        this.plugin = plugin;
-    }
+
 
     /**
      * {@inheritDoc}
@@ -61,7 +53,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      */
     @Override
     public @NotNull String getVersion() {
-        return "1.0.3.1";
+        return "1.0.3.2";
     }
 
     /**
@@ -95,8 +87,8 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                     return formatTime(plugin,timeRemaining);
                 case "fly_activate":
                     UUID player1 = offlinePlayer.getUniqueId();
-                    AccessPlayerDTO isFlying = flyTimeHybridRepository.getPlayerFlyData(player.getUniqueId());
-                    return String.valueOf(isFlying.isinFly());
+                    AccessPlayerDTO playerData = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
+                    return String.valueOf(playerData.isinFly());
             }
         }
         return null;

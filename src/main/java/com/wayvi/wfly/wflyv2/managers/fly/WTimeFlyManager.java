@@ -266,7 +266,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     private void handleFlyDeactivation(UUID playerUUID, Player player) {
         WflyApi.get().getFlyManager().manageFly(playerUUID, false);
         isFlying.put(playerUUID, false);
-        Location safeLocation = getSafeLocation(player);
+        Location safeLocation = WflyApi.get().getConditionManager().getSafeLocation(player);
         player.teleport(safeLocation);
     }
 
@@ -365,21 +365,7 @@ public class WTimeFlyManager implements TimeFlyManager {
                 && loc1.getBlockZ() == loc2.getBlockZ();
     }
 
-    public Location getSafeLocation(Player player) {
-        boolean tpOnFloor = plugin.getConfigFile().get(ConfigEnum.TP_ON_FLOOR_WHEN_FLY_DISABLED);
 
-        if (!tpOnFloor) return player.getLocation();
-
-        Location loc = player.getLocation();
-        World world = player.getWorld();
-        int y = loc.getBlockY();
-
-        while (world.getBlockAt(loc.getBlockX(), y, loc.getBlockZ()).getType() == Material.AIR) {
-            y--;
-        }
-
-        return new Location(world, loc.getX(), y + 1, loc.getZ(), loc.getYaw(), loc.getPitch());
-    }
 
     private void startDecrementTask() {
 
