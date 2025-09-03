@@ -29,9 +29,7 @@ public class WflyApi {
     }
 
     @ApiStatus.Internal
-    public static void inject(ConditionManager conditionManager) {
-        WflyApi.conditionManager = conditionManager;
-    }
+    public static void inject(ConditionManager conditionManager) { WflyApi.conditionManager = conditionManager; }
 
     @ApiStatus.Internal
     public static void inject(ExchangeManager exchangeManager) {

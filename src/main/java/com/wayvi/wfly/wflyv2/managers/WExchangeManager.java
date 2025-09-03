@@ -47,7 +47,6 @@ public class WExchangeManager implements ExchangeManager {
     }
 
 
-    @Override
     public boolean canGiveHisTempFly(Player donator) {
         return getCooldown(donator) <= 0;
     }

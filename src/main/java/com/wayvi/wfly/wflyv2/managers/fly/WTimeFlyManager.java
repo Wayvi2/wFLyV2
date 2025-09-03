@@ -11,15 +11,17 @@ import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 
 /**
  * This class manages the fly time for players and coordinates the decrement of fly time,
- * handles fly status, and manages saving/loading fly time from database.
+ * handles fly status, and manages saving/loading fly time from Database.
  */
 public class WTimeFlyManager implements TimeFlyManager {
 
@@ -34,84 +36,100 @@ public class WTimeFlyManager implements TimeFlyManager {
     private final Map<UUID, Long> lastMovementTime = new HashMap<>();
     private final Map<UUID, Location> lastLocations = new HashMap<>();
 
+    private BukkitTask saveTask;
+
     // ---------- CONSTRUCTOR & INIT ----------
     /**
      * Constructor to initialize the TimeFlyManager with dependencies and load fly times.
      */
     public WTimeFlyManager(WFlyV2 plugin) {
         this.plugin = plugin;
-        loadFlyTimes();
+        loadFlyTimesForOnlinePlayers();
         startDecrementTask();
     }
 
-    /**
-     * Loads fly time data from the database into memory.
-     */
-    public void loadFlyTimes() {
+
+    private void loadFlyTimesForOnlinePlayers() {
+
         List<AccessPlayerDTO> flyData = plugin.getStorage().selectAll("fly", AccessPlayerDTO.class);
+
+
+        Set<UUID> onlinePlayerUUIDs = Bukkit.getOnlinePlayers().stream()
+                .map(Player::getUniqueId)
+                .collect(Collectors.toSet());
+
+        int loadedCount = 0;
         for (AccessPlayerDTO accessPlayerDTO : flyData) {
-            flyTimes.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.FlyTimeRemaining());
-            isFlying.put(accessPlayerDTO.uniqueId(), accessPlayerDTO.isinFly());
+            UUID playerUUID = accessPlayerDTO.uniqueId();
+
+            if (onlinePlayerUUIDs.contains(playerUUID)) {
+                flyTimes.put(playerUUID, accessPlayerDTO.FlyTimeRemaining());
+                isFlying.put(playerUUID, accessPlayerDTO.isinFly());
+                loadedCount++;
+            }
         }
+
+        plugin.getLogger().info("Data loaded for " + loadedCount + " online players");
     }
+
 
     @Override
     public void loadFlyTimesForPlayer(Player player) {
         UUID playerUUID = player.getUniqueId();
-        List<AccessPlayerDTO> flyData = plugin.getStorage().selectAll("fly", AccessPlayerDTO.class);
-
-        for (AccessPlayerDTO accessPlayerDTO : flyData) {
-            if (accessPlayerDTO.uniqueId().equals(playerUUID)) {
-                flyTimes.put(playerUUID, accessPlayerDTO.FlyTimeRemaining());
-                isFlying.put(playerUUID, accessPlayerDTO.isinFly());
-                break;
-            }
-        }
+        AccessPlayerDTO accessPlayerDTO = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
+            flyTimes.put(playerUUID, accessPlayerDTO.FlyTimeRemaining());
+            isFlying.put(playerUUID, accessPlayerDTO.isinFly());
     }
 
     // ---------- PUBLIC MAIN METHODS ----------
 
     @Override
-
     public void saveFlyTimes() {
-        int seconds = plugin.getConfigFile().get(ConfigEnum.SAVE_DATABASE_DELAY);
-        Bukkit.getScheduler().runTaskTimer(WflyApi.get().getPlugin(), () -> {
-            for (UUID ignored : needsUpdate) {
-                saveFlyTimeOnDisableOnline();
-            }
-            needsUpdate.clear();
-        }, 0L, 20L * seconds);
-    }
-
-    @Override
-    public void saveFlyTimeOnDisableOnline() {
-        for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
-            plugin.getStorage().save(Bukkit.getPlayer(entry.getKey()));
+        if (saveTask != null) {
+            saveTask.cancel();
         }
-        WflyApi.get().getPlugin().getLogger().info("Fly time saved");
+
+        int seconds = plugin.getConfigFile().get(ConfigEnum.SAVE_DATABASE_DELAY);
+        saveTask = Bukkit.getScheduler().runTaskTimer(WflyApi.get().getPlugin(), () -> {
+            if (!needsUpdate.isEmpty()) {
+                for (UUID playerUUID : new HashSet<>(needsUpdate)) {
+                    Player player = Bukkit.getPlayer(playerUUID);
+                    if (player != null) {
+                        plugin.getStorage().save(player);
+                    }
+                }
+                plugin.getLogger().info("Save " + needsUpdate.size() + " player");
+                needsUpdate.clear();
+            }
+        }, 0L, 20L * seconds);
     }
 
     @Override
     public void decrementTimeRemaining() throws SQLException {
         String decrementMethod = plugin.getConfigFile().get(ConfigEnum.FLY_DECREMENT_METHOD);
-        for (UUID playerUUID : flyTimes.keySet()) {
+        boolean flyDecrementStatic = plugin.getConfigFile().get(ConfigEnum.FLY_DECREMENT_DISABLED_BY_STATIC);
 
-            Player player = Bukkit.getPlayer(playerUUID);
-            if (player == null || !player.isOnline()) continue;
+        List<Player> validPlayers = flyTimes.keySet().stream()
+                .map(Bukkit::getPlayer)
+                .filter(Objects::nonNull)
+                .filter(Player::isOnline)
+                .collect(Collectors.toList());
+
+        for (Player player : validPlayers) {
+
             if (isExemptFromFlyDecrement(player)) continue;
 
-            int timeRemaining = flyTimes.getOrDefault(playerUUID, 0);
-            boolean currentlyFlying = isFlying.getOrDefault(playerUUID, false);
+            int timeRemaining = flyTimes.getOrDefault(player.getUniqueId(), 0);
+            boolean currentlyFlying = isFlying.getOrDefault(player.getUniqueId(), false);
 
             if (timeRemaining <= 0 && currentlyFlying) {
-                handleFlyDeactivation(playerUUID, player);
+                handleFlyDeactivation(player.getUniqueId(), player);
                 continue;
             }
 
             if (timeRemaining <= 0) continue;
 
 
-            boolean flyDecrementStatic = plugin.getConfigFile().get(ConfigEnum.FLY_DECREMENT_DISABLED_BY_STATIC);
             if (isExemptFromLastPosition(player)
                     && flyDecrementStatic
                     && decrementMethod.equalsIgnoreCase("PLAYER_FLYING_MODE")) {
@@ -122,7 +140,7 @@ public class WTimeFlyManager implements TimeFlyManager {
                 continue;
             }
 
-            decrementFlyTime(playerUUID, player, currentlyFlying);
+            decrementFlyTime(player.getUniqueId(), player, currentlyFlying);
         }
     }
 
@@ -132,13 +150,10 @@ public class WTimeFlyManager implements TimeFlyManager {
         int newTime = flyTimes.getOrDefault(playerUUID, 0) + time;
         flyTimes.put(playerUUID, newTime);
         needsUpdate.add(playerUUID);
-        plugin.getStorage().save(player);
     }
 
     @Override
     public boolean removeFlyTime( Player target, int time) {
-        UUID senderUUID = null;
-
 
         int currentFlyTime = getTimeRemaining(target);
 
@@ -152,7 +167,6 @@ public class WTimeFlyManager implements TimeFlyManager {
         flyTimes.put(targetUUID, newTime);
         needsUpdate.add(targetUUID);
 
-        plugin.getStorage().save(target);
         return true;
     }
 
@@ -161,16 +175,10 @@ public class WTimeFlyManager implements TimeFlyManager {
     public void resetFlytime(Player player) {
         flyTimes.put(player.getUniqueId(), 0);
         needsUpdate.add(player.getUniqueId());
-        plugin.getStorage().save(player);
     }
 
-    // ---------- ADD/REMOVE/RESET FOR ALL PLAYERS -----------
-    @Override
-    public void resetFlytimeForAllPlayers() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            resetFlytime(player);
-        }
-    }
+    // ---------- ADD/REMOVE FOR ALL PLAYERS -----------
+
     @Override
     public void addFlytimeForAllPlayers(int time) {
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -370,17 +378,17 @@ public class WTimeFlyManager implements TimeFlyManager {
     private void startDecrementTask() {
 
         Bukkit.getScheduler().runTaskTimer(WflyApi.get().getPlugin(), () -> {
+
             try {
-                decrementTimeRemaining();
                 manageCommandMessageOnTimeLeft();
+                decrementTimeRemaining();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
+
         }, 0L, 20);
     }
 
     // ---------- HELPER / UTILITY METHODS ----------
-
-    // No additional helper methods in current code.
 
 }

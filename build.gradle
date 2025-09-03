@@ -14,10 +14,6 @@ repositories {
     }
 
 
-    maven {
-        name "flyteRepositoryReleases"
-        url "https://repo.flyte.gg/releases"
-    }
 
 
     maven {
@@ -48,7 +44,6 @@ repositories {
 }
 
 dependencies {
-    implementation "org.mclicense:library:1.4.7"
     compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
     //compileOnly('world.bentobox:bentobox:3.2.3-20250101.170024-4')
     compileOnly('me.clip:placeholderapi:2.11.6')
