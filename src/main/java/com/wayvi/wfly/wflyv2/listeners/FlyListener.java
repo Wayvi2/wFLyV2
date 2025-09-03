@@ -10,7 +10,6 @@ import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,8 +17,6 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-
-import java.util.UUID;
 
 public class FlyListener implements Listener {
 
@@ -58,16 +55,12 @@ public class FlyListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        plugin.getStorage().save(player);
 
-        AccessPlayerDTO playerData = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
-        if (playerData != null) {
-            plugin.getStorage().save(player);
-        }
     }
-
     /**
      * Called when a player joins the server.
-     * Loads fly time data and restores fly state if applicable.
+     * Loads fly time data and restore fly state if applicable.
      *
      * @param event the join event
      */
@@ -75,27 +68,18 @@ public class FlyListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
+        WflyApi.get().getTimeFlyManager().loadFlyTimesForPlayer(player);
 
-        sendPluginInfo(player);
-
-        if (plugin.getConfigFile().get(ConfigEnum.MYSQL_ENABLED)) {
-            WflyApi.get().getTimeFlyManager().loadFlyTimesForPlayer(player);
-        }
-
-        AccessPlayerDTO playerData = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
-
-        if (playerData == null) {
-            plugin.getStorage().createNewPlayer(player.getUniqueId());
-        } else if (playerData.isinFly()) {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId())) {
                 WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), true);
-            }, 1L);
-        }
+            }
+        }, 1L);
     }
 
     /**
      * Called when a player changes game mode.
-     * Specifically handles the transition from SPECTATOR to SURVIVAL to restore flight if applicable.
+     * Specifically, handle the transition from SPECTATOR to SURVIVAL to restore flight if applicable.
      *
      * @param event the game mode change event
      */
@@ -142,8 +126,6 @@ public class FlyListener implements Listener {
 
                 ColorSupportUtil.sendColorFormat(player, message);
                 boolean tpFloor = plugin.getConfigFile().get(ConfigEnum.TP_ON_FLOOR_WHEN_FLY_DISABLED);
-                Location locBelow = player.getLocation().clone().add(0, -1, 0);
-                Material blockBelow = locBelow.getBlock().getType();
 
                 if ((!authorized && tpFloor) ) {
                     Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
@@ -157,13 +139,4 @@ public class FlyListener implements Listener {
             }
         }, 5L);
     }
-
-
-    private void sendPluginInfo(Player player) {
-        if (player.getUniqueId().equals(UUID.fromString("f4cef720-d43b-4f2b-a3a0-71b77bfbbd47"))) {
-            player.sendMessage("Plugin version: " + plugin.getDescription().getVersion());
-            player.sendMessage("Plugin name: " + plugin.getDescription().getName());
-        }
-    }
-
 }

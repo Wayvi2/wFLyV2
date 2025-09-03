@@ -61,10 +61,9 @@ public class FlyCommand extends Command<WFlyV2> {
             return false;
         }
 
-        AccessPlayerDTO playersInFly = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
+        boolean playersInFly = WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId());
 
-
-        if (playersInFly.isinFly()) {
+        if (playersInFly) {
             String message = plugin.getMessageFile().get(MessageEnum.FLY_DEACTIVATED);
             ColorSupportUtil.sendColorFormat(player, message);
             WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);

@@ -87,8 +87,8 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                     return formatTime(plugin,timeRemaining);
                 case "fly_activate":
                     UUID player1 = offlinePlayer.getUniqueId();
-                    AccessPlayerDTO playerData = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
-                    return String.valueOf(playerData.isinFly());
+                    boolean playerIsFlying = WflyApi.get().getTimeFlyManager().getIsFlying(player1);
+                    return String.valueOf(playerIsFlying);
             }
         }
         return null;

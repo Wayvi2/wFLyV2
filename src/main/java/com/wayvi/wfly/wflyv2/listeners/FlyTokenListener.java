@@ -23,8 +23,8 @@ public class FlyTokenListener implements Listener {
 
     public FlyTokenListener(WFlyV2 plugin) {
         this.plugin = plugin;
-        TOKEN_MESSAGE_USE = (String) plugin.getItemsFile().get(ItemsEnum.FLY_TOKEN_MESSAGE_USE);
-        TOKEN_MATERIAL = Material.valueOf((String) plugin.getItemsFile().get(ItemsEnum.FLY_TOKEN_MATERIAL));
+        TOKEN_MESSAGE_USE =  plugin.getItemsFile().get(ItemsEnum.FLY_TOKEN_MESSAGE_USE);
+        TOKEN_MATERIAL = Material.valueOf( plugin.getItemsFile().get(ItemsEnum.FLY_TOKEN_MATERIAL));
     }
 
     @EventHandler

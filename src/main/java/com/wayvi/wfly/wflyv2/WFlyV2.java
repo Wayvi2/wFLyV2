@@ -16,17 +16,14 @@ import com.wayvi.wfly.wflyv2.constants.configs.ItemsEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.handlers.CustomMessageHandler;
 import com.wayvi.wfly.wflyv2.listeners.FlyTokenListener;
-import com.wayvi.wfly.wflyv2.managers.WExchangeManager;
-import com.wayvi.wfly.wflyv2.managers.WItemsManager;
+import com.wayvi.wfly.wflyv2.managers.*;
 import com.wayvi.wfly.wflyv2.messaging.BungeeMessenger;
 import com.wayvi.wfly.wflyv2.pluginhook.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyv2.commands.*;
 
 import com.wayvi.wfly.wflyv2.listeners.FlyListener;
 import com.wayvi.wfly.wflyv2.listeners.PvPListener;
-import com.wayvi.wfly.wflyv2.managers.WConditionManager;
 import com.wayvi.wfly.wflyv2.managers.fly.WFlyManager;
-import com.wayvi.wfly.wflyv2.managers.PlaceholerapiManager;
 import com.wayvi.wfly.wflyv2.managers.fly.WTimeFlyManager;
 import com.wayvi.wfly.wflyv2.services.DatabaseService;
 import com.wayvi.wfly.wflyv2.storage.FlyTimeStorageFactory;
@@ -71,17 +68,15 @@ public final class WFlyV2 extends JavaPlugin {
     @Override
     public void onEnable() {
 
-        if (!MCLicense.validateKey(this, "yourPluginId")) {
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
-        Bukkit.getPluginManager().addPermission();
+
 
 
         WflyApi.inject(this);
 
         // INIT METRICS FOR BSTATS
         Metrics metrics = new Metrics(this, 24609);
+
+
 
 
 
@@ -167,6 +162,8 @@ public final class WFlyV2 extends JavaPlugin {
         }
 
         FlyCommand flyCommand = new FlyCommand(this, pvpListener);
+
+
 
         // COMMANDS
 

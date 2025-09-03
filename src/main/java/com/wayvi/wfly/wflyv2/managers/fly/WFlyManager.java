@@ -4,7 +4,6 @@ import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.FlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
-import com.wayvi.wfly.wflyv2.storage.sql.FlyTimeRepository;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -43,7 +42,6 @@ public class WFlyManager implements FlyManager {
         player.setFlying(fly);
 
         WflyApi.get().getTimeFlyManager().updateFlyStatus(uuid, fly);
-        plugin.getStorage().upsertFlyStatus(player, fly);
     }
 
     /**
@@ -52,20 +50,12 @@ public class WFlyManager implements FlyManager {
      * @param player the player whose fly speed is to be set
      * @param speed the desired fly speed (0–10)
      */
-    /**
-     * Sets the fly speed of the player, validating permissions and limits.
-     *
-     * @param player the player whose fly speed is to be set
-     * @param speed the desired fly speed (1–10)
-     */
     @Override
     public void manageFlySpeed(final Player player, double speed) {
 
         int maxAllowedSpeed = 0;
         for (int i = 1; i <= 10; i++) {
-            if (player.hasPermission("wfly.fly.speed." + i)) {
-                maxAllowedSpeed = i;
-            }
+            if (player.hasPermission("wfly.fly.speed." + i)) maxAllowedSpeed = i;
         }
 
         if (maxAllowedSpeed == 0) {
