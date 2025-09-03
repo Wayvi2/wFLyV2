@@ -109,4 +109,6 @@ public interface TimeFlyManager {
      */
     void removeFlytimeForAllPlayers(int time);
 
+    void loadTimeCommandMap();
+
 }

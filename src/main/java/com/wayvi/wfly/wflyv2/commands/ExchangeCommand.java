@@ -3,8 +3,10 @@ package com.wayvi.wfly.wflyv2.commands;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.commands.TimeUnits;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
+import com.wayvi.wfly.wflyv2.placeholders.WFlyPlaceholder;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
@@ -19,6 +21,7 @@ public class ExchangeCommand extends Command<WFlyV2> {
         super(plugin, "fly.give");
         addArgs("receiver", Player.class);
         addArgs("time", Integer.class);
+        addArgs("units", TimeUnits.class);
 
         this.plugin = plugin;
         setPermission(Permissions.EXCHANGE_FLY_TIME.getPermission());
@@ -34,7 +37,10 @@ public class ExchangeCommand extends Command<WFlyV2> {
 
         Player donator = (Player) commandSender;
         Player receiver = arguments.get("receiver");
-        int time = arguments.get("time");
+        int basicTime = arguments.get("time");
+        TimeUnits units = arguments.get("units");
+
+        int time = TimeUnits.convertTimeToType(basicTime, units);
 
         if (plugin.getConfigFile().get(ConfigEnum.COOLDOWN_GIVE_LIMITS_ENABLED)) {
             int min = plugin.getConfigFile().get(ConfigEnum.COOLDOWN_GIVE_MIN);
@@ -84,10 +90,10 @@ public class ExchangeCommand extends Command<WFlyV2> {
             WflyApi.get().getExchangeManager().exchangeTimeFly(donator, receiver, time);
 
             String messageReceiver = plugin.getMessageFile().get(MessageEnum.EXCHANGE_RECEIVER);
-            ColorSupportUtil.sendColorFormat(receiver, messageReceiver.replace("%donator%", donator.getName()).replace("%time%", String.valueOf(time)));
+            ColorSupportUtil.sendColorFormat(receiver, messageReceiver.replace("%donator%", donator.getName()).replace("%time%", WFlyPlaceholder.formatTime(plugin,time)));
 
             String messageDonator = plugin.getMessageFile().get(MessageEnum.EXCHANGE_DONATOR);
-            ColorSupportUtil.sendColorFormat(donator, messageDonator.replace("%receiver%", receiver.getName()).replace("%time%", String.valueOf(time)));
+            ColorSupportUtil.sendColorFormat(donator, messageDonator.replace("%receiver%", receiver.getName()).replace("%time%", WFlyPlaceholder.formatTime(plugin,time)));
         }
     }
 }

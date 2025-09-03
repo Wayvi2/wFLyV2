@@ -6,13 +6,17 @@ import com.google.common.io.ByteStreams;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.commands.TimeUnits;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
+import com.wayvi.wfly.wflyv2.placeholders.WFlyPlaceholder;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.Arrays;
 
 public class addAllTimeFlyCommand  extends Command<WFlyV2> {
 
@@ -29,7 +33,8 @@ public class addAllTimeFlyCommand  extends Command<WFlyV2> {
         super(plugin, "wfly.addall");
         setDescription("Manage fly time for all players");
         setUsage("/wfly addtime <player> <time>");
-        addArgs("time", Integer.class);
+        addArgs("time", Integer.class, Arrays.asList("10","20","30","40"));
+        addArgs("units", TimeUnits.class);
         setPermission(Permissions.ADD_FLY_TIME.getPermission());
         this.plugin = plugin;
     }
@@ -42,7 +47,10 @@ public class addAllTimeFlyCommand  extends Command<WFlyV2> {
      */
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
-        int time = arguments.get("time");
+        int basicTime = arguments.get("time");
+        TimeUnits units = arguments.get("units");
+
+        int time = TimeUnits.convertTimeToType(basicTime, units);
 
         WflyApi.get().getTimeFlyManager().addFlytimeForAllPlayers(time); //to actual server
         sendFlyTimeAllProxy(time); //to other proxy server
@@ -50,16 +58,16 @@ public class addAllTimeFlyCommand  extends Command<WFlyV2> {
 
         String message = plugin.getMessageFile().get(MessageEnum.FLY_TIME_ADDED);
         for (Player target : plugin.getServer().getOnlinePlayers()) {
-            ColorSupportUtil.sendColorFormat(target, message.replace("%time%", String.valueOf(time)));
+            ColorSupportUtil.sendColorFormat(target, message.replace("%time%", WFlyPlaceholder.formatTime(plugin,time)));
         }
 
 
         if (commandSender instanceof Player) {
             Player playerSender = (Player) commandSender;
             String messageToSender = plugin.getMessageFile().get(MessageEnum.FLY_TIME_ADDED_TO_ALL_PLAYER);
-            ColorSupportUtil.sendColorFormat(playerSender, messageToSender.replace("%time%", String.valueOf(time)));
+            ColorSupportUtil.sendColorFormat(playerSender, messageToSender.replace("%time%", WFlyPlaceholder.formatTime(plugin,time)));
         } else {
-            plugin.getLogger().info("You have given " + time + " fly time to all players");
+            plugin.getLogger().info("You have given " + time  + " " + units.getTimeUnits() + " fly time to all players");
         }
     }
 

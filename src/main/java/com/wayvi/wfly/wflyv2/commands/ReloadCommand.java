@@ -59,6 +59,8 @@ public class ReloadCommand extends Command<WFlyV2> {
         plugin.getConfigFile().reload();
         plugin.getItemsFile().reload();
 
+        WflyApi.get().getTimeFlyManager().loadTimeCommandMap();
+
         pvpListener.reloadConfigValues();
 
         plugin.getConfigFile().set(ConfigEnum.VERSION, plugin.getDescription().getVersion());

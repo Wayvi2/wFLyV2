@@ -7,9 +7,11 @@ import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.api.storage.FlyTimeStorage;
 import com.wayvi.wfly.wflyv2.commands.all.RemoveAllTimeFlyCommand;
 import com.wayvi.wfly.wflyv2.commands.all.addAllTimeFlyCommand;
+import com.wayvi.wfly.wflyv2.commands.converter.TimeUnitsConverter;
 import com.wayvi.wfly.wflyv2.commands.converter.ToggleTypeConverter;
 import com.wayvi.wfly.wflyv2.commands.items.GiveFlyTokenCommand;
 import com.wayvi.wfly.wflyv2.commands.other.MigrateTempFlyCommand;
+import com.wayvi.wfly.wflyv2.constants.commands.TimeUnits;
 import com.wayvi.wfly.wflyv2.constants.commands.ToggleType;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.ItemsEnum;
@@ -172,6 +174,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.setDebug(false);
 
         commandManager.registerConverter(ToggleType.class, new ToggleTypeConverter());
+        commandManager.registerConverter(TimeUnits.class, new TimeUnitsConverter());
 
         commandManager.registerCommand(new ReloadCommand(this, pvpListener, conditionManager));
         commandManager.registerCommand(flyCommand);

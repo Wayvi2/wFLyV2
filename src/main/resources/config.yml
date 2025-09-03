@@ -45,7 +45,7 @@ delay: 3
 
 format-placeholder:
   seconds: true
-  minutes: false
+  minutes: true
   hours: true
   days: true
   unlimited: "Unlimited" #need permission wfly.infinite.fly

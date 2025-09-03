@@ -3,12 +3,16 @@ package com.wayvi.wfly.wflyv2.commands;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.commands.TimeUnits;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
+import com.wayvi.wfly.wflyv2.placeholders.WFlyPlaceholder;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.Arrays;
 
 /**
  * Command to remove fly time from a player.
@@ -27,7 +31,8 @@ public class RemoveTimeCommand extends Command<WFlyV2> {
         setDescription("Manage fly time for players.");
         setUsage("/fly removetime <player> <time>");
         addArgs("player", Player.class);
-        addArgs("time", Integer.class);
+        addArgs("time", Integer.class, Arrays.asList("10","20","30","40"));
+        addArgs("units", TimeUnits.class);
         setPermission(Permissions.REMOVE_FLY_TIME.getPermission());
         this.plugin = plugin;
     }
@@ -39,20 +44,23 @@ public class RemoveTimeCommand extends Command<WFlyV2> {
      * @param args   The command arguments: player and time.
      */
     @Override
-    public void execute(CommandSender sender, Arguments args) {
-        Player target = args.get("player");
-        int time = args.get("time");
+    public void execute(CommandSender sender, Arguments arguments) {
+        Player target = arguments.get("player");
+        int basicTime = arguments.get("time");
+        TimeUnits units = arguments.get("units");
+
+        int time = TimeUnits.convertTimeToType(basicTime, units);
 
         if (WflyApi.get().getTimeFlyManager().removeFlyTime(target, time)) {
             String message = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVED);
-            ColorSupportUtil.sendColorFormat(target, message.replace("%time%", String.valueOf(time)));
+            ColorSupportUtil.sendColorFormat(target, message.replace("%time%", WFlyPlaceholder.formatTime(plugin,time)));
 
             if (sender instanceof Player) {
                 Player playerSender = (Player) sender;
                 String messageRemove = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVE_TO_PLAYER);
-                ColorSupportUtil.sendColorFormat(playerSender, messageRemove.replace("%time%", String.valueOf(time)).replace("%player%", target.getName()));
+                ColorSupportUtil.sendColorFormat(playerSender, messageRemove.replace("%time%", WFlyPlaceholder.formatTime(plugin,time)).replace("%player%", target.getName()));
             } else {
-                plugin.getLogger().info("You have removed " + time + " fly time from " + target.getName());
+                plugin.getLogger().info("You have removed " + time  + " " + units.getTimeUnits() + " fly time from " + target.getName());
             }
         }
     }
