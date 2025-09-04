@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Command to remove fly time from a player.
@@ -31,8 +32,8 @@ public class RemoveTimeCommand extends Command<WFlyV2> {
         setDescription("Manage fly time for players.");
         setUsage("/fly removetime <player> <time>");
         addArgs("player", Player.class);
-        addArgs("time", Integer.class, Arrays.asList("10","20","30","40"));
-        addArgs("units", TimeUnits.class);
+        addArgs("time", Integer.class);
+        addOptionalArgs("units", TimeUnits.class);
         setPermission(Permissions.REMOVE_FLY_TIME.getPermission());
         this.plugin = plugin;
     }
@@ -47,20 +48,19 @@ public class RemoveTimeCommand extends Command<WFlyV2> {
     public void execute(CommandSender sender, Arguments arguments) {
         Player target = arguments.get("player");
         int basicTime = arguments.get("time");
-        TimeUnits units = arguments.get("units");
-
-        int time = TimeUnits.convertTimeToType(basicTime, units);
+        Optional<TimeUnits> units = arguments.getOptional("units");
+        int time = units.map(timeUnits -> TimeUnits.convertTimeToType(basicTime, timeUnits)).orElse(basicTime);
 
         if (WflyApi.get().getTimeFlyManager().removeFlyTime(target, time)) {
             String message = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVED);
-            ColorSupportUtil.sendColorFormat(target, message.replace("%time%", WFlyPlaceholder.formatTime(plugin,time)));
+            ColorSupportUtil.sendColorFormat(target, message.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin,time)));
 
             if (sender instanceof Player) {
                 Player playerSender = (Player) sender;
                 String messageRemove = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVE_TO_PLAYER);
-                ColorSupportUtil.sendColorFormat(playerSender, messageRemove.replace("%time%", WFlyPlaceholder.formatTime(plugin,time)).replace("%player%", target.getName()));
+                ColorSupportUtil.sendColorFormat(playerSender, messageRemove.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin,time)).replace("%player%", target.getName()));
             } else {
-                plugin.getLogger().info("You have removed " + time  + " " + units.getTimeUnits() + " fly time from " + target.getName());
+                plugin.getLogger().info("You have removed " + time  + " " + units.orElse(TimeUnits.SECONDS).getTimeUnits() + " fly time from " + target.getName());
             }
         }
     }

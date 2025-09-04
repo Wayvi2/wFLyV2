@@ -13,6 +13,8 @@ import fr.traqueur.commands.spigot.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Optional;
+
 public class ExchangeCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
@@ -21,7 +23,7 @@ public class ExchangeCommand extends Command<WFlyV2> {
         super(plugin, "fly.give");
         addArgs("receiver", Player.class);
         addArgs("time", Integer.class);
-        addArgs("units", TimeUnits.class);
+        addOptionalArgs("units", TimeUnits.class);
 
         this.plugin = plugin;
         setPermission(Permissions.EXCHANGE_FLY_TIME.getPermission());
@@ -38,9 +40,8 @@ public class ExchangeCommand extends Command<WFlyV2> {
         Player donator = (Player) commandSender;
         Player receiver = arguments.get("receiver");
         int basicTime = arguments.get("time");
-        TimeUnits units = arguments.get("units");
-
-        int time = TimeUnits.convertTimeToType(basicTime, units);
+        Optional<TimeUnits> units = arguments.getOptional("units");
+        int time = units.map(timeUnits -> TimeUnits.convertTimeToType(basicTime, timeUnits)).orElse(basicTime);
 
         if (plugin.getConfigFile().get(ConfigEnum.COOLDOWN_GIVE_LIMITS_ENABLED)) {
             int min = plugin.getConfigFile().get(ConfigEnum.COOLDOWN_GIVE_MIN);
@@ -90,10 +91,10 @@ public class ExchangeCommand extends Command<WFlyV2> {
             WflyApi.get().getExchangeManager().exchangeTimeFly(donator, receiver, time);
 
             String messageReceiver = plugin.getMessageFile().get(MessageEnum.EXCHANGE_RECEIVER);
-            ColorSupportUtil.sendColorFormat(receiver, messageReceiver.replace("%donator%", donator.getName()).replace("%time%", WFlyPlaceholder.formatTime(plugin,time)));
+            ColorSupportUtil.sendColorFormat(receiver, messageReceiver.replace("%donator%", donator.getName()).replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin,time)));
 
             String messageDonator = plugin.getMessageFile().get(MessageEnum.EXCHANGE_DONATOR);
-            ColorSupportUtil.sendColorFormat(donator, messageDonator.replace("%receiver%", receiver.getName()).replace("%time%", WFlyPlaceholder.formatTime(plugin,time)));
+            ColorSupportUtil.sendColorFormat(donator, messageDonator.replace("%receiver%", receiver.getName()).replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin,time)));
         }
     }
 }

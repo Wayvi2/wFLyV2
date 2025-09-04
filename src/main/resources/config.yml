@@ -52,14 +52,13 @@ format-placeholder:
   auto-format: true
   remove-null-values:
     enabled: true
-    value: "#FFC77A0seconds"
+    value: "#FFC77A0#FF9D00seconds"
   format: "#FFC77A%seconds%#FF9D00%seconds_suffixe%#FFC77A%minutes%#FF9D00%minutes_suffixe% #FFC77A%hours%#FF9D00%hours_suffixe% #FFC77A%days%#FF9D00%days_suffixe%"
   other-format:
     seconds_suffixe: "seconds"
     minutes_suffixe: "minutes"
     hours_suffixe: "hours"
     days_suffixe: "days"
-
 
 command:
   alias:

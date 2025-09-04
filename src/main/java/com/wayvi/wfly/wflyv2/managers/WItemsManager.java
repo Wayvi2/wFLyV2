@@ -2,6 +2,7 @@ package com.wayvi.wfly.wflyv2.managers;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
+import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.ItemsEnum;
 import com.wayvi.wfly.wflyv2.placeholders.WFlyPlaceholder;
 import com.wayvi.wfly.wflyv2.storage.sql.FlyTimeRepository;
@@ -39,12 +40,15 @@ public class WItemsManager {
         final String TOKEN_MESSAGE_ERROR = plugin.getItemsFile().get(ItemsEnum.FLY_TOKEN_MESSAGE_ERROR);
 
         int currentFly = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
-        if (currentFly < seconds) {
-            ColorSupportUtil.sendColorFormat(player, TOKEN_MESSAGE_ERROR);
-            return;
-        }
 
-        WflyApi.get().getTimeFlyManager().removeFlyTime(player, seconds);
+        if (!player.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
+            if (currentFly < seconds) {
+                ColorSupportUtil.sendColorFormat(player, TOKEN_MESSAGE_ERROR);
+                return;
+            }
+
+            WflyApi.get().getTimeFlyManager().removeFlyTime(player, seconds);
+        }
 
         ItemStack token = new ItemStack(TOKEN_MATERIAL, 1);
         ItemMeta meta = token.getItemMeta();
