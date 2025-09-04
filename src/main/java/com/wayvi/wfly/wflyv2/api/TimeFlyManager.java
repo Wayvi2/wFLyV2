@@ -108,7 +108,14 @@ public interface TimeFlyManager {
      * @param time the amount of time (in seconds) to remove
      */
     void removeFlytimeForAllPlayers(int time);
-
+    /**
+     * Loads or initializes the map of time-related commands.
+     * <p>
+     * This method should be called during the initial setup to ensure
+     * that all time-based commands are properly registered and ready
+     * to be used.
+     */
     void loadTimeCommandMap();
+
 
 }
