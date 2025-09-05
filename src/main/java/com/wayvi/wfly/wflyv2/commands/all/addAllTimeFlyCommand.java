@@ -6,13 +6,19 @@ import com.google.common.io.ByteStreams;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
+import com.wayvi.wfly.wflyv2.constants.commands.TimeUnits;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
+import com.wayvi.wfly.wflyv2.placeholders.WFlyPlaceholder;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Optional;
 
 public class addAllTimeFlyCommand  extends Command<WFlyV2> {
 
@@ -29,7 +35,9 @@ public class addAllTimeFlyCommand  extends Command<WFlyV2> {
         super(plugin, "wfly.addall");
         setDescription("Manage fly time for all players");
         setUsage("/wfly addtime <player> <time>");
-        addArgs("time", Integer.class);
+        addArgs("time", Integer.class, (sender, current) -> Arrays.asList("10","30","60"));
+        addOptionalArgs("units", TimeUnits.class);
+        addOptionalArgs("silent", String.class, (sender, partial) -> Collections.singletonList("-s"));
         setPermission(Permissions.ADD_FLY_TIME.getPermission());
         this.plugin = plugin;
     }
@@ -42,26 +50,37 @@ public class addAllTimeFlyCommand  extends Command<WFlyV2> {
      */
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
-        int time = arguments.get("time");
+        int basicTime = arguments.get("time");
+        Optional<TimeUnits> units = arguments.getOptional("units");
+        int time = units.map(u -> TimeUnits.convertTimeToType(basicTime, u))
+                .orElse(basicTime);
 
-        WflyApi.get().getTimeFlyManager().addFlytimeForAllPlayers(time); //to actual server
-        sendFlyTimeAllProxy(time); //to other proxy server
+        String silentFlag = arguments.getOptional("silent").orElse("").toString();
+        boolean silent = "-s".equalsIgnoreCase(silentFlag);
 
+        WflyApi.get().getTimeFlyManager().addFlytimeForAllPlayers(time); // local
+        sendFlyTimeAllProxy(time); // others proxy
 
-        String message = plugin.getMessageFile().get(MessageEnum.FLY_TIME_ADDED);
-        for (Player target : plugin.getServer().getOnlinePlayers()) {
-            ColorSupportUtil.sendColorFormat(target, message.replace("%time%", String.valueOf(time)));
+        if (!silent) {
+            String message = plugin.getMessageFile().get(MessageEnum.FLY_TIME_ADDED);
+            for (Player target : plugin.getServer().getOnlinePlayers()) {
+                ColorSupportUtil.sendColorFormat(target,
+                        message.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin, time)));
+            }
         }
-
 
         if (commandSender instanceof Player) {
             Player playerSender = (Player) commandSender;
             String messageToSender = plugin.getMessageFile().get(MessageEnum.FLY_TIME_ADDED_TO_ALL_PLAYER);
-            ColorSupportUtil.sendColorFormat(playerSender, messageToSender.replace("%time%", String.valueOf(time)));
+            ColorSupportUtil.sendColorFormat(playerSender,
+                    messageToSender.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin, time)));
         } else {
-            plugin.getLogger().info("You have given " + time + " fly time to all players");
+            plugin.getLogger().info("You have given " + basicTime + " " +
+                    units.orElse(TimeUnits.SECONDS).getTimeUnits() +
+                    " fly time to all players");
         }
     }
+
 
     public void sendFlyTimeAllProxy(int time) {
         Player player = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);

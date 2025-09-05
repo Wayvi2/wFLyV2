@@ -35,6 +35,7 @@ public class WTimeFlyManager implements TimeFlyManager {
 
     private final Map<UUID, Long> lastMovementTime = new HashMap<>();
     private final Map<UUID, Location> lastLocations = new HashMap<>();
+    private final Map<Integer, List<String>> timeCommandMap = new HashMap<>();
 
     private BukkitTask saveTask;
 
@@ -46,6 +47,7 @@ public class WTimeFlyManager implements TimeFlyManager {
         this.plugin = plugin;
         loadFlyTimesForOnlinePlayers();
         startDecrementTask();
+        loadTimeCommandMap();
     }
 
 
@@ -295,48 +297,50 @@ public class WTimeFlyManager implements TimeFlyManager {
         needsUpdate.add(playerUUID);
     }
 
-    public void manageCommandMessageOnTimeLeft() throws SQLException {
-        ConfigurationSection conditionsSection = plugin.getMessageFile().getRaw().getConfigurationSection("commands-time-remaining");
-        if (conditionsSection == null) return;
 
-        Map<Integer, List<String>> timeCommandMap = new HashMap<>();
 
-        for (String key : conditionsSection.getKeys(false)) {
-            try {
-                int timeKey = Integer.parseInt(key);
-                Object value = conditionsSection.get(key + ".commands");
-
-                if (value instanceof String) {
-                    timeCommandMap.put(timeKey, Collections.singletonList((String) value));
-                } else if (value instanceof List) {
-                    @SuppressWarnings("unchecked")
-                    List<String> commands = (List<String>) value;
-                    timeCommandMap.put(timeKey, commands);
-                }
-            } catch (NumberFormatException ignored) {}
-        }
-
+    public void manageCommandMessageOnTimeLeft() {
         for (Map.Entry<UUID, Integer> entry : flyTimes.entrySet()) {
-            UUID playerUUID = entry.getKey();
-            int playerTimeRemaining = entry.getValue();
+            UUID uuid = entry.getKey();
+            int time = entry.getValue();
 
-            if (lastNotifiedTime.getOrDefault(playerUUID, -1) == playerTimeRemaining) continue;
+            if (lastNotifiedTime.getOrDefault(uuid, -1) == time) continue;
 
-            List<String> commands = timeCommandMap.get(playerTimeRemaining);
+            List<String> commands = timeCommandMap.get(time);
             if (commands == null) continue;
 
-            Player player = Bukkit.getPlayer(playerUUID);
+            Player player = Bukkit.getPlayer(uuid);
             if (player == null || !player.isOnline()) continue;
-
             if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) continue;
 
-            lastNotifiedTime.put(playerUUID, playerTimeRemaining);
-
+            lastNotifiedTime.put(uuid, time);
             for (String cmd : commands) {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%player%", player.getName()));
             }
         }
     }
+
+    @Override
+    public void loadTimeCommandMap() {
+        timeCommandMap.clear();
+        ConfigurationSection section = plugin.getMessageFile().getRaw()
+                .getConfigurationSection("commands-time-remaining");
+        if (section == null) return;
+
+        for (String key : section.getKeys(false)) {
+            try {
+                int timeKey = Integer.parseInt(key);
+                Object value = section.get(key + ".commands");
+                if (value instanceof String) {
+                    timeCommandMap.put(timeKey, Collections.singletonList((String) value));
+                } else if (value instanceof List) {
+                    @SuppressWarnings("unchecked") List<String> cmds = (List<String>) value;
+                    timeCommandMap.put(timeKey, cmds);
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+    }
+
 
 
     private boolean isExemptFromLastPosition(Player player) {

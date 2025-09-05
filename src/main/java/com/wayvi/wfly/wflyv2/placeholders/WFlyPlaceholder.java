@@ -14,8 +14,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.BiFunction;
 
 /**
  * Custom placeholder expansion for the WFlyV2 plugin that allows retrieving flying-related data
@@ -53,7 +53,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      */
     @Override
     public @NotNull String getVersion() {
-        return "1.0.3.2";
+        return "1.0.3.3";
     }
 
     /**
@@ -98,109 +98,222 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      * Formats the given time in seconds into a readable format, taking into account the enabled
      * time units (days, hours, minutes, seconds) and applying the specified format.
      *
-     * @param seconds The time in seconds to be formatted.
      * @return A formatted string representing the time.
      */
-    public static String formatTime(WFlyV2 plugin, int seconds) {
-        Map<String, Boolean> enabledFormats = WflyApi.get().getPlugin().getTimeFormatTranslatorUtil().getTimeUnitsEnabled();
-        String format = WflyApi.get().getPlugin().getTimeFormatTranslatorUtil().getPlaceholderFormat();
+    public static String formatTime(WFlyV2 plugin, int totalSeconds) {
+        Map<String, Boolean> enabledFormats = WflyApi.get()
+                .getPlugin()
+                .getTimeFormatTranslatorUtil()
+                .getTimeUnitsEnabled();
+
+        String result = WflyApi.get()
+                .getPlugin()
+                .getTimeFormatTranslatorUtil()
+                .getPlaceholderFormat();
 
         boolean autoFormat = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_AUTO_FORMAT);
-        boolean removeNullValues = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_REMOVE_NULL_ENABLED);
+        boolean removeNull = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_REMOVE_NULL_ENABLED);
         String nullValue = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_REMOVE_NULL_VALUE);
 
-        String secondsSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_SECONDS);
-        String minutesSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_MINUTES);
-        String hoursSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_HOURS);
-        String daysSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_DAYS);
+        String secSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_SECONDS);
+        String minSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_MINUTES);
+        String hrSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_HOURS);
+        String daySuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_DAYS);
 
-        secondsSuffix = secondsSuffix.trim();
-        minutesSuffix = minutesSuffix.trim();
-        hoursSuffix = hoursSuffix.trim();
-        daysSuffix = daysSuffix.trim();
+        int days = totalSeconds / 86400;
+        int hours = (totalSeconds % 86400) / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int seconds = totalSeconds % 60;
 
-        int days = seconds / 86400;
-        int hours = (seconds % 86400) / 3600;
-        int minutes = (seconds % 3600) / 60;
-        int sec = seconds % 60;
-
-        if (!enabledFormats.get("days")) {
-            hours += days * 24;
-            days = 0;
+        if (removeNull && days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
+            return (String) ColorSupportUtil.convertColorFormat(nullValue);
         }
-        if (!enabledFormats.get("hours")) {
-            minutes += hours * 60;
-            hours = 0;
-        }
-        if (!enabledFormats.get("minutes")) {
-            sec += minutes * 60;
-            minutes = 0;
-        }
-        if (enabledFormats.get("minutes")) {
-            minutes += sec / 60;
-            sec %= 60;
-        }
-        if (enabledFormats.get("hours")) {
-            hours += minutes / 60;
-            minutes %= 60;
-        }
-        if (enabledFormats.get("days")) {
-            days += hours / 24;
-            hours %= 24;
-        }
-
-        // Amélioration : gestion intelligente des placeholders vides
-        boolean showDays = days > 0 || !removeNullValues;
-        boolean showHours = hours > 0 || !removeNullValues;
-        boolean showMinutes = minutes > 0 || !removeNullValues;
-        boolean showSeconds = sec > 0 || !removeNullValues;
 
         if (autoFormat) {
-            if (!enabledFormats.getOrDefault("days", false) || !showDays) {
-
-                format = format.replaceAll("\\s*%days%\\s*", "").replaceAll("\\s*%days_suffixe%\\s*", "");
-            }
-            if (!enabledFormats.getOrDefault("hours", false) || !showHours) {
-                format = format.replaceAll("\\s*%hours%\\s*", "").replaceAll("\\s*%hours_suffixe%\\s*", "");
-            }
-            if (!enabledFormats.getOrDefault("minutes", false) || !showMinutes) {
-                format = format.replaceAll("\\s*%minutes%\\s*", "").replaceAll("\\s*%minutes_suffixe%\\s*", "");
-            }
-            if (!enabledFormats.getOrDefault("seconds", false) || !showSeconds) {
-                format = format.replaceAll("\\s*%seconds%\\s*", "").replaceAll("\\s*%seconds_suffixe%\\s*", "");
+            if (days > 0) {
+            } else if (hours > 0) {
+                enabledFormats.put("days", false);
+            } else if (minutes > 0) {
+                enabledFormats.put("days", false);
+                enabledFormats.put("hours", false);
+            } else {
+                enabledFormats.put("days", false);
+                enabledFormats.put("hours", false);
+                enabledFormats.put("minutes", false);
             }
         }
 
-        String finalDays = showDays ? String.valueOf(days) : "";
-        String finalHours = showHours ? String.valueOf(hours) : "";
-        String finalMinutes = showMinutes ? String.valueOf(minutes) : "";
-        String finalSeconds = showSeconds ? String.valueOf(sec) : "";
+        LinkedHashMap<String, Integer> values = new LinkedHashMap<>();
+        values.put("days", days);
+        values.put("hours", hours);
+        values.put("minutes", minutes);
+        values.put("seconds", seconds);
 
-        String finalFormat = format
-                .replace("%seconds%", finalSeconds)
-                .replace("%minutes%", finalMinutes)
-                .replace("%hours%", finalHours)
-                .replace("%days%", finalDays)
-                .replace("%seconds_suffixe%", finalSeconds.isEmpty() ? "" : secondsSuffix)
-                .replace("%minutes_suffixe%", finalMinutes.isEmpty() ? "" : minutesSuffix)
-                .replace("%hours_suffixe%", finalHours.isEmpty() ? "" : hoursSuffix)
-                .replace("%days_suffixe%", finalDays.isEmpty() ? "" : daysSuffix);
+        LinkedHashMap<String, String> suffixes = new LinkedHashMap<>();
+        suffixes.put("days", daySuffix);
+        suffixes.put("hours", hrSuffix);
+        suffixes.put("minutes", minSuffix);
+        suffixes.put("seconds", secSuffix);
 
-        // Si tous les éléments sont vides, retourner la valeur null configurée
-        if (finalDays.isEmpty() && finalHours.isEmpty() && finalMinutes.isEmpty() && finalSeconds.isEmpty()) {
-            finalFormat = nullValue;
+        Map<String, Integer> unitToSeconds = new HashMap<>();
+        unitToSeconds.put("days", 86400);
+        unitToSeconds.put("hours", 3600);
+        unitToSeconds.put("minutes", 60);
+        unitToSeconds.put("seconds", 1);
+
+        String[] unitOrder = {"days", "hours", "minutes", "seconds"};
+        for (int i = 0; i < unitOrder.length; i++) {
+            String unit = unitOrder[i];
+            int value = values.get(unit);
+            if (value > 0 && !enabledFormats.getOrDefault(unit, true)) {
+                boolean reported = false;
+                for (int j = i + 1; j < unitOrder.length; j++) {
+                    String smallerUnit = unitOrder[j];
+                    if (enabledFormats.getOrDefault(smallerUnit, true)) {
+                        int factor = unitToSeconds.get(unit) / unitToSeconds.get(smallerUnit);
+                        values.put(smallerUnit, values.get(smallerUnit) + value * factor);
+                        values.put(unit, 0);
+                        reported = true;
+                        break;
+                    }
+                }
+                if (!reported) {
+                    values.put(unit, value);
+                }
+            }
         }
 
-        // Nettoyage amélioré des espaces
-        finalFormat = finalFormat
-                .replaceAll("\\r?\\n", "")
-                .replaceAll("\\t", "")
-                .replaceAll("\\s{2,}", " ")
-                .replaceAll("^\\s+|\\s+$", "")
-                .replaceAll("\\s+([#&§])", "$1")
-                .replaceAll("([#&§][0-9a-fA-F])\\s+", "$1");
+        for (String unit : unitOrder) {
+            result = replaceUnit(result, unit, values.get(unit), suffixes.get(unit), enabledFormats, removeNull, nullValue);
+        }
 
-        return (String) ColorSupportUtil.convertColorFormat(finalFormat);
+        String finalResult = result.trim().replaceAll("\\s{2,}", " ");
+        return (String) ColorSupportUtil.convertColorFormat(finalResult);
+    }
+
+    private static String replaceUnit(
+            String format,
+            String unitKey,
+            int value,
+            String suffix,
+            Map<String, Boolean> enabled,
+            boolean removeNull,
+            String nullValue) {
+
+        boolean isEnabled = enabled.getOrDefault(unitKey, true);
+
+        if (value == 0 && removeNull) {
+            return format
+                    .replaceAll("\\s*%" + unitKey + "%\\s*", "")
+                    .replaceAll("\\s*%" + unitKey + "_suffixe%\\s*", "");
+        }
+
+        if (!isEnabled && value == 0) {
+            return format
+                    .replaceAll("\\s*%" + unitKey + "%\\s*", "")
+                    .replaceAll("\\s*%" + unitKey + "_suffixe%\\s*", "");
+        }
+
+        if (isEnabled || value > 0) {
+            return format
+                    .replace("%" + unitKey + "%", String.valueOf(value))
+                    .replace("%" + unitKey + "_suffixe%", suffix);
+        }
+
+        return format
+                .replace("%" + unitKey + "%", nullValue)
+                .replace("%" + unitKey + "_suffixe%", "");
+    }
+
+    public static String formatTimeAlways(WFlyV2 plugin, int totalSeconds) {
+        Map<String, Boolean> enabledFormats = new HashMap<>();
+        enabledFormats.put("seconds", true);
+        enabledFormats.put("minutes", true);
+        enabledFormats.put("hours", true);
+        enabledFormats.put("days", true);
+
+        String result = WflyApi.get()
+                .getPlugin()
+                .getTimeFormatTranslatorUtil()
+                .getPlaceholderFormat();
+
+        boolean autoFormat = true;
+        boolean removeNull = true;
+        String nullValue = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_REMOVE_NULL_VALUE);
+
+        String secSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_SECONDS);
+        String minSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_MINUTES);
+        String hrSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_HOURS);
+        String daySuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_DAYS);
+
+        int days = totalSeconds / 86400;
+        int hours = (totalSeconds % 86400) / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int seconds = totalSeconds % 60;
+
+
+        if (days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
+            return (String) ColorSupportUtil.convertColorFormat(nullValue);
+        }
+
+        if (days > 0) {
+        } else if (hours > 0) {
+            enabledFormats.put("days", false);
+        } else if (minutes > 0) {
+            enabledFormats.put("days", false);
+            enabledFormats.put("hours", false);
+        } else {
+            enabledFormats.put("days", false);
+            enabledFormats.put("hours", false);
+            enabledFormats.put("minutes", false);
+        }
+
+        LinkedHashMap<String, Integer> values = new LinkedHashMap<>();
+        values.put("days", days);
+        values.put("hours", hours);
+        values.put("minutes", minutes);
+        values.put("seconds", seconds);
+
+        LinkedHashMap<String, String> suffixes = new LinkedHashMap<>();
+        suffixes.put("days", daySuffix);
+        suffixes.put("hours", hrSuffix);
+        suffixes.put("minutes", minSuffix);
+        suffixes.put("seconds", secSuffix);
+
+        Map<String, Integer> unitToSeconds = new HashMap<>();
+        unitToSeconds.put("days", 86400);
+        unitToSeconds.put("hours", 3600);
+        unitToSeconds.put("minutes", 60);
+        unitToSeconds.put("seconds", 1);
+
+        String[] unitOrder = {"days", "hours", "minutes", "seconds"};
+        for (int i = 0; i < unitOrder.length; i++) {
+            String unit = unitOrder[i];
+            int value = values.get(unit);
+            if (value > 0 && !enabledFormats.getOrDefault(unit, true)) {
+                boolean reported = false;
+                for (int j = i + 1; j < unitOrder.length; j++) {
+                    String smallerUnit = unitOrder[j];
+                    if (enabledFormats.getOrDefault(smallerUnit, true)) {
+                        int factor = unitToSeconds.get(unit) / unitToSeconds.get(smallerUnit);
+                        values.put(smallerUnit, values.get(smallerUnit) + value * factor);
+                        values.put(unit, 0);
+                        reported = true;
+                        break;
+                    }
+                }
+                if (!reported) {
+                    values.put(unit, value);
+                }
+            }
+        }
+
+        for (String unit : unitOrder) {
+            result = replaceUnit(result, unit, values.get(unit), suffixes.get(unit), enabledFormats, removeNull, nullValue);
+        }
+
+        String finalResult = result.trim().replaceAll("\\s{2,}", " ");
+        return (String) ColorSupportUtil.convertColorFormat(finalResult);
     }
 
 }

@@ -12,4 +12,4 @@ items:
         messages:
           give: "&aYou received a &bFly Token &7(%time%)"
           use: "&aYou gained &e%time% &aof fly time!"
-          error: "&cThis item is not valid."
+          error: "&cYou don't have enought time fly!"
