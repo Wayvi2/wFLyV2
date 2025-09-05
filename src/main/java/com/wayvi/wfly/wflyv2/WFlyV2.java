@@ -10,6 +10,7 @@ import com.wayvi.wfly.wflyv2.commands.all.addAllTimeFlyCommand;
 import com.wayvi.wfly.wflyv2.commands.converter.TimeUnitsConverter;
 import com.wayvi.wfly.wflyv2.commands.converter.ToggleTypeConverter;
 import com.wayvi.wfly.wflyv2.commands.items.GiveFlyTokenCommand;
+import com.wayvi.wfly.wflyv2.commands.items.GiveFlyTokenToOtherCommand;
 import com.wayvi.wfly.wflyv2.commands.other.MigrateTempFlyCommand;
 import com.wayvi.wfly.wflyv2.constants.commands.TimeUnits;
 import com.wayvi.wfly.wflyv2.constants.commands.ToggleType;
@@ -197,6 +198,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new ToggleFlyPlayerCommand(this, flyCommand));
         commandManager.registerCommand(new AboutCommand(this));
         commandManager.registerCommand(new GiveFlyTokenCommand(this, wItemsManager));
+        commandManager.registerCommand(new GiveFlyTokenToOtherCommand(this, wItemsManager));
 
 
         // LISTENER

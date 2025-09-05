@@ -23,7 +23,7 @@ public enum ItemsEnum implements ConfigKey<Object> {
     FLY_TOKEN_MESSAGE_USE("items.fly-token.items.fly-token.messages.use",
             "&aYou gained &e%time% &aof fly time!"),
     FLY_TOKEN_MESSAGE_ERROR("items.fly-token.items.fly-token.messages.error",
-            "&cThis item is not valid.");
+            "&cYou don't have enought time fly!");
 
     private final String path;
     private final Object defaultValue;

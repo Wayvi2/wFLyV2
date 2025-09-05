@@ -54,7 +54,7 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
 
             String formattedMessage = rawMessage
                     .replace("%player%", target.getName())
-                    .replace("%fly_remaining%", placeholder.formatTime(plugin,flyRemaining));
+                    .replace("%fly_remaining%", WFlyPlaceholder.formatTimeAlways(plugin,flyRemaining));
 
             ColorSupportUtil.sendColorFormat((Player) commandSender, formattedMessage);
             return;
@@ -85,7 +85,7 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
         String rawMessage = target.equals(sender) ? plugin.getMessageFile().get(MessageEnum.HAVE_YOUR_FLY_TIME) :  plugin.getMessageFile().get(MessageEnum.GET_PLAYER_FLY_TIME);
         String formattedMessage = rawMessage
                 .replace("%player%", target.getName())
-                .replace("%fly_remaining%", placeholder.formatTime(plugin,flyRemaining));
+                .replace("%fly_remaining%", WFlyPlaceholder.formatTimeAlways(plugin,flyRemaining));
 
         ColorSupportUtil.sendColorFormat(sender, formattedMessage);
     }

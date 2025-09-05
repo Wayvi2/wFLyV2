@@ -62,7 +62,9 @@ public enum Permissions {
 
     WFLY_ABOUT("wfly.about"),
 
-    FLY_TOKEN("wfly.fly.token");
+    FLY_TOKEN("wfly.fly.token"),
+
+    FLY_TOKEN_GIVE_OTHER("wfly.fly.token.give.other");
 
     private final String permission;
 

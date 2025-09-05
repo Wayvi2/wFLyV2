@@ -17,6 +17,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 public class RemoveAllTimeFlyCommand extends Command<WFlyV2> {
@@ -32,8 +33,9 @@ public class RemoveAllTimeFlyCommand extends Command<WFlyV2> {
         super(plugin, "wfly.removeall");
         setDescription("Manage fly time for all players");
         setUsage("/wfly addtime <player> <time>");
-        addArgs("time", Integer.class);
+        addArgs("time", Integer.class, (sender, current) -> Arrays.asList("10","30","60"));
         addOptionalArgs("units", TimeUnits.class);
+        addOptionalArgs("silent", String.class, (sender, partial) -> Collections.singletonList("-s"));
         setPermission(Permissions.REMOVE_FLY_TIME.getPermission());
         this.plugin = plugin;
     }
@@ -49,26 +51,35 @@ public class RemoveAllTimeFlyCommand extends Command<WFlyV2> {
 
         int basicTime = arguments.get("time");
         Optional<TimeUnits> units = arguments.getOptional("units");
-        int time = units.map(timeUnits -> TimeUnits.convertTimeToType(basicTime, timeUnits)).orElse(basicTime);
+        int time = units.map(u -> TimeUnits.convertTimeToType(basicTime, u))
+                .orElse(basicTime);
 
-        WflyApi.get().getTimeFlyManager().removeFlytimeForAllPlayers(time); //to actual server
-        removeFlyTimeAllProxy(time); //to other proxy server
+        String silentFlag = arguments.getOptional("silent").orElse("").toString();
+        boolean silent = "-s".equalsIgnoreCase(silentFlag);
+
+        WflyApi.get().getTimeFlyManager().removeFlytimeForAllPlayers(time); // local
+        removeFlyTimeAllProxy(time); // others proxy
 
 
-        String message = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVED);
-        for (Player target : plugin.getServer().getOnlinePlayers()) {
-            ColorSupportUtil.sendColorFormat(target,message.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin,time)));
+        if (!silent) {
+            String message = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVED);
+            for (Player target : plugin.getServer().getOnlinePlayers()) {
+                ColorSupportUtil.sendColorFormat(target,
+                        message.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin, time)));
+            }
         }
-
 
         if (commandSender instanceof Player) {
             Player playerSender = (Player) commandSender;
             String messageToSender = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVED_TO_ALL_PLAYER);
-            ColorSupportUtil.sendColorFormat(playerSender, messageToSender.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin,time)));
+            ColorSupportUtil.sendColorFormat(playerSender,
+                    messageToSender.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin, time)));
         } else {
-            plugin.getLogger().info("You have removed " + time + " " + units.orElse(TimeUnits.SECONDS).getTimeUnits() +  " fly time to all players");
+            plugin.getLogger().info("You have removed " + basicTime + " " +
+                    units.orElse(TimeUnits.SECONDS).getTimeUnits() + " fly time from all players");
         }
     }
+
 
     public void removeFlyTimeAllProxy(int time) {
         Player player = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);

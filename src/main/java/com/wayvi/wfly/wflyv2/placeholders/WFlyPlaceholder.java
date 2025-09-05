@@ -252,22 +252,20 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
         int seconds = totalSeconds % 60;
 
 
-        if (removeNull && days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
+        if (days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
             return (String) ColorSupportUtil.convertColorFormat(nullValue);
         }
 
-        if (autoFormat) {
-            if (days > 0) {
-            } else if (hours > 0) {
-                enabledFormats.put("days", false);
-            } else if (minutes > 0) {
-                enabledFormats.put("days", false);
-                enabledFormats.put("hours", false);
-            } else {
-                enabledFormats.put("days", false);
-                enabledFormats.put("hours", false);
-                enabledFormats.put("minutes", false);
-            }
+        if (days > 0) {
+        } else if (hours > 0) {
+            enabledFormats.put("days", false);
+        } else if (minutes > 0) {
+            enabledFormats.put("days", false);
+            enabledFormats.put("hours", false);
+        } else {
+            enabledFormats.put("days", false);
+            enabledFormats.put("hours", false);
+            enabledFormats.put("minutes", false);
         }
 
         LinkedHashMap<String, Integer> values = new LinkedHashMap<>();
