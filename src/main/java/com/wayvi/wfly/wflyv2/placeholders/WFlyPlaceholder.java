@@ -53,7 +53,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      */
     @Override
     public @NotNull String getVersion() {
-        return "1.0.3.3";
+        return "1.0.3.4";
     }
 
     /**

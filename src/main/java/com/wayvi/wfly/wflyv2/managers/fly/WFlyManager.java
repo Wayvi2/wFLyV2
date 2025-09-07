@@ -42,6 +42,7 @@ public class WFlyManager implements FlyManager {
         player.setFlying(fly);
 
         WflyApi.get().getTimeFlyManager().updateFlyStatus(uuid, fly);
+        Bukkit.broadcastMessage(String.valueOf(WflyApi.get().getTimeFlyManager().getIsFlying(uuid)));
     }
 
     /**

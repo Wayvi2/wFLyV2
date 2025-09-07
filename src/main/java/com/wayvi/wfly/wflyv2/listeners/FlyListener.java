@@ -89,12 +89,12 @@ public class FlyListener implements Listener {
 
         if (player.getGameMode() == GameMode.SPECTATOR && event.getNewGameMode() == GameMode.SURVIVAL) {
             player.setAllowFlight(true);
-            Bukkit.getScheduler().runTask(plugin, () -> {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 boolean fly = WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId());
                 if (fly) {
                     WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), true);
                 }
-            });
+            },7L);
         }
     }
 
@@ -108,17 +108,17 @@ public class FlyListener implements Listener {
     @EventHandler
     public void onWorldChange(PlayerChangedWorldEvent event) {
         Player player = event.getPlayer();
-
+        Bukkit.broadcastMessage(String.valueOf(WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId())));
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             boolean authorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
-            AccessPlayerDTO playerData = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
+            boolean isInFly = WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId());
 
-            if (playerData != null && !playerData.isinFly()){
+            if (!isInFly){
                 Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
                 player.teleport(safeLoc);
             }
 
-            if (playerData != null && playerData.isinFly()) {
+            if (isInFly) {
                 flyManager.manageFly(player.getUniqueId(), authorized);
 
                 String message = authorized ? plugin.getMessageFile().get(MessageEnum.FLY_ACTIVATED) : plugin.getMessageFile().get(MessageEnum.FLY_DEACTIVATED);

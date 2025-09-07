@@ -151,7 +151,7 @@ public class WConditionManager implements ConditionManager {
     @Override
     public void logPlaceholderError(String placeholder) {
         if (unregisteredPlaceholders.add(placeholder)) {
-            WflyApi.get().getPlugin().getLogger().severe("Placeholder not registered or not working: " + placeholder);
+            WflyApi.get().getPlugin().getLogger().info("Placeholder not registered or not working: " + placeholder);
         }
     }
 
