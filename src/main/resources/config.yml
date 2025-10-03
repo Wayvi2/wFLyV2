@@ -9,7 +9,7 @@
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
 
-version: '1.0.3.2'
+version: '1.0.3.5'
 
 mysql:
   enabled: false

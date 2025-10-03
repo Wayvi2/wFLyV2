@@ -108,7 +108,6 @@ public class FlyListener implements Listener {
     @EventHandler
     public void onWorldChange(PlayerChangedWorldEvent event) {
         Player player = event.getPlayer();
-        Bukkit.broadcastMessage(String.valueOf(WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId())));
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             boolean authorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
             boolean isInFly = WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId());
