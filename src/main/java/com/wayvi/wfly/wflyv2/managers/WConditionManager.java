@@ -25,6 +25,8 @@ public class WConditionManager implements ConditionManager {
     private final Set<String> unregisteredPlaceholders = new HashSet<>();
     private final Map<UUID, Boolean> flyPermissionCache = new HashMap<>();
 
+    private final Map<UUID, Boolean> wasFlyingBefore = new HashMap<>();
+
     // ══════════════════════════════════════════════════════
     //                 CONSTRUCTOR & INIT
     // ══════════════════════════════════════════════════════
@@ -178,9 +180,19 @@ public class WConditionManager implements ConditionManager {
 
         if (hasBypassPermission(player)) return;
 
-        if (!isAuthorized && isCurrentlyFlying) {
+        if (!isAuthorized) {
             deactivateFlyForPlayer(player);
+            wasFlyingBefore.put(player.getUniqueId(), true);
         }
+
+        if(isAuthorized && wasFlyingBefore.getOrDefault(player.getUniqueId(), false)){
+            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), true);
+            wasFlyingBefore.put(player.getUniqueId(), false);
+
+        }
+
+
+
     }
 
     /**
@@ -189,15 +201,22 @@ public class WConditionManager implements ConditionManager {
      * @param player the player to affect
      */
     private void deactivateFlyForPlayer(Player player) {
-        WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
-        ColorSupportUtil.sendColorFormat(player, plugin.getMessageFile().get(MessageEnum.NO_FLY_HERE));
+        if (WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId())) {
 
-        Location safeLocation = getSafeLocation(player);
-        if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
-            handleFlyDeactivation(player, safeLocation);
+            if (player.isFlying()) {
+                Location safeLocation = getSafeLocation(player);
+                if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
+                    handleFlyDeactivation(player, safeLocation);
+                }
+            }
+
+
+            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
+            ColorSupportUtil.sendColorFormat(player, plugin.getMessageFile().get(MessageEnum.NO_FLY_HERE));
+
+
+            executeNotAuthorizedCommands(player);
         }
-
-        executeNotAuthorizedCommands(player);
     }
 
     /**

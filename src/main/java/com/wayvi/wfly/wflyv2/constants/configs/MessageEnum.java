@@ -6,18 +6,6 @@ import java.util.Arrays;
 
 public enum MessageEnum implements ConfigKey<Object> {
 
-    // Commands Time Remaining
-    COMMANDS_TIME_REMAINING_0("commands-time-remaining.0.commands",
-            "title %player% title {\"text\":\"You have 0 seconds fly left!\",\"bold\":true,\"color\":\"gold\"}"),
-    COMMANDS_TIME_REMAINING_1("commands-time-remaining.1.commands",
-            "title %player% title {\"text\":\"You have 1 seconds fly left!\",\"bold\":true,\"color\":\"gold\"}"),
-    COMMANDS_TIME_REMAINING_2("commands-time-remaining.2.commands",
-            "title %player% title {\"text\":\"You have 2 seconds fly left!\",\"bold\":true,\"color\":\"gold\"}"),
-    COMMANDS_TIME_REMAINING_3("commands-time-remaining.3.commands",
-            "title %player% title {\"text\":\"You have 3 seconds fly left!\",\"bold\":true,\"color\":\"gold\"}"),
-    COMMANDS_TIME_REMAINING_5("commands-time-remaining.5.commands",
-            "title %player% title {\"text\":\"You have 5 seconds fly left!\",\"bold\":true,\"color\":\"gold\"}"),
-
     // Messages
     RELOAD("message.reload", "&cPlugin has been reloaded!"),
     FLY_ACTIVATED("message.fly-activated", "&aYou have been set to fly! Use /fly to disable fly."),
