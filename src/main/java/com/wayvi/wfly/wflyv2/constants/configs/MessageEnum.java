@@ -48,7 +48,7 @@ public enum MessageEnum implements ConfigKey<Object> {
     COOLDOWN_GIVE("message.cooldown-give", "&cYou must wait %seconds% before give fly again!"),
     EXCHANGE_TIME_BELOW_MINIMUM("message.exchange-time-below-minimum", "&cYou must give at least %min% seconds of fly time."),
     EXCHANGE_TIME_ABOVE_MAXIMUM("message.exchange-time-above-maximum", "&cYou cannot give more than %max% seconds of fly time."),
-
+    FLY_STATUS("message.fly-status", "%player% : %status%"),
     // Help messages player
     HELP_MESSAGE_PLAYER("message.help-message-player", Arrays.asList(
             "&8&m──────&7 » &b&lw&bFlight &7Player &7« &8&m──────",

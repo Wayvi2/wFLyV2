@@ -32,9 +32,9 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
     public void execute(CommandSender commandSender, Arguments arguments) {
 
         Optional<Player> targetOptional = arguments.getOptional("target");
-
         Player target = targetOptional.orElse(null);
 
+        // Si la commande vient de la console
         if (!(commandSender instanceof Player)) {
             if (target == null) {
                 commandSender.sendMessage(ChatColor.DARK_RED + "You must specify a valid online player when using this command from the console.");
@@ -45,21 +45,23 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
 
             if (target.hasPermission(Permissions.INFINITE_FLY.getPermission())) {
                 String rawMessage = plugin.getMessageFile().get(MessageEnum.PLAYER_HAS_UNLIMITED);
-
                 String formattedMessage = rawMessage.replace("%player%", target.getName());
-                ColorSupportUtil.sendColorFormat((Player) commandSender, formattedMessage);
+
+                // Envoyer au console: traduire les & en codes couleurs Minecraft
+                commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', formattedMessage));
                 return;
             }
-            String rawMessage = plugin.getMessageFile().get(MessageEnum.GET_PLAYER_FLY_TIME);
 
+            String rawMessage = plugin.getMessageFile().get(MessageEnum.GET_PLAYER_FLY_TIME);
             String formattedMessage = rawMessage
                     .replace("%player%", target.getName())
-                    .replace("%fly_remaining%", WFlyPlaceholder.formatTimeAlways(plugin,flyRemaining));
+                    .replace("%fly_remaining%", WFlyPlaceholder.formatTimeAlways(plugin, flyRemaining));
 
-            ColorSupportUtil.sendColorFormat((Player) commandSender, formattedMessage);
+            commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', formattedMessage));
             return;
         }
 
+        // Command exécutée par un joueur
         Player sender = (Player) commandSender;
 
         if (target == null) {
@@ -81,13 +83,14 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
             return;
         }
 
+        String rawMessage = target.equals(sender)
+                ? plugin.getMessageFile().get(MessageEnum.HAVE_YOUR_FLY_TIME)
+                : plugin.getMessageFile().get(MessageEnum.GET_PLAYER_FLY_TIME);
 
-        String rawMessage = target.equals(sender) ? plugin.getMessageFile().get(MessageEnum.HAVE_YOUR_FLY_TIME) :  plugin.getMessageFile().get(MessageEnum.GET_PLAYER_FLY_TIME);
         String formattedMessage = rawMessage
                 .replace("%player%", target.getName())
-                .replace("%fly_remaining%", WFlyPlaceholder.formatTimeAlways(plugin,flyRemaining));
+                .replace("%fly_remaining%", WFlyPlaceholder.formatTimeAlways(plugin, flyRemaining));
 
         ColorSupportUtil.sendColorFormat(sender, formattedMessage);
     }
-
 }
