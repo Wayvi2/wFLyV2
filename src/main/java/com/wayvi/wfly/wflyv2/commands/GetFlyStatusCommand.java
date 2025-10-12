@@ -34,7 +34,7 @@ public class GetFlyStatusCommand extends Command<WFlyV2> {
 
 
         if (!(commandSender instanceof Player)){
-            commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
+            commandSender.sendMessage((String) ColorSupportUtil.convertColorFormat(message));
         } else {
 
             ColorSupportUtil.sendColorFormat((Player) commandSender, message);
