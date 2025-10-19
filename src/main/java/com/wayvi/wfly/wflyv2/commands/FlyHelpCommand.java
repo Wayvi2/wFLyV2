@@ -40,7 +40,11 @@ public class FlyHelpCommand extends Command<WFlyV2> {
     public void execute(CommandSender commandSender, Arguments arguments) {
         List<String> message = plugin.getMessageFile().get(MessageEnum.HELP_MESSAGE_ADMIN);
         for (String s : message) {
-            ColorSupportUtil.sendColorFormat((Player) commandSender, s);
+            if (commandSender instanceof Player) {
+                ColorSupportUtil.sendColorFormat((Player) commandSender, s);
+            } else {
+                commandSender.sendMessage((String) ColorSupportUtil.convertColorFormat(s));
+            }
         }
     }
 }

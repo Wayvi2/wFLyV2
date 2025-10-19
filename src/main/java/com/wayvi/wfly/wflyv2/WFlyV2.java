@@ -199,6 +199,7 @@ public final class WFlyV2 extends JavaPlugin {
         commandManager.registerCommand(new AboutCommand(this));
         commandManager.registerCommand(new GiveFlyTokenCommand(this, wItemsManager));
         commandManager.registerCommand(new GiveFlyTokenToOtherCommand(this, wItemsManager));
+        commandManager.registerCommand(new GetFlyStatusCommand(this));
 
 
         // LISTENER

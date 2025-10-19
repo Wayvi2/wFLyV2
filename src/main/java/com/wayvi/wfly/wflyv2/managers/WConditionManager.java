@@ -175,24 +175,28 @@ public class WConditionManager implements ConditionManager {
      * @param player the player to handle
      */
     private void handlePlayerFlyState(Player player) {
+        if (hasBypassPermission(player)) return;
+
+        UUID uuid = player.getUniqueId();
         boolean isAuthorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
         boolean isCurrentlyFlying = player.isFlying();
 
-        if (hasBypassPermission(player)) return;
-
         if (!isAuthorized) {
-            deactivateFlyForPlayer(player);
-            wasFlyingBefore.put(player.getUniqueId(), true);
+
+            if (isCurrentlyFlying) {
+                deactivateFlyForPlayer(player);
+                wasFlyingBefore.put(uuid, true);
+            } else {
+                wasFlyingBefore.remove(uuid);
+            }
+            return;
         }
 
-        if(isAuthorized && wasFlyingBefore.getOrDefault(player.getUniqueId(), false)){
-            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), true);
-            wasFlyingBefore.put(player.getUniqueId(), false);
 
+        Boolean wasFlying = wasFlyingBefore.remove(uuid);
+        if (Boolean.TRUE.equals(wasFlying) && !isCurrentlyFlying) {
+            WflyApi.get().getFlyManager().manageFly(uuid, true);
         }
-
-
-
     }
 
     /**
