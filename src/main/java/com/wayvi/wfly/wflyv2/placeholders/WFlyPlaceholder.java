@@ -89,6 +89,28 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                     UUID player1 = offlinePlayer.getUniqueId();
                     boolean playerIsFlying = WflyApi.get().getTimeFlyManager().getIsFlying(player1);
                     return String.valueOf(playerIsFlying);
+                case "fly_remaining_seconds": {
+                    int timeRemainingSeconds = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
+                    return String.valueOf(timeRemainingSeconds);
+                }
+
+                case "fly_remaining_minutes": {
+                    int timeRemainingSeconds = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
+                    int minutes = timeRemainingSeconds >= 60 ? timeRemainingSeconds / 60 : 0;
+                    return String.valueOf(minutes);
+                }
+
+                case "fly_remaining_hours": {
+                    int timeRemainingSeconds = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
+                    int hours = timeRemainingSeconds >= 3600 ? timeRemainingSeconds / 3600 : 0;
+                    return String.valueOf(hours);
+                }
+
+                case "fly_remaining_days": {
+                    int timeRemainingSeconds = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
+                    int days = timeRemainingSeconds >= 86400 ? timeRemainingSeconds / 86400 : 0;
+                    return String.valueOf(days);
+                }
             }
         }
         return null;
