@@ -1,11 +1,13 @@
 package com.wayvi.wfly.wflyv2.managers.fly;
 
+import com.wayvi.wfly.wflyv2.ActionBar;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.TimeFlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
+import com.wayvi.wfly.wflyv2.models.TimeCommandData;
 import com.wayvi.wfly.wflyv2.storage.models.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import org.bukkit.*;
@@ -35,7 +37,7 @@ public class WTimeFlyManager implements TimeFlyManager {
 
     private final Map<UUID, Long> lastMovementTime = new HashMap<>();
     private final Map<UUID, Location> lastLocations = new HashMap<>();
-    private final Map<Integer, List<String>> timeCommandMap = new HashMap<>();
+    private final Map<Integer, List<TimeCommandData>> timeCommandMap = new HashMap<>();
 
     private BukkitTask saveTask;
 
@@ -306,19 +308,45 @@ public class WTimeFlyManager implements TimeFlyManager {
 
             if (lastNotifiedTime.getOrDefault(uuid, -1) == time) continue;
 
-            List<String> commands = timeCommandMap.get(time);
-            if (commands == null) continue;
+            List<TimeCommandData> actions = timeCommandMap.get(time);
+            if (actions == null) continue;
 
             Player player = Bukkit.getPlayer(uuid);
             if (player == null || !player.isOnline()) continue;
             if (player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp()) continue;
 
             lastNotifiedTime.put(uuid, time);
-            for (String cmd : commands) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%player%", player.getName()));
+
+            for (TimeCommandData data : actions) {
+                String type = data.getType();
+                for (String cmd : data.getCommands()) {
+                    String message = cmd.replace("%player%", player.getName());
+                    switch (type.toUpperCase()) {
+                        case "MESSAGE":
+                            player.sendMessage((String) ColorSupportUtil.convertColorFormat(message));
+                            break;
+                        case "TITLE":
+                            player.sendTitle((String) ColorSupportUtil.convertColorFormat(message), "", 10, 40, 10);
+                            break;
+                        case "SUBTITLE":
+                            player.sendTitle("", (String) ColorSupportUtil.convertColorFormat(message), 10, 40, 10);
+                            break;
+                        case "ACTIONBAR":
+                            ActionBar.sendActionBar(player,(String) ColorSupportUtil.convertColorFormat(message));
+                            break;
+                        case "COMMAND":
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%player%", player.getName()));
+                            break;
+                        default:
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%player%", player.getName()));
+                            break;
+                    }
+                }
             }
         }
     }
+
+
 
     @Override
     public void loadTimeCommandMap() {
@@ -330,16 +358,41 @@ public class WTimeFlyManager implements TimeFlyManager {
         for (String key : section.getKeys(false)) {
             try {
                 int timeKey = Integer.parseInt(key);
-                Object value = section.get(key + ".commands");
-                if (value instanceof String) {
-                    timeCommandMap.put(timeKey, Collections.singletonList((String) value));
-                } else if (value instanceof List) {
-                    @SuppressWarnings("unchecked") List<String> cmds = (List<String>) value;
-                    timeCommandMap.put(timeKey, cmds);
+                ConfigurationSection subSection = section.getConfigurationSection(key);
+                if (subSection == null) continue;
+
+                List<TimeCommandData> actionsList = new ArrayList<>();
+                List<Map<?, ?>> rawActions = subSection.getMapList("actions");
+
+                if (rawActions != null && !rawActions.isEmpty()) {
+                    for (Map<?, ?> raw : rawActions) {
+                        String type = raw.containsKey("type") ? raw.get("type").toString().toUpperCase() : "TITLE";
+
+                        Object cmdObj = raw.get("commands");
+                        List<String> cmds = new ArrayList<>();
+                        if (cmdObj instanceof String) cmds.add((String) cmdObj);
+                        else if (cmdObj instanceof List) cmds.addAll((List<String>) cmdObj);
+
+                        actionsList.add(new TimeCommandData(cmds, type));
+                    }
+                } else {
+                    String type = subSection.getString("type", "COMMAND").toUpperCase();
+                    Object cmdObj = subSection.get("commands");
+                    List<String> cmds = new ArrayList<>();
+                    if (cmdObj instanceof String) cmds.add((String) cmdObj);
+                    else if (cmdObj instanceof List) cmds.addAll((List<String>) cmdObj);
+
+                    actionsList.add(new TimeCommandData(cmds, type));
                 }
+
+                timeCommandMap.put(timeKey, actionsList);
+
             } catch (NumberFormatException ignored) {}
         }
     }
+
+
+
 
 
 
@@ -394,5 +447,6 @@ public class WTimeFlyManager implements TimeFlyManager {
     }
 
     // ---------- HELPER / UTILITY METHODS ----------
+
 
 }
