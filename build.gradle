@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.wayvi.wfly'
-version = '1.0.3.6'
+version = '1.0.3.7'
 
 repositories {
     mavenCentral()
@@ -44,7 +44,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
+    compileOnly("org.spigotmc:spigot-api:1.21.8-R0.1-SNAPSHOT")
     //compileOnly('world.bentobox:bentobox:3.2.3-20250101.170024-4')
     compileOnly('me.clip:placeholderapi:2.11.6')
     implementation 'com.github.Traqueur-dev.CommandsAPI:platform-spigot:4.2.1'

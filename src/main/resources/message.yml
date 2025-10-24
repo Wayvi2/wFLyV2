@@ -1,3 +1,4 @@
+# TITLE AND SUBTITLE NEED MC >> 1.11 | Use default configuration with commands: (without type)
 commands-time-remaining:
   0:
     commands: 'title %player% title {"text":"You have 0 seconds fly left!","bold":true,"color":"gold"}'
