@@ -114,7 +114,9 @@ public class FlyListener implements Listener {
 
             if (!isInFly){
                 Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
-                player.teleport(safeLoc);
+                if (safeLoc != null) {
+                    player.teleport(safeLoc);
+                }
             }
 
             if (isInFly) {
@@ -128,7 +130,9 @@ public class FlyListener implements Listener {
 
                 if ((!authorized && tpFloor) ) {
                     Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
-                    player.teleport(safeLoc);
+                    if (safeLoc != null) {
+                        player.teleport(safeLoc);
+                    }
                     ColorSupportUtil.sendColorFormat(player, plugin.getMessageFile().get(MessageEnum.NO_FLY_HERE));
                 }
 

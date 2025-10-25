@@ -132,7 +132,7 @@ public class WConditionManager implements ConditionManager {
     @Override
     public Location getSafeLocation(Player player) {
         boolean tpOnFloor = plugin.getConfigFile().get(ConfigEnum.TP_ON_FLOOR_WHEN_FLY_DISABLED);
-        if (!tpOnFloor) return player.getLocation();
+        if (!tpOnFloor) return null;
 
         Location loc = player.getLocation();
         World world = player.getWorld();
@@ -180,24 +180,24 @@ public class WConditionManager implements ConditionManager {
         UUID uuid = player.getUniqueId();
         boolean isAuthorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
         boolean isCurrentlyFlying = player.isFlying();
+        boolean wasFlying = getWasFlyingBefore(player);
+
 
         if (!isAuthorized) {
-
-            if (isCurrentlyFlying) {
-                deactivateFlyForPlayer(player);
-                wasFlyingBefore.put(uuid, true);
-            } else {
-                wasFlyingBefore.remove(uuid);
-            }
+            deactivateFlyForPlayer(player);
+            setFlyingBefore(player, true);
             return;
         }
 
-
-        Boolean wasFlying = wasFlyingBefore.remove(uuid);
-        if (Boolean.TRUE.equals(wasFlying) && !isCurrentlyFlying) {
-            WflyApi.get().getFlyManager().manageFly(uuid, true);
+        boolean reactivate = plugin.getConfigFile().get(ConfigEnum.AUTO_REACTIVATE_FLY_AFTER_CONDITIONS_DISABLE);
+        if (reactivate && wasFlying) {
+            if (!player.isFlying() && !player.getAllowFlight()) {
+                WflyApi.get().getFlyManager().manageFly(uuid, true);
+                setFlyingBefore(player, false);
+            }
         }
     }
+
 
     /**
      * Disables flight for a player and teleports them to a safe location.
@@ -209,10 +209,16 @@ public class WConditionManager implements ConditionManager {
 
             if (player.isFlying()) {
                 Location safeLocation = getSafeLocation(player);
+                if (safeLocation == null) {
+                    WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
+                    return;
+                }
+
                 if (!safeLocation.equals(lastSafeLocation.get(player.getUniqueId()))) {
                     handleFlyDeactivation(player, safeLocation);
                 }
             }
+
 
 
             WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
@@ -230,11 +236,9 @@ public class WConditionManager implements ConditionManager {
      * @param safeLocation the safe location to move them to
      */
     private void handleFlyDeactivation(Player player, Location safeLocation) {
-        if (player.getWorld().getEnvironment() != World.Environment.NETHER) {
-            WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
-            player.teleport(safeLocation);
-            lastSafeLocation.put(player.getUniqueId(), safeLocation);
-        }
+        WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
+        player.teleport(safeLocation);
+        lastSafeLocation.put(player.getUniqueId(), safeLocation);
     }
 
     // ══════════════════════════════════════════════════════
@@ -286,5 +290,16 @@ public class WConditionManager implements ConditionManager {
                         || player.hasPermission(Permissions.BYPASS_FLY.getPermission())
                         || player.getGameMode() == GameMode.SPECTATOR
         ) || player.hasPermission(Permissions.BYPASS_FLY.getPermission());
+    }
+
+
+    @Override
+    public boolean getWasFlyingBefore(Player player) {
+        return wasFlyingBefore.getOrDefault(player.getUniqueId(), false);
+    }
+
+    @Override
+    public void setFlyingBefore(Player player, boolean bool) {
+        wasFlyingBefore.put(player.getUniqueId(), bool);
     }
 }

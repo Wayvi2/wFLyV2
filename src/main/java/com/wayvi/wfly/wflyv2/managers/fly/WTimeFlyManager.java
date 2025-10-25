@@ -278,8 +278,10 @@ public class WTimeFlyManager implements TimeFlyManager {
     private void handleFlyDeactivation(UUID playerUUID, Player player) {
         WflyApi.get().getFlyManager().manageFly(playerUUID, false);
         isFlying.put(playerUUID, false);
-        Location safeLocation = WflyApi.get().getConditionManager().getSafeLocation(player);
-        player.teleport(safeLocation);
+        Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
+        if (safeLoc != null) {
+            player.teleport(safeLoc);
+        }
     }
 
     private void decrementFlyTime(UUID playerUUID, Player player, boolean currentlyFlying) {
@@ -429,6 +431,9 @@ public class WTimeFlyManager implements TimeFlyManager {
                 && loc1.getBlockY() == loc2.getBlockY()
                 && loc1.getBlockZ() == loc2.getBlockZ();
     }
+
+
+
 
 
 

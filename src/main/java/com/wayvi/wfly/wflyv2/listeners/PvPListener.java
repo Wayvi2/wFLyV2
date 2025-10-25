@@ -56,8 +56,10 @@ public class PvPListener implements Listener {
 
         if (shouldDisableFly(player) && player.isFlying()) {
             WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
-            Location location = WflyApi.get().getConditionManager().getSafeLocation(player);
-            player.teleport(location);
+            Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
+            if (safeLoc != null) {
+                player.teleport(safeLoc);
+            }
         }
     }
 
