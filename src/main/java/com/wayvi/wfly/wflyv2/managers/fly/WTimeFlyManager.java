@@ -278,6 +278,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     private void handleFlyDeactivation(UUID playerUUID, Player player) {
         WflyApi.get().getFlyManager().manageFly(playerUUID, false);
         isFlying.put(playerUUID, false);
+        WflyApi.get().getConditionManager().setFlyingBefore(player,false);
         Location safeLoc = WflyApi.get().getConditionManager().getSafeLocation(player);
         if (safeLoc != null) {
             player.teleport(safeLoc);
