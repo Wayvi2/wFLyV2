@@ -94,4 +94,8 @@ public interface ConditionManager {
      * @param player the player for whom the commands will be executed
      */
     void executeNotAuthorizedCommands(Player player);
+
+    boolean getWasFlyingBefore(Player player);
+
+    void setFlyingBefore(Player player, boolean bool);
 }

@@ -80,6 +80,7 @@ conditions:
 # When true, the player will be teleported to the floor when their fly time expires or conditions are not met.
 tp-on-floor-when-fly-disabled: true
 
+auto-reactivate-fly-after-conditions-disable: true
 
 
 #This feature is heavily focused on faction servers

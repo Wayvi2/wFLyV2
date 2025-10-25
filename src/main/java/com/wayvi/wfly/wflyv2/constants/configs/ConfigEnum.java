@@ -71,7 +71,8 @@ public enum ConfigEnum implements ConfigKey<Object> {
 
     REDIS_POOL_MAX_TOTAL("redis.pool.maxTotal", 8),
     REDIS_POOL_MAX_IDLE("redis.pool.maxIdle", 8),
-    REDIS_POOL_MIN_IDLE("redis.pool.minIdle", 0);
+    REDIS_POOL_MIN_IDLE("redis.pool.minIdle", 0),
+    AUTO_REACTIVATE_FLY_AFTER_CONDITIONS_DISABLE("auto-reactivate-fly-after-conditions-disable", true);
 
     private final String path;
     private final Object defaultValue;
