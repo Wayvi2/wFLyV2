@@ -181,13 +181,18 @@ public class WConditionManager implements ConditionManager {
         boolean isAuthorized = WflyApi.get().getConditionManager().isFlyAuthorized(player);
         boolean isCurrentlyFlying = player.isFlying();
         boolean wasFlying = getWasFlyingBefore(player);
+        int time = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
 
-
-        if (!isAuthorized) {
-            deactivateFlyForPlayer(player);
-            setFlyingBefore(player, true);
+        if (!isAuthorized && (time > 0)) {
+            if (isCurrentlyFlying) {
+                deactivateFlyForPlayer(player);
+                setFlyingBefore(player, true);
+            } else {
+                setFlyingBefore(player, false);
+            }
             return;
         }
+
 
         boolean reactivate = plugin.getConfigFile().get(ConfigEnum.AUTO_REACTIVATE_FLY_AFTER_CONDITIONS_DISABLE);
         if (reactivate && wasFlying) {
