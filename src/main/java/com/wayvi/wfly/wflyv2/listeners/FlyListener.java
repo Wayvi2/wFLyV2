@@ -10,6 +10,7 @@ import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -74,12 +75,19 @@ public class FlyListener implements Listener {
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId())) {
-                WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), true);
+
+                player.setAllowFlight(true);
+                WflyApi.get().getTimeFlyManager().updateFlyStatus(player.getUniqueId(), true);
+                Block blockBelow = player.getLocation().clone().subtract(0, 1, 0).getBlock();
+
+
+                if (!blockBelow.getType().isSolid() && !player.isFlying()) {
+                    player.setFlying(true);
+                }
             }
-        }, 1L);
+        }, 5L);
 
         WflyApi.get().getFlyTimeSynchronizer().handlePlayerJoinSynchronizer(player);
-
     }
 
     /**

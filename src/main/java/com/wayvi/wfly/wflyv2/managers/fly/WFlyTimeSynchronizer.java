@@ -45,6 +45,7 @@ public class WFlyTimeSynchronizer implements FlyTimeSynchronizer {
         if (!decrementOffline){
             return;
         }
+        String decrementMethod = plugin.getConfigFile().get(ConfigEnum.FLY_DECREMENT_METHOD);
 
         UUID uuid = player.getUniqueId();
         long now = System.currentTimeMillis();
@@ -54,7 +55,15 @@ public class WFlyTimeSynchronizer implements FlyTimeSynchronizer {
         long serverOfflineDuration = Math.max(0L, startupTime - shutdownTime);
 
         int remaining = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
-        boolean flying = WflyApi.get().getTimeFlyManager().getIsFlying(uuid);
+
+        boolean flying = true;
+        if (decrementMethod.equals("PLAYER_FLYING_MODE")){
+            flying = WflyApi.get().getTimeFlyManager().getIsFlying(uuid) && player.isFlying();
+        } else if (decrementMethod.equals("PLAYER_FLY_MODE")){
+            flying = WflyApi.get().getTimeFlyManager().getIsFlying(uuid);
+        }
+
+
 
         Long lastUpdateObj = playerLastUpdate.get(uuid);
         int elapsedSeconds = 0;

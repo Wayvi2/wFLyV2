@@ -234,8 +234,8 @@ public class WTimeFlyManager implements TimeFlyManager {
 
 
     // ---------- decrementation-disable-by-condition ----------
-
-    private boolean getDecrementationDisable(Player player) {
+    @Override
+    public boolean getDecrementationDisable(Player player) {
         List<Map<?, ?>> conditions = plugin.getConfigFile().get(ConfigEnum.DECREMENTATION_DISABLE_BY_CONDITION);
 
         for (Map<?, ?> entry : conditions) {
