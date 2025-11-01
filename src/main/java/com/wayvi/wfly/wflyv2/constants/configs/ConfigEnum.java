@@ -74,7 +74,7 @@ public enum ConfigEnum implements ConfigKey<Object> {
     REDIS_POOL_MIN_IDLE("redis.pool.minIdle", 0),
     AUTO_REACTIVATE_FLY_AFTER_CONDITIONS_DISABLE("auto-reactivate-fly-after-conditions-disable", true),
 
-    DECREMENT_ONLINE("decrement-offline", false);
+    DECREMENT_OFFLINE("decrement-offline", false);
 
     private final String path;
     private final Object defaultValue;
