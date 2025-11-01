@@ -28,7 +28,7 @@ public class WFlyTimeSynchronizer implements FlyTimeSynchronizer {
     @Override
     public void handlePlayerQuitSynchronizer(Player player) {
         boolean decrementOffline = plugin.getConfigFile().get(ConfigEnum.DECREMENT_OFFLINE);
-        if (!decrementOffline && WflyApi.get().getTimeFlyManager().getDecrementationDisable(player)){
+        if (!decrementOffline){
             return;
         }
         UUID uuid = player.getUniqueId();
