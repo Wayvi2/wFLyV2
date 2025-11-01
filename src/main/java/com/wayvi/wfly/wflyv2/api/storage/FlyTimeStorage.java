@@ -68,4 +68,9 @@ public interface FlyTimeStorage {
      * @param playerData the player data to save
      */
     void saveDTO(AccessPlayerDTO playerData);
+
+    void saveTimeOffOnDisable();
+
+    long getTimeOffOnDisable();
+
 }

@@ -31,7 +31,7 @@ public class StorageAdapter {
         this.plugin = plugin;
 
         File file = new File(Bukkit.getPluginManager().getPlugin("TempFly").getDataFolder(), "data.yml");
-        if (!file.exists()) throw new IllegalStateException("Fichier data.yml introuvable");
+        if (!file.exists()) throw new IllegalStateException("Cannot find data.yml");
         this.data = YamlConfiguration.loadConfiguration(file);
     }
 
@@ -76,12 +76,14 @@ public class StorageAdapter {
                             table.uuid("uniqueId", uuid).primary();
                             table.bool("isinFly", isFlying);
                             table.bigInt("FlyTimeRemaining", (long) time);
+                            table.bigInt("lastUpdate", 0);
                         });
                     } else {
                         requestHelper.update("fly", table -> {
                             table.where("uniqueId", uuid);
                             table.bool("isinFly", isFlying);
                             table.bigInt("FlyTimeRemaining", (long) time);
+                            table.bigInt("lastUpdate", 0);
                         });
                     }
 

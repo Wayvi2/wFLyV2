@@ -47,14 +47,17 @@ public class WTimeFlyManager implements TimeFlyManager {
      */
     public WTimeFlyManager(WFlyV2 plugin) {
         this.plugin = plugin;
-        loadFlyTimesForOnlinePlayers();
+        loadFlyTimesForPlayers();
         startDecrementTask();
         loadTimeCommandMap();
     }
 
 
-    private void loadFlyTimesForOnlinePlayers() {
+    private void loadFlyTimesForPlayers() {
 
+        boolean online = true;
+
+        if(online){
         List<AccessPlayerDTO> flyData = plugin.getStorage().selectAll("fly", AccessPlayerDTO.class);
 
 
@@ -74,6 +77,7 @@ public class WTimeFlyManager implements TimeFlyManager {
         }
 
         plugin.getLogger().info("Data loaded for " + loadedCount + " online players");
+        }
     }
 
 
@@ -83,6 +87,7 @@ public class WTimeFlyManager implements TimeFlyManager {
         AccessPlayerDTO accessPlayerDTO = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
             flyTimes.put(playerUUID, accessPlayerDTO.FlyTimeRemaining());
             isFlying.put(playerUUID, accessPlayerDTO.isinFly());
+            WflyApi.get().getFlyTimeSynchronizer().setPlayerLastUpdate(player,accessPlayerDTO.lastUpdate());
     }
 
     // ---------- PUBLIC MAIN METHODS ----------
@@ -162,15 +167,14 @@ public class WTimeFlyManager implements TimeFlyManager {
         int currentFlyTime = getTimeRemaining(target);
 
         if (time > currentFlyTime) {
-            ColorSupportUtil.sendColorFormat(target, plugin.getMessageFile().get(MessageEnum.FLY_REMOVE_TOO_HIGH));
-            return false;
+            resetFlytime(target);
+            return true;
+        } else {
+            UUID targetUUID = target.getUniqueId();
+            int newTime = flyTimes.getOrDefault(targetUUID, 0) - time;
+            flyTimes.put(targetUUID, newTime);
+            needsUpdate.add(targetUUID);
         }
-
-        UUID targetUUID = target.getUniqueId();
-        int newTime = flyTimes.getOrDefault(targetUUID, 0) - time;
-        flyTimes.put(targetUUID, newTime);
-        needsUpdate.add(targetUUID);
-
         return true;
     }
 
@@ -415,7 +419,7 @@ public class WTimeFlyManager implements TimeFlyManager {
         Location lastLocation = lastLocations.get(uuid);
 
         long currentTime = System.currentTimeMillis();
-        int delayMillis = plugin.getConfigFile().get(ConfigEnum.DELAY);
+        int delayMillis = (int) plugin.getConfigFile().get(ConfigEnum.DELAY) * 1000;
 
         if (lastLocation == null || !locationsEqual(currentLocation, lastLocation)) {
             lastLocations.put(uuid, currentLocation.clone());

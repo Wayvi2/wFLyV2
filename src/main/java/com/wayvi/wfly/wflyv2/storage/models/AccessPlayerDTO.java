@@ -19,6 +19,9 @@ public class AccessPlayerDTO {
     @Column(value = "FlyTimeRemaining")
     private int FlyTimeRemaining;
 
+    @Column(value = "lastUpdate")
+    private long lastUpdate;
+
     /**
      * Constructs an AccessPlayerDTO with the specified player data.
      *
@@ -26,10 +29,11 @@ public class AccessPlayerDTO {
      * @param isinFly the current flying state of the player (true if flying, false otherwise)
      * @param FlyTimeRemaining the remaining time the player can stay in fly mode
      */
-    public AccessPlayerDTO(UUID uniqueId, boolean isinFly, int FlyTimeRemaining) {
+    public AccessPlayerDTO(UUID uniqueId, boolean isinFly, int FlyTimeRemaining, long lastUpdate) {
         this.uniqueId = uniqueId;
         this.isinFly = isinFly;
         this.FlyTimeRemaining = FlyTimeRemaining;
+        this.lastUpdate = lastUpdate;
     }
 
     /**
@@ -58,4 +62,7 @@ public class AccessPlayerDTO {
     public int FlyTimeRemaining() {
         return FlyTimeRemaining;
     }
+
+
+    public long lastUpdate() {return lastUpdate;}
 }

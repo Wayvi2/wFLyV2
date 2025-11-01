@@ -3,6 +3,7 @@ package com.wayvi.wfly.wflyv2.storage.sql;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.api.storage.FlyTimeStorage;
 import com.wayvi.wfly.wflyv2.storage.models.AccessPlayerDTO;
+import com.wayvi.wfly.wflyv2.storage.models.AccessServerDTO;
 import fr.maxlego08.sarah.RequestHelper;
 import org.bukkit.entity.Player;
 
@@ -31,18 +32,21 @@ public class FlyTimeRepository implements FlyTimeStorage {
 
         int flyTime = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
         boolean isFlying = WflyApi.get().getTimeFlyManager().getIsFlying(uuid);
+        long lastUpdate = System.currentTimeMillis();
 
         if (records.isEmpty()) {
             requestHelper.insert("fly", table -> {
                 table.uuid("uniqueId", uuid).primary();
                 table.bool("isinFly", isFlying);
                 table.bigInt("FlyTimeRemaining", flyTime);
+                table.bigInt("lastUpdate", lastUpdate);
             });
         } else {
             requestHelper.update("fly", table -> {
                 table.where("uniqueId", uuid);
                 table.bool("isinFly", isFlying);
                 table.bigInt("FlyTimeRemaining", flyTime);
+                table.bigInt("lastUpdate", lastUpdate);
             });
         }
     }
@@ -53,6 +57,35 @@ public class FlyTimeRepository implements FlyTimeStorage {
 
         return CompletableFuture.runAsync(() -> save(player), executor);
     }
+
+    @Override
+    public void saveTimeOffOnDisable() {
+        long now = System.currentTimeMillis();
+        final List<AccessServerDTO> records = requestHelper.selectAll("server", AccessServerDTO.class);
+
+        if (records.isEmpty()) {
+            requestHelper.insert("server", table -> {
+                table.bigInt("shutdownMillisTime", now);
+            });
+        } else {
+            requestHelper.update("server", table -> {
+                table.where("shutdownMillisTime", records.get(records.size() - 1).shutdownMillisTime());
+                table.bigInt("shutdownMillisTime", now);
+            });
+        }
+    }
+
+
+    @Override
+    public long getTimeOffOnDisable() {
+        List<AccessServerDTO> records = requestHelper.selectAll("server", AccessServerDTO.class);
+
+        if (records.isEmpty()) return 0L;
+
+        AccessServerDTO lastRecord = records.get(records.size() - 1);
+        return lastRecord.shutdownMillisTime();
+    }
+
 
     @Override
     public void upsertFlyStatus(final Player player, final boolean isFlying) {
@@ -66,12 +99,15 @@ public class FlyTimeRepository implements FlyTimeStorage {
                     table.uuid("uniqueId", uuid).primary();
                     table.bool("isinFly", isFlying);
                     table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
+                    table.bigInt("lastUpdate",WflyApi.get().getFlyTimeSynchronizer().getLastUpdate(player.getUniqueId()));
+
                 });
             } else {
                 requestHelper.update("fly", table -> {
                     table.where("uniqueId", uuid);
                     table.bool("isinFly", isFlying);
                     table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
+                    table.bigInt("lastUpdate",WflyApi.get().getFlyTimeSynchronizer().getLastUpdate(player.getUniqueId()));
                 });
             }
         });
@@ -88,7 +124,7 @@ public class FlyTimeRepository implements FlyTimeStorage {
         final List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
                 table -> table.where("uniqueId", uuid));
 
-        return records.isEmpty() ? new AccessPlayerDTO(uuid, false, 0) : records.get(0);
+        return records.isEmpty() ? new AccessPlayerDTO(uuid, false, 0, 0) : records.get(0);
     }
 
     /**
@@ -101,6 +137,7 @@ public class FlyTimeRepository implements FlyTimeStorage {
             table.uuid("uniqueId", uuid).primary();
             table.bool("isinFly", false);
             table.bigInt("FlyTimeRemaining", 0);
+            table.bigInt("lastUpdate",0);
         });
     }
 
@@ -120,16 +157,16 @@ public class FlyTimeRepository implements FlyTimeStorage {
                 table.uuid("uniqueId", playerData.uniqueId()).primary();
                 table.bool("isinFly", playerData.isinFly());
                 table.bigInt("FlyTimeRemaining", playerData.FlyTimeRemaining());
+                table.bigInt("lastUpdate",WflyApi.get().getFlyTimeSynchronizer().getLastUpdate(playerData.uniqueId()));
             });
         } else {
             requestHelper.update("fly", table -> {
                 table.where("uniqueId", playerData.uniqueId());
                 table.bool("isinFly", playerData.isinFly());
                 table.bigInt("FlyTimeRemaining", playerData.FlyTimeRemaining());
+                table.bigInt("lastUpdate",WflyApi.get().getFlyTimeSynchronizer().getLastUpdate(playerData.uniqueId()));
             });
         }
     }
-
-
 }
 

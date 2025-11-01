@@ -9,7 +9,7 @@
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
 
-version: '1.0.3.5'
+version: '1.0.4.0'
 
 mysql:
   enabled: false
@@ -40,7 +40,8 @@ fly-decrement-method: PLAYER_FLY_MODE
 
 #work only if fly-decrement-method is PLAYER_FLYING_MODE
 fly-decrement-disabled-by-static: false
-delay: 3
+#in seconds
+delay: 3 #may have a margin of error of 1 second
 
 
 format-placeholder:
@@ -108,5 +109,8 @@ cooldown-give:
     enabled: true
     give-minimum-value: 5    # Minimum number of seconds a player can give.
     give-maximum-value: 60   # Maximum number of seconds a player can give. Use "INFINITE" for no max limit.
+
+decrement-offline: false
+
 
 

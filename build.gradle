@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.wayvi.wfly'
-version = '1.0.3.8'
+version = '1.0.4.0'
 
 repositories {
     mavenCentral()
@@ -45,19 +45,17 @@ repositories {
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.21.8-R0.1-SNAPSHOT")
-    //compileOnly('world.bentobox:bentobox:3.2.3-20250101.170024-4')
     compileOnly('me.clip:placeholderapi:2.11.6')
-    implementation 'com.github.Traqueur-dev.CommandsAPI:platform-spigot:4.2.1'
+    compileOnly 'io.github.electro2560:ClueScrollsAPI:master-SNAPSHOT'
+
+    implementation files("libs/commands-api-spigot-4.2.3.jar")
+    implementation files("libs/commands-api-core-4.2.3.jar");
+    implementation files("libs/wConfigAPI-1.0.1.jar")
+    implementation files("libs/Sarah-1.20.jar")
 
     implementation("redis.clients:jedis:6.0.0")
-    implementation 'com.github.Traqueur-dev.CommandsAPI:core:4.2.1'
-    implementation 'fr.maxlego08.sarah:sarah:1.18'
-
-    //implementation 'com.github.Wayvi2:wConfigAPI:1.0.1'
-    implementation files("H:/wConfigAPI/build/libs/wConfigAPI-1.0.1.jar")
     implementation("de.tr7zw:item-nbt-api:2.15.2")
 
-    compileOnly 'io.github.electro2560:ClueScrollsAPI:master-SNAPSHOT'
 }
 
 def targetJavaVersion = 8

@@ -57,6 +57,8 @@ public class FlyListener implements Listener {
         Player player = event.getPlayer();
         plugin.getStorage().save(player);
 
+        WflyApi.get().getFlyTimeSynchronizer().handlePlayerQuitSynchronizer(player);
+
     }
     /**
      * Called when a player joins the server.
@@ -75,6 +77,9 @@ public class FlyListener implements Listener {
                 WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), true);
             }
         }, 1L);
+
+        WflyApi.get().getFlyTimeSynchronizer().handlePlayerJoinSynchronizer(player);
+
     }
 
     /**
