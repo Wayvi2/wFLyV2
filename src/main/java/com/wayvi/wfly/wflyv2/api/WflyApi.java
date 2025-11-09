@@ -12,6 +12,7 @@ public class WflyApi {
     private static TimeFlyManager timeFlyManager;
     private static ConditionManager conditionManager;
     private static ExchangeManager exchangeManager;
+    private static FlyTimeSynchronizer flyTimeSynchronizer;
 
     @ApiStatus.Internal
     public static void inject(WFlyV2 plugin) {
@@ -36,40 +37,10 @@ public class WflyApi {
         WflyApi.exchangeManager = exchangeManager;
     }
 
-    // ---------------------- UNINJECT ----------------------
     @ApiStatus.Internal
-    public static void uninjectPlugin() {
-        plugin = null;
-    }
+    public static void inject(FlyTimeSynchronizer flyTimeSynchronizer){WflyApi.flyTimeSynchronizer = flyTimeSynchronizer;}
 
-    @ApiStatus.Internal
-    public static void uninjectFlyManager() {
-        flyManager = null;
-    }
 
-    @ApiStatus.Internal
-    public static void uninjectTimeFlyManager() {
-        timeFlyManager = null;
-    }
-
-    @ApiStatus.Internal
-    public static void uninjectConditionManager() {
-        conditionManager = null;
-    }
-
-    @ApiStatus.Internal
-    public static void uninjectExchangeManager() {
-        exchangeManager = null;
-    }
-
-    @ApiStatus.Internal
-    public static void uninjectAll() {
-        plugin = null;
-        flyManager = null;
-        timeFlyManager = null;
-        conditionManager = null;
-        exchangeManager = null;
-    }
     // ------------------------------------------------------
 
     public static WflyApi get() {
@@ -95,4 +66,6 @@ public class WflyApi {
     public ExchangeManager getExchangeManager() {
         return exchangeManager;
     }
+
+    public FlyTimeSynchronizer getFlyTimeSynchronizer(){return flyTimeSynchronizer;}
 }

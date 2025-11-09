@@ -2,9 +2,14 @@ package com.wayvi.wfly.wflyv2.services;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
+import com.wayvi.wfly.wflyv2.migrations.CreateServerTableMigration;
 import com.wayvi.wfly.wflyv2.migrations.CreateUserTableMigration;
+import com.wayvi.wfly.wflyv2.migrations.updates.CreateLastUpdateMigration;
 import fr.maxlego08.sarah.*;
+import fr.maxlego08.sarah.logger.Logger;
+import fr.maxlego08.sarah.requests.AlterRequest;
 import org.bukkit.Bukkit;
+import org.checkerframework.checker.units.qual.A;
 
 import java.io.File;
 import java.sql.SQLException;
@@ -76,6 +81,8 @@ public class DatabaseService {
         }
 
         MigrationManager.registerMigration(new CreateUserTableMigration());
+        MigrationManager.registerMigration(new CreateLastUpdateMigration());
+        MigrationManager.registerMigration(new CreateServerTableMigration());
         MigrationManager.execute(this.connection, plugin.getLogger()::info);
     }
 

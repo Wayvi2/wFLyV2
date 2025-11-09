@@ -104,4 +104,15 @@ public class FlyTimeHybridRepository implements FlyTimeStorage {
             mysqlRepository.saveDTO(playerData);
         }
     }
+
+    @Override
+    public void saveTimeOffOnDisable() {
+        mysqlRepository.saveTimeOffOnDisable();
+    }
+
+    @Override
+    public long getTimeOffOnDisable() {
+        return mysqlRepository.getTimeOffOnDisable();
+    }
+
 }

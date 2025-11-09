@@ -22,6 +22,7 @@ public class FlyTimeRedisRepository implements FlyTimeStorage {
 
     private static final String FLY_KEY_PREFIX = "fly:player:";
     private static final String FLY_ALL_PLAYERS = "fly:all_players";
+    private static final String SERVER_SHUTDOWN_KEY = "server:shutdown_time";
 
     private final JedisPool jedisPool;
     private final ExecutorService executor;
@@ -42,9 +43,10 @@ public class FlyTimeRedisRepository implements FlyTimeStorage {
         UUID uuid = player.getUniqueId();
         int flyTime = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
         boolean isFlying = WflyApi.get().getTimeFlyManager().getIsFlying(uuid);
+        long lastUpdate = WflyApi.get().getFlyTimeSynchronizer().getLastUpdate(uuid);
 
         try (Jedis jedis = jedisPool.getResource()) {
-            AccessPlayerDTO playerData = new AccessPlayerDTO(uuid, isFlying, flyTime);
+            AccessPlayerDTO playerData = new AccessPlayerDTO(uuid, isFlying, flyTime, lastUpdate);
             String key = FLY_KEY_PREFIX + uuid.toString();
             String jsonData = gson.toJson(playerData);
 
@@ -70,9 +72,10 @@ public class FlyTimeRedisRepository implements FlyTimeStorage {
 
             final UUID uuid = player.getUniqueId();
             final int flyTime = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
+            final long lastUpdate = WflyApi.get().getFlyTimeSynchronizer().getLastUpdate(uuid);
 
             try (Jedis jedis = jedisPool.getResource()) {
-                AccessPlayerDTO playerData = new AccessPlayerDTO(uuid, isFlying, flyTime);
+                AccessPlayerDTO playerData = new AccessPlayerDTO(uuid, isFlying, flyTime, lastUpdate);
                 String key = FLY_KEY_PREFIX + uuid.toString();
                 String jsonData = gson.toJson(playerData);
 
@@ -85,6 +88,7 @@ public class FlyTimeRedisRepository implements FlyTimeStorage {
         });
     }
 
+
     @Override
     public AccessPlayerDTO getPlayerFlyData(final UUID uuid) {
         try (Jedis jedis = jedisPool.getResource()) {
@@ -92,21 +96,21 @@ public class FlyTimeRedisRepository implements FlyTimeStorage {
             String jsonData = jedis.hget(key, "data");
 
             if (jsonData == null) {
-                return new AccessPlayerDTO(uuid, false, 0);
+                return new AccessPlayerDTO(uuid, false, 0,0);
             }
 
             return gson.fromJson(jsonData, AccessPlayerDTO.class);
 
         } catch (JedisException e) {
             logger.log(Level.SEVERE, "Error fetching Redis for player" + uuid, e);
-            return new AccessPlayerDTO(uuid, false, 0);
+            return new AccessPlayerDTO(uuid, false, 0,0);
         }
     }
 
     @Override
     public void createNewPlayer(final UUID uuid) {
         try (Jedis jedis = jedisPool.getResource()) {
-            AccessPlayerDTO playerData = new AccessPlayerDTO(uuid, false, 0);
+            AccessPlayerDTO playerData = new AccessPlayerDTO(uuid, false, 0,0);
             String key = FLY_KEY_PREFIX + uuid.toString();
             String jsonData = gson.toJson(playerData);
 
@@ -156,5 +160,35 @@ public class FlyTimeRedisRepository implements FlyTimeStorage {
             logger.log(Level.SEVERE, "Error saving Redis for player " + playerData.uniqueId(), e);
         }
     }
+
+    @Override
+    public void saveTimeOffOnDisable() {
+        long now = System.currentTimeMillis();
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.set(SERVER_SHUTDOWN_KEY, String.valueOf(now));
+        } catch (JedisException e) {
+            logger.log(Level.SEVERE, "Error saving server shutdown time to Redis", e);
+        }
+    }
+
+    @Override
+    public long getTimeOffOnDisable() {
+        try (Jedis jedis = jedisPool.getResource()) {
+            String value = jedis.get(SERVER_SHUTDOWN_KEY);
+            if (value == null) {
+                return 0L;
+            }
+            return Long.parseLong(value);
+
+        } catch (NumberFormatException e) {
+
+            logger.log(Level.WARNING, "Invalid shutdown time format in Redis for key " + SERVER_SHUTDOWN_KEY, e);
+        } catch (JedisException e) {
+            logger.log(Level.SEVERE, "Error getting server shutdown time from Redis", e);
+        }
+        return 0L;
+    }
+
+
 
 }

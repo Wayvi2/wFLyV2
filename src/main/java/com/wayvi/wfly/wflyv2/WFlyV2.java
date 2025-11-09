@@ -2,6 +2,7 @@ package com.wayvi.wfly.wflyv2;
 
 import com.wayvi.wconfigapi.wconfigapi.ConfigAPI;
 import com.wayvi.wfly.wflyv2.api.FlyManager;
+import com.wayvi.wfly.wflyv2.api.FlyTimeSynchronizer;
 import com.wayvi.wfly.wflyv2.api.TimeFlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.api.storage.FlyTimeStorage;
@@ -20,6 +21,7 @@ import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.handlers.CustomMessageHandler;
 import com.wayvi.wfly.wflyv2.listeners.FlyTokenListener;
 import com.wayvi.wfly.wflyv2.managers.*;
+import com.wayvi.wfly.wflyv2.managers.fly.WFlyTimeSynchronizer;
 import com.wayvi.wfly.wflyv2.messaging.BungeeMessenger;
 import com.wayvi.wfly.wflyv2.pluginhook.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyv2.commands.*;
@@ -64,6 +66,8 @@ public final class WFlyV2 extends JavaPlugin {
     private JedisPool jedisPool;
     private ExecutorService executor;
 
+    private long pluginStartupTime;
+
     DatabaseService databaseService;
 
     private UUID serverId;
@@ -82,6 +86,7 @@ public final class WFlyV2 extends JavaPlugin {
 
 
 
+        this.pluginStartupTime = System.currentTimeMillis();
 
 
         // CONFIGS
@@ -135,7 +140,8 @@ public final class WFlyV2 extends JavaPlugin {
 
         WItemsManager wItemsManager = new WItemsManager(this);
 
-
+        FlyTimeSynchronizer wFlyTimeSynchronizer = new WFlyTimeSynchronizer(this);
+        WflyApi.inject(wFlyTimeSynchronizer);
 
 
         // INIT FlyManager
@@ -222,7 +228,7 @@ public final class WFlyV2 extends JavaPlugin {
     public void onDisable() {
         try {
             WflyApi.get().getTimeFlyManager().saveFlyTimeOnDisable().join();
-
+            this.getStorage().saveTimeOffOnDisable();
             FlyTimeStorageFactory.saveDisableWithRedisAndMysql(this.getStorage());
 
             getLogger().info("Fly time saved");
@@ -230,11 +236,8 @@ public final class WFlyV2 extends JavaPlugin {
             getLogger().severe("" + e.getCause());
         }
 
-
-
         this.getServer().getMessenger().unregisterOutgoingPluginChannel(this, "BungeeCord");
         this.getServer().getMessenger().unregisterIncomingPluginChannel(this, "BungeeCord");
-
 
 
 
@@ -268,6 +271,10 @@ public final class WFlyV2 extends JavaPlugin {
 
     public FlyTimeStorage getStorage(){
         return storage;
+    }
+
+    public long getPluginStartupTime() {
+        return pluginStartupTime;
     }
 
 }

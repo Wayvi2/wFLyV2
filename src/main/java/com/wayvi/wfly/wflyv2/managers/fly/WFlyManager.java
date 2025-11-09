@@ -38,8 +38,19 @@ public class WFlyManager implements FlyManager {
         final Player player = Bukkit.getPlayer(uuid);
         if (player == null) return;
 
+
+        final boolean couldFly = player.getAllowFlight();
+        final boolean isFlying = player.isFlying();
+
         player.setAllowFlight(fly);
-        player.setFlying(fly);
+
+        if (fly) {
+            if (!couldFly || isFlying) {
+                player.setFlying(true);
+            }
+        } else {
+            player.setFlying(false);
+        }
 
         WflyApi.get().getTimeFlyManager().updateFlyStatus(uuid, fly);
     }
