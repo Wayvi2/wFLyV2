@@ -16,6 +16,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Custom placeholder expansion for the WFlyV2 plugin that allows retrieving flying-related data
@@ -53,7 +55,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
      */
     @Override
     public @NotNull String getVersion() {
-        return "1.0.3.4";
+        return "1.0.4.0";
     }
 
     /**
@@ -116,12 +118,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
         return null;
     }
 
-    /**
-     * Formats the given time in seconds into a readable format, taking into account the enabled
-     * time units (days, hours, minutes, seconds) and applying the specified format.
-     *
-     * @return A formatted string representing the time.
-     */
+
     public static String formatTime(WFlyV2 plugin, int totalSeconds) {
         Map<String, Boolean> enabledFormats = WflyApi.get()
                 .getPlugin()
@@ -132,44 +129,63 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
                 .getPlugin()
                 .getTimeFormatTranslatorUtil()
                 .getPlaceholderFormat();
-
         boolean autoFormat = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_AUTO_FORMAT);
         boolean removeNull = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_REMOVE_NULL_ENABLED);
         String nullValue = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_REMOVE_NULL_VALUE);
-
         String secSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_SECONDS);
         String minSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_MINUTES);
         String hrSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_HOURS);
         String daySuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_DAYS);
 
-        int days = totalSeconds / 86400;
-        int hours = (totalSeconds % 86400) / 3600;
-        int minutes = (totalSeconds % 3600) / 60;
-        int seconds = totalSeconds % 60;
-
-        if (removeNull && days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
+        if (removeNull && totalSeconds == 0) {
             return (String) ColorSupportUtil.convertColorFormat(nullValue);
         }
 
         if (autoFormat) {
-            if (days > 0) {
-            } else if (hours > 0) {
+            int tempDays = totalSeconds / 86400;
+            int tempHours = (totalSeconds % 86400) / 3600;
+            int tempMinutes = (totalSeconds % 3600) / 60;
+
+            if (tempDays > 0 && enabledFormats.getOrDefault("days", false)) {
+
+            } else if (tempHours > 0 && enabledFormats.getOrDefault("hours", false)) {
                 enabledFormats.put("days", false);
-            } else if (minutes > 0) {
+            } else if (tempMinutes > 0 && enabledFormats.getOrDefault("minutes", false)) {
                 enabledFormats.put("days", false);
                 enabledFormats.put("hours", false);
-            } else {
+            } else if (totalSeconds > 0 && enabledFormats.getOrDefault("seconds", false)) {
                 enabledFormats.put("days", false);
                 enabledFormats.put("hours", false);
                 enabledFormats.put("minutes", false);
+            } else if (totalSeconds > 0) {
+                enabledFormats.put("days", false);
+                enabledFormats.put("hours", false);
+                enabledFormats.put("minutes", false);
+                enabledFormats.put("seconds", true);
             }
         }
 
+
         LinkedHashMap<String, Integer> values = new LinkedHashMap<>();
-        values.put("days", days);
-        values.put("hours", hours);
-        values.put("minutes", minutes);
-        values.put("seconds", seconds);
+        Map<String, Integer> unitToSeconds = new HashMap<>();
+        unitToSeconds.put("days", 86400);
+        unitToSeconds.put("hours", 3600);
+        unitToSeconds.put("minutes", 60);
+        unitToSeconds.put("seconds", 1);
+        String[] unitOrder = {"days", "hours", "minutes", "seconds"};
+        int remainingSeconds = totalSeconds;
+
+        for (String unit : unitOrder) {
+            int secondsInUnit = unitToSeconds.get(unit);
+
+            if (enabledFormats.getOrDefault(unit, true)) {
+                int value = remainingSeconds / secondsInUnit;
+                values.put(unit, value);
+                remainingSeconds = remainingSeconds % secondsInUnit;
+            } else {
+                values.put(unit, 0);
+            }
+        }
 
         LinkedHashMap<String, String> suffixes = new LinkedHashMap<>();
         suffixes.put("days", daySuffix);
@@ -177,92 +193,31 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
         suffixes.put("minutes", minSuffix);
         suffixes.put("seconds", secSuffix);
 
-        Map<String, Integer> unitToSeconds = new HashMap<>();
-        unitToSeconds.put("days", 86400);
-        unitToSeconds.put("hours", 3600);
-        unitToSeconds.put("minutes", 60);
-        unitToSeconds.put("seconds", 1);
-
-        String[] unitOrder = {"days", "hours", "minutes", "seconds"};
-        for (int i = 0; i < unitOrder.length; i++) {
-            String unit = unitOrder[i];
-            int value = values.get(unit);
-            if (value > 0 && !enabledFormats.getOrDefault(unit, true)) {
-                boolean reported = false;
-                for (int j = i + 1; j < unitOrder.length; j++) {
-                    String smallerUnit = unitOrder[j];
-                    if (enabledFormats.getOrDefault(smallerUnit, true)) {
-                        int factor = unitToSeconds.get(unit) / unitToSeconds.get(smallerUnit);
-                        values.put(smallerUnit, values.get(smallerUnit) + value * factor);
-                        values.put(unit, 0);
-                        reported = true;
-                        break;
-                    }
-                }
-                if (!reported) {
-                    values.put(unit, value);
-                }
-            }
-        }
-
         for (String unit : unitOrder) {
             result = replaceUnit(result, unit, values.get(unit), suffixes.get(unit), enabledFormats, removeNull, nullValue);
         }
+        String finalResult = result.trim();
 
-        String finalResult = result.trim().replaceAll("\\s{2,}", " ");
         return (String) ColorSupportUtil.convertColorFormat(finalResult);
     }
-
-    private static String replaceUnit(
-            String format,
-            String unitKey,
-            int value,
-            String suffix,
-            Map<String, Boolean> enabled,
-            boolean removeNull,
-            String nullValue) {
-
-        boolean isEnabled = enabled.getOrDefault(unitKey, true);
-
-        if (value == 0 && removeNull) {
-            return format
-                    .replaceAll("\\s*%" + unitKey + "%\\s*", "")
-                    .replaceAll("\\s*%" + unitKey + "_suffixe%\\s*", "");
-        }
-
-        if (!isEnabled && value == 0) {
-            return format
-                    .replaceAll("\\s*%" + unitKey + "%\\s*", "")
-                    .replaceAll("\\s*%" + unitKey + "_suffixe%\\s*", "");
-        }
-
-        if (isEnabled || value > 0) {
-            return format
-                    .replace("%" + unitKey + "%", String.valueOf(value))
-                    .replace("%" + unitKey + "_suffixe%", suffix);
-        }
-
-        return format
-                .replace("%" + unitKey + "%", nullValue)
-                .replace("%" + unitKey + "_suffixe%", "");
-    }
-
     public static String formatTimeAlways(WFlyV2 plugin, int totalSeconds) {
+
         Map<String, Boolean> enabledFormats = new HashMap<>();
-        enabledFormats.put("seconds", true);
-        enabledFormats.put("minutes", true);
-        enabledFormats.put("hours", true);
         enabledFormats.put("days", true);
+        enabledFormats.put("hours", true);
+        enabledFormats.put("minutes", true);
+        enabledFormats.put("seconds", true);
+
 
         String result = WflyApi.get()
                 .getPlugin()
                 .getTimeFormatTranslatorUtil()
                 .getPlaceholderFormat();
 
-        boolean autoFormat = true;
-        boolean removeNull = true;
-        String nullValue = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_REMOVE_NULL_VALUE);
 
+        boolean removeNull = true;
+
+        String nullValue = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_REMOVE_NULL_VALUE);
         String secSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_SECONDS);
         String minSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_MINUTES);
         String hrSuffix = plugin.getConfigFile().get(ConfigEnum.FORMAT_PLACEHOLDER_OTHER_HOURS);
@@ -272,7 +227,6 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
         int hours = (totalSeconds % 86400) / 3600;
         int minutes = (totalSeconds % 3600) / 60;
         int seconds = totalSeconds % 60;
-
 
         if (days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
             return (String) ColorSupportUtil.convertColorFormat(nullValue);
@@ -296,7 +250,7 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
         values.put("minutes", minutes);
         values.put("seconds", seconds);
 
-        LinkedHashMap<String, String> suffixes = new LinkedHashMap<>();
+        Map<String, String> suffixes = new HashMap<>();
         suffixes.put("days", daySuffix);
         suffixes.put("hours", hrSuffix);
         suffixes.put("minutes", minSuffix);
@@ -309,33 +263,80 @@ public class WFlyPlaceholder extends PlaceholderExpansion {
         unitToSeconds.put("seconds", 1);
 
         String[] unitOrder = {"days", "hours", "minutes", "seconds"};
+
         for (int i = 0; i < unitOrder.length; i++) {
             String unit = unitOrder[i];
             int value = values.get(unit);
+
             if (value > 0 && !enabledFormats.getOrDefault(unit, true)) {
-                boolean reported = false;
                 for (int j = i + 1; j < unitOrder.length; j++) {
-                    String smallerUnit = unitOrder[j];
-                    if (enabledFormats.getOrDefault(smallerUnit, true)) {
-                        int factor = unitToSeconds.get(unit) / unitToSeconds.get(smallerUnit);
-                        values.put(smallerUnit, values.get(smallerUnit) + value * factor);
+                    String nextUnit = unitOrder[j];
+
+                    if (enabledFormats.getOrDefault(nextUnit, true)) {
+                        int factor = unitToSeconds.get(unit) / unitToSeconds.get(nextUnit);
+                        values.put(nextUnit, values.get(nextUnit) + (value * factor));
                         values.put(unit, 0);
-                        reported = true;
                         break;
                     }
-                }
-                if (!reported) {
-                    values.put(unit, value);
                 }
             }
         }
 
         for (String unit : unitOrder) {
-            result = replaceUnit(result, unit, values.get(unit), suffixes.get(unit), enabledFormats, removeNull, nullValue);
+            result = replaceUnit(
+                    result,
+                    unit,
+                    values.get(unit),
+                    suffixes.get(unit),
+                    enabledFormats,
+                    removeNull,
+                    nullValue
+            );
         }
-
         String finalResult = result.trim().replaceAll("\\s{2,}", " ");
+
         return (String) ColorSupportUtil.convertColorFormat(finalResult);
     }
 
+
+    private static String replaceUnit(String currentResult, String unit, int value, String suffix,
+                                      Map<String, Boolean> enabledFormats, boolean removeNull, String nullValue) {
+
+        String valuePlaceholder = "%" + unit + "%";
+        String suffixPlaceholder = "%" + unit + "_suffixe%";
+
+        boolean isEnabled = enabledFormats.getOrDefault(unit, true);
+        boolean shouldShow = isEnabled && (value > 0 || !removeNull);
+
+        String patternString = "(\\s*)" +
+                "(" +
+                "(\\S*#\\S+)" +
+                "\\s*" +
+                Pattern.quote(valuePlaceholder) +
+                ".*?" +
+                Pattern.quote(suffixPlaceholder) +
+                ")";
+
+        Pattern unitPattern = Pattern.compile(patternString);
+        Matcher matcher = unitPattern.matcher(currentResult);
+
+        if (matcher.find()) {
+            String precedingSpaces = matcher.group(1);
+            String fullBlock = matcher.group(2);
+
+            if (shouldShow) {
+
+                String finalReplacedBlock = fullBlock
+                        .replace(valuePlaceholder, String.valueOf(value))
+                        .replace(suffixPlaceholder, suffix);
+
+                return currentResult.replace(fullBlock, finalReplacedBlock);
+
+            } else {
+                return currentResult.replace(precedingSpaces + fullBlock, "");
+            }
+        }
+        return currentResult;
+    }
 }
+
