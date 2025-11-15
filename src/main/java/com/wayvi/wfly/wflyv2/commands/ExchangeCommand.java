@@ -91,10 +91,10 @@ public class ExchangeCommand extends Command<WFlyV2> {
             WflyApi.get().getExchangeManager().exchangeTimeFly(donator, receiver, time);
 
             String messageReceiver = plugin.getMessageFile().get(MessageEnum.EXCHANGE_RECEIVER);
-            ColorSupportUtil.sendColorFormat(receiver, messageReceiver.replace("%donator%", donator.getName()).replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin,time)));
+            ColorSupportUtil.sendColorFormat(receiver, messageReceiver.replace("%donator%", donator.getName()).replace("%time%", WFlyPlaceholder.formatTime(plugin,time, true)));
 
             String messageDonator = plugin.getMessageFile().get(MessageEnum.EXCHANGE_DONATOR);
-            ColorSupportUtil.sendColorFormat(donator, messageDonator.replace("%receiver%", receiver.getName()).replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin,time)));
+            ColorSupportUtil.sendColorFormat(donator, messageDonator.replace("%receiver%", receiver.getName()).replace("%time%", WFlyPlaceholder.formatTime(plugin,time, true)));
         }
     }
 }

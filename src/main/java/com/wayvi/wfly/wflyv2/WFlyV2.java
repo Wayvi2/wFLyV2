@@ -23,6 +23,9 @@ import com.wayvi.wfly.wflyv2.listeners.FlyTokenListener;
 import com.wayvi.wfly.wflyv2.managers.*;
 import com.wayvi.wfly.wflyv2.managers.fly.WFlyTimeSynchronizer;
 import com.wayvi.wfly.wflyv2.messaging.BungeeMessenger;
+import com.wayvi.wfly.wflyv2.migrations.CreateServerTableMigration;
+import com.wayvi.wfly.wflyv2.migrations.CreateUserTableMigration;
+import com.wayvi.wfly.wflyv2.migrations.updates.CreateLastUpdateMigration;
 import com.wayvi.wfly.wflyv2.pluginhook.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyv2.commands.*;
 
@@ -34,10 +37,12 @@ import com.wayvi.wfly.wflyv2.services.DatabaseService;
 import com.wayvi.wfly.wflyv2.storage.FlyTimeStorageFactory;
 import com.wayvi.wfly.wflyv2.tempfly.StorageAdapter;
 import com.wayvi.wfly.wflyv2.util.*;
+import fr.maxlego08.sarah.MigrationManager;
 import fr.maxlego08.sarah.RequestHelper;
 
 import fr.traqueur.commands.spigot.CommandManager;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import redis.clients.jedis.JedisPool;
 
@@ -102,6 +107,13 @@ public final class WFlyV2 extends JavaPlugin {
         databaseService = new DatabaseService(this);
         databaseService.initializeDatabase();
 
+        MigrationManager.registerMigration(new CreateUserTableMigration());
+        MigrationManager.registerMigration(new CreateServerTableMigration());
+        MigrationManager.registerMigration(new CreateLastUpdateMigration());
+        MigrationManager.execute(databaseService.getConnection(), this.getLogger()::info);
+
+
+
         // INIT RequestHelper
         RequestHelper requestHelper = new RequestHelper(databaseService.getConnection(), this.getLogger()::info);
 
@@ -143,6 +155,15 @@ public final class WFlyV2 extends JavaPlugin {
         FlyTimeSynchronizer wFlyTimeSynchronizer = new WFlyTimeSynchronizer(this);
         WflyApi.inject(wFlyTimeSynchronizer);
 
+        // INIT TimeFlyManager
+        TimeFlyManager timeFlyManager = new WTimeFlyManager(this);
+        WflyApi.inject(timeFlyManager);
+        try {
+            timeFlyManager.decrementTimeRemaining();
+            timeFlyManager.saveFlyTimes();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
         // INIT FlyManager
         FlyManager flyManager = new WFlyManager(this);
@@ -159,16 +180,9 @@ public final class WFlyV2 extends JavaPlugin {
 
         this.serverId = UUID.randomUUID();
 
+        handleConfigMigration();
 
-        // INIT TimeFlyManager
-        TimeFlyManager timeFlyManager = new WTimeFlyManager(this);
-        WflyApi.inject(timeFlyManager);
-        try {
-            timeFlyManager.decrementTimeRemaining();
-            timeFlyManager.saveFlyTimes();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+
 
         FlyCommand flyCommand = new FlyCommand(this, pvpListener);
 
@@ -213,6 +227,7 @@ public final class WFlyV2 extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PvPListener(this), this);
         getServer().getPluginManager().registerEvents(new FlyTokenListener(this), this);
 
+
         new VersionCheckerUtil(this, 118465).checkAndNotify();
 
         getLogger().info("Plugin enabled");
@@ -242,6 +257,22 @@ public final class WFlyV2 extends JavaPlugin {
 
 
         getLogger().info("Plugin disabled");
+    }
+
+    private void handleConfigMigration() {
+
+        FileConfiguration config = getConfigFile().getRaw();
+        String path = "format-placeholder.other-format.seconds_suffixe";
+        String basePath = "format-placeholder.other-format";
+
+        if (config.isSet(path)) {
+            getConfigFile().set(ConfigEnum.FORMAT_PLACEHOLDER_FORMAT, "%seconds% %minutes% %hours% %days%");
+            config.set(basePath + ".seconds_suffixe", null);
+            config.set(basePath + ".minutes_suffixe", null);
+            config.set(basePath + ".hours_suffixe", null);
+            config.set(basePath + ".days_suffixe", null);
+        }
+
     }
 
 

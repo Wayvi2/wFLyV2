@@ -19,7 +19,7 @@ public enum MessageEnum implements ConfigKey<Object> {
     FLY_TIME_REMOVE_TO_PLAYER("message.fly-time-remove-to-player", "&aYou have removed &e%time% &atimefly from &e%player%"),
     FLY_TIME_RESET_TO_PLAYER("message.fly-time-reset-to-player", "&aYou have been given reset &atimefly to &e%player%"),
     FLY_TIME_REMOVED("message.fly-time-removed", "&cYou have been taken &e%time% &ctimefly!"),
-    FLY_TIME_RESET("message.fly-time-reset", "&aYou have been given &e0 &atimefly!"),
+    FLY_TIME_RESET("message.fly-time-reset", "&aYou have been set &e0 &atimefly!"),
     NO_FLY_HERE("message.no-fly-here", "&cYou cannot fly here!"),
     FLY_REMOVE_TOO_HIGH("message.fly-remove-too-high", "&cYou cannot remove too much timefly!"),
     NO_PERMISSION("message.no-permission", "&cYou do not have permission to use this command!"),

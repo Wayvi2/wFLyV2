@@ -12,58 +12,41 @@ import java.lang.reflect.Method;
 
 public class ActionBar {
 
-    private static final double nmsVersion = NMSUtils.getNMSVersion();
-    private static Class<?> craftPlayerClass;
-    private static Class<?> packetClass;
-    private static Method getHandleMethod;
-    private static Field playerConnectionField;
-    private static Constructor<?> constructorPacket;
-    private static Constructor<?> constructorComponent;
-
-    static {
-        String nmsVersionAsString = Bukkit.getServer().getClass().getPackage().getName();
-        nmsVersionAsString = nmsVersionAsString.substring(nmsVersionAsString.lastIndexOf(".") + 1);
+    public static void sendActionBar(Player player, String message) {
+        if (player == null) return;
 
         try {
-            craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + nmsVersionAsString + ".entity.CraftPlayer");
-            Class<?> packetPlayOutChatClass = Class.forName("net.minecraft.server." + nmsVersionAsString + ".PacketPlayOutChat");
-            packetClass = Class.forName("net.minecraft.server." + nmsVersionAsString + ".Packet");
-            Class<?> iChatBaseComponentClass = Class.forName("net.minecraft.server." + nmsVersionAsString + ".IChatBaseComponent");
+            player.spigot().sendMessage(
+                    net.md_5.bungee.api.ChatMessageType.ACTION_BAR,
+                    TextComponent.fromLegacyText(message)
+            );
+            return;
+        } catch (Throwable ignored) { }
 
-            getHandleMethod = craftPlayerClass.getMethod("getHandle");
-            playerConnectionField = getHandleMethod.getReturnType().getField("playerConnection");
+        try {
+            Object icbc = Class.forName("net.minecraft.server." + getVersion() + ".IChatBaseComponent$ChatSerializer")
+                    .getMethod("a", String.class)
+                    .invoke(null, "{\"text\":\"" + message.replace("\"", "\\\"") + "\"}");
 
-            Class<?> chatComponentTextClass = Class.forName("net.minecraft.server." + nmsVersionAsString + ".ChatComponentText");
+            Object packet = Class.forName("net.minecraft.server." + getVersion() + ".PacketPlayOutChat")
+                    .getConstructor(
+                            Class.forName("net.minecraft.server." + getVersion() + ".IChatBaseComponent"),
+                            byte.class
+                    )
+                    .newInstance(icbc, (byte) 2);
 
-            constructorComponent = chatComponentTextClass.getConstructor(String.class);
-            constructorPacket = packetPlayOutChatClass.getConstructor(iChatBaseComponentClass, Byte.TYPE);
-        } catch (Exception ignored) {
+            Object handle = player.getClass().getMethod("getHandle").invoke(player);
+            Object connection = handle.getClass().getField("playerConnection").get(handle);
+            connection.getClass().getMethod("sendPacket",
+                            Class.forName("net.minecraft.server." + getVersion() + ".Packet"))
+                    .invoke(connection, packet);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public static void sendActionBar(Player player, String message) {
-
-        if (!player.isOnline()) {
-            return;
-        }
-
-        if (nmsVersion != 1.7 && nmsVersion != 1.8 && nmsVersion != 1.9) {
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
-                    new TextComponent(TextComponent.fromLegacyText(message)));
-
-            return;
-        }
-
-        try {
-            Object craftPlayer = craftPlayerClass.cast(player);
-            Object packet = constructorComponent.newInstance(message);
-            Object packetContent = constructorPacket.newInstance(packet, (byte) 2);
-            Object serverPlayer = getHandleMethod.invoke(craftPlayer);
-            packet = playerConnectionField.get(serverPlayer);
-            Method packetMethod = packet.getClass().getDeclaredMethod("sendPacket", packetClass);
-            packetMethod.invoke(packet, packetContent);
-        } catch (Exception error) {
-            error.printStackTrace();
-        }
+    private static String getVersion() {
+        return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
     }
 }

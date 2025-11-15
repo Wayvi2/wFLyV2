@@ -65,7 +65,7 @@ public class RemoveAllTimeFlyCommand extends Command<WFlyV2> {
             String message = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVED);
             for (Player target : plugin.getServer().getOnlinePlayers()) {
                 ColorSupportUtil.sendColorFormat(target,
-                        message.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin, time)));
+                        message.replace("%time%", WFlyPlaceholder.formatTime(plugin, time, true)));
             }
         }
 
@@ -73,7 +73,7 @@ public class RemoveAllTimeFlyCommand extends Command<WFlyV2> {
             Player playerSender = (Player) commandSender;
             String messageToSender = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVED_TO_ALL_PLAYER);
             ColorSupportUtil.sendColorFormat(playerSender,
-                    messageToSender.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin, time)));
+                    messageToSender.replace("%time%", WFlyPlaceholder.formatTime(plugin, time, true)));
         } else {
             plugin.getLogger().info("You have removed " + basicTime + " " +
                     units.orElse(TimeUnits.SECONDS).getTimeUnits() + " fly time from all players");

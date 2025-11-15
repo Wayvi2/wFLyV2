@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 public enum ConfigEnum implements ConfigKey<Object> {
 
-    VERSION("version", "1.0.3.5"),
+    VERSION("version", "1.0.4.1"),
 
     MYSQL_ENABLED("mysql.enabled", false),
     MYSQL_HOST("mysql.host", "localhost"),
@@ -33,12 +33,12 @@ public enum ConfigEnum implements ConfigKey<Object> {
     FORMAT_PLACEHOLDER_UNLIMITED("format-placeholder.unlimited", "Unlimited"),
     FORMAT_PLACEHOLDER_AUTO_FORMAT("format-placeholder.auto-format", true),
     FORMAT_PLACEHOLDER_REMOVE_NULL_ENABLED("format-placeholder.remove-null-values.enabled", true),
-    FORMAT_PLACEHOLDER_REMOVE_NULL_VALUE("format-placeholder.remove-null-values.value", "#FFC77A0seconds"),
-    FORMAT_PLACEHOLDER_FORMAT("format-placeholder.format", "#FFC77A%seconds%#FF9D00%seconds_suffixe%#FFC77A%minutes%#FF9D00%minutes_suffixe% #FFC77A%hours%#FF9D00%hours_suffixe% #FFC77A%days%#FF9D00%days_suffixe%"),
-    FORMAT_PLACEHOLDER_OTHER_SECONDS("format-placeholder.other-format.seconds_suffixe", "seconds"),
-    FORMAT_PLACEHOLDER_OTHER_MINUTES("format-placeholder.other-format.minutes_suffixe", "minutes"),
-    FORMAT_PLACEHOLDER_OTHER_HOURS("format-placeholder.other-format.hours_suffixe", "hours"),
-    FORMAT_PLACEHOLDER_OTHER_DAYS("format-placeholder.other-format.days_suffixe", "days"),
+    FORMAT_PLACEHOLDER_REMOVE_NULL_VALUE("format-placeholder.remove-null-values.value", "#FFC77A0 seconds"),
+    FORMAT_PLACEHOLDER_FORMAT("format-placeholder.format", "%seconds% %minutes% %hours% %days%"),
+    FORMAT_PLACEHOLDER_OTHER_SECONDS("format-placeholder.other-format.seconds", "#FFC77A%seconds% #FF9D00seconds"),
+    FORMAT_PLACEHOLDER_OTHER_MINUTES("format-placeholder.other-format.minutes", "#FFC77A%minutes% #FF9D00minutes"),
+    FORMAT_PLACEHOLDER_OTHER_HOURS("format-placeholder.other-format.hours", "#FFC77A%hours% #FF9D00hours"),
+    FORMAT_PLACEHOLDER_OTHER_DAYS("format-placeholder.other-format.days", "#FFC77A%days% #FF9D00days"),
 
     COMMAND_ALIAS("command.alias", Arrays.asList("wfly", "fly")),
 
@@ -74,7 +74,10 @@ public enum ConfigEnum implements ConfigKey<Object> {
     REDIS_POOL_MIN_IDLE("redis.pool.minIdle", 0),
     AUTO_REACTIVATE_FLY_AFTER_CONDITIONS_DISABLE("auto-reactivate-fly-after-conditions-disable", true),
 
-    DECREMENT_OFFLINE("decrement-offline", false);
+    DECREMENT_OFFLINE("decrement-offline", false),
+
+    SHOW_FLYTIME_ACTIONBAR_ENABLED("show-flytime-actionbar.enabled", false),
+    SHOW_FLYTIME_ACTIONBAR_MESSAGE("show-flytime-actionbar.actionbar-message", "Flytime : %wfly_fly_remaining%");
 
     private final String path;
     private final Object defaultValue;

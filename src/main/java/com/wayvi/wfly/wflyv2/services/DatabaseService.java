@@ -80,10 +80,6 @@ public class DatabaseService {
 
         }
 
-        MigrationManager.registerMigration(new CreateUserTableMigration());
-        MigrationManager.registerMigration(new CreateLastUpdateMigration());
-        MigrationManager.registerMigration(new CreateServerTableMigration());
-        MigrationManager.execute(this.connection, plugin.getLogger()::info);
     }
 
     /**
@@ -94,4 +90,8 @@ public class DatabaseService {
     public DatabaseConnection getConnection() {
         return this.connection;
     }
+
+
+
+
 }

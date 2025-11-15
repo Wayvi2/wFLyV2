@@ -49,6 +49,12 @@ public class WConditionManager implements ConditionManager {
         notAuthorizedConditions = loadConditionsFromConfig("conditions.not-authorized");
     }
 
+    @Override
+    public void reloadConditions() {
+        plugin.getConfigFile().reload();
+        loadConditions();
+    }
+
     /**
      * Loads a list of conditions from the specified config path.
      *
@@ -184,14 +190,18 @@ public class WConditionManager implements ConditionManager {
         int time = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
 
         if (!isAuthorized && (time > 0)) {
+            // Si le joueur est en train de voler → désactive et note qu’il volait avant
             if (isCurrentlyFlying) {
                 deactivateFlyForPlayer(player);
                 setFlyingBefore(player, true);
-            } else {
-                setFlyingBefore(player, false);
+            } else if (player.getAllowFlight()) {
+                // S’il peut voler mais n’est pas encore en vol, on empêche immédiatement le fly
+                WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
+                setFlyingBefore(player, true);
             }
             return;
         }
+
 
 
         boolean reactivate = plugin.getConfigFile().get(ConfigEnum.AUTO_REACTIVATE_FLY_AFTER_CONDITIONS_DISABLE);

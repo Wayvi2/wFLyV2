@@ -63,14 +63,14 @@ public class RemoveTimeCommand extends Command<WFlyV2> {
             if (!silent) {
                 String message = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVED);
                 ColorSupportUtil.sendColorFormat(target,
-                        message.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin, time)));
+                        message.replace("%time%", WFlyPlaceholder.formatTime(plugin, time, true)));
             }
 
             if (sender instanceof Player) {
                 Player playerSender = (Player) sender;
                 String messageRemove = plugin.getMessageFile().get(MessageEnum.FLY_TIME_REMOVE_TO_PLAYER);
                 ColorSupportUtil.sendColorFormat(playerSender,
-                        messageRemove.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin, time))
+                        messageRemove.replace("%time%", WFlyPlaceholder.formatTime(plugin, time, true))
                                 .replace("%player%", target.getName()));
             } else {
                 plugin.getLogger().info("You have removed " + basicTime + " " +

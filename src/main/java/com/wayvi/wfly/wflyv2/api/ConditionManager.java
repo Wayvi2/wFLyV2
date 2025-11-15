@@ -98,4 +98,6 @@ public interface ConditionManager {
     boolean getWasFlyingBefore(Player player);
 
     void setFlyingBefore(Player player, boolean bool);
+
+    void reloadConditions();
 }

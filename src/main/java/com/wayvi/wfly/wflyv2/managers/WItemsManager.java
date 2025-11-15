@@ -54,12 +54,12 @@ public class WItemsManager {
         ItemMeta meta = token.getItemMeta();
 
         meta.setDisplayName((String) ColorSupportUtil.convertColorFormat(
-                TOKEN_NAME.replace("%time%", WFlyPlaceholder.formatTime(plugin, seconds))
+                TOKEN_NAME.replace("%time%", WFlyPlaceholder.formatTime(plugin, seconds, true))
         ));
 
         List<String> lore = new ArrayList<>();
         for (String line : TOKEN_LORE) {
-            lore.add((String) ColorSupportUtil.convertColorFormat(line.replace("%time%", WFlyPlaceholder.formatTime(plugin, seconds))));
+            lore.add((String) ColorSupportUtil.convertColorFormat(line.replace("%time%", WFlyPlaceholder.formatTime(plugin, seconds, true))));
         }
         meta.setLore(lore);
 
@@ -78,7 +78,7 @@ public class WItemsManager {
             player.getInventory().addItem(token);
         }
         player.sendMessage((String) ColorSupportUtil.convertColorFormat(
-                TOKEN_MESSAGE_GIVE.replace("%time%", WFlyPlaceholder.formatTime(plugin, seconds))
+                TOKEN_MESSAGE_GIVE.replace("%time%", WFlyPlaceholder.formatTime(plugin, seconds, true))
         ));
     }
 
@@ -99,13 +99,13 @@ public class WItemsManager {
         ItemStack token = new ItemStack(TOKEN_MATERIAL, 1);
         ItemMeta meta = token.getItemMeta();
         meta.setDisplayName((String) ColorSupportUtil.convertColorFormat(
-                TOKEN_NAME.replace("%time%", WFlyPlaceholder.formatTime(plugin, seconds))
+                TOKEN_NAME.replace("%time%", WFlyPlaceholder.formatTime(plugin, seconds, true))
         ));
 
         List<String> lore = new ArrayList<>();
         for (String line : TOKEN_LORE) {
             lore.add((String) ColorSupportUtil.convertColorFormat(
-                    line.replace("%time%", WFlyPlaceholder.formatTime(plugin, seconds))
+                    line.replace("%time%", WFlyPlaceholder.formatTime(plugin, seconds, true))
             ));
         }
         meta.setLore(lore);
@@ -127,7 +127,7 @@ public class WItemsManager {
 
         // feedback
         target.sendMessage((String) ColorSupportUtil.convertColorFormat(
-                TOKEN_MESSAGE_GIVE.replace("%time%", WFlyPlaceholder.formatTime(plugin, seconds))
+                TOKEN_MESSAGE_GIVE.replace("%time%", WFlyPlaceholder.formatTime(plugin, seconds, true))
         ));
         if (!(sender instanceof Player)) {
             sender.sendMessage("Fly Token of " + seconds + "s given to " + target.getName());

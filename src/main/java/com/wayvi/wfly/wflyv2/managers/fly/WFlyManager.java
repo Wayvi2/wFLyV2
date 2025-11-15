@@ -1,13 +1,23 @@
 package com.wayvi.wfly.wflyv2.managers.fly;
 
+import com.wayvi.wfly.wflyv2.ActionBar;
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.FlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
+import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
+import com.wayvi.wfly.wflyv2.placeholders.WFlyPlaceholder;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scheduler.BukkitTask;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -20,11 +30,20 @@ public class WFlyManager implements FlyManager {
     private final WFlyV2 plugin;
 
 
+    private final Map<UUID, BukkitTask> playerTasks = new HashMap<>();
+
+    private boolean actionBarEnabled;
+    private String actionBarMessage;
+
+
     /**
      * Constructs a new WFlyManager instance.
      */
     public WFlyManager(WFlyV2 plugin) {
+
         this.plugin = plugin;
+        loadActionBarConfiguration();
+        FlyActionBar();
     }
 
     /**
@@ -89,4 +108,29 @@ public class WFlyManager implements FlyManager {
         ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(requestedSpeed)));
     }
 
+
+    @Override
+    public void loadActionBarConfiguration() {
+        this.actionBarEnabled = plugin.getConfigFile().get(ConfigEnum.SHOW_FLYTIME_ACTIONBAR_ENABLED);
+        this.actionBarMessage = plugin.getConfigFile().get(ConfigEnum.SHOW_FLYTIME_ACTIONBAR_MESSAGE);
+    }
+
+
+    @Override
+    public void FlyActionBar() {
+        if (!actionBarEnabled){
+            return;
+        }
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+
+            if (!WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId())) {
+                continue;
+            }
+            String msg = PlaceholderAPI.setPlaceholders(player, actionBarMessage);
+            ActionBar.sendActionBar(player, msg);
+        }
+    }
 }
+
+

@@ -449,6 +449,7 @@ public class WTimeFlyManager implements TimeFlyManager {
             try {
                 manageCommandMessageOnTimeLeft();
                 decrementTimeRemaining();
+                WflyApi.get().getFlyManager().FlyActionBar();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -457,6 +458,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     }
 
     // ---------- HELPER / UTILITY METHODS ----------
+
 
 
 }

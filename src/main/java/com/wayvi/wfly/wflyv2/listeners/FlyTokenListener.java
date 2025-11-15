@@ -48,7 +48,7 @@ public class FlyTokenListener implements Listener {
         item.setAmount(item.getAmount() - 1);
 
         player.sendMessage((String) ColorSupportUtil.convertColorFormat(
-                TOKEN_MESSAGE_USE.replace("%time%", WFlyPlaceholder.formatTime(plugin, flyTime))
+                TOKEN_MESSAGE_USE.replace("%time%", WFlyPlaceholder.formatTime(plugin, flyTime, true))
         ));
 
 
