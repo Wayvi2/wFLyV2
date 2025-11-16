@@ -79,14 +79,14 @@ public class AddTimeCommand extends Command<WFlyV2> {
 
         if (!silent) {
             String flyAddedMsg = plugin.getMessageFile().get(MessageEnum.FLY_TIME_ADDED);
-            String formattedFlyAdded = flyAddedMsg.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin, time));
+            String formattedFlyAdded = flyAddedMsg.replace("%time%", WFlyPlaceholder.formatTime(plugin, time, true));
             ColorSupportUtil.sendColorFormat(target, formattedFlyAdded);
         }
 
         if (commandSender instanceof Player) {
             Player playerSender = (Player) commandSender;
             String playerMsg = plugin.getMessageFile().get(MessageEnum.FLY_TIME_ADDED_TO_PLAYER);
-            String formattedPlayerMsg = playerMsg.replace("%time%", WFlyPlaceholder.formatTimeAlways(plugin, time))
+            String formattedPlayerMsg = playerMsg.replace("%time%", WFlyPlaceholder.formatTime(plugin, time, true))
                     .replace("%player%", target.getName());
             ColorSupportUtil.sendColorFormat(playerSender, formattedPlayerMsg);
         } else {

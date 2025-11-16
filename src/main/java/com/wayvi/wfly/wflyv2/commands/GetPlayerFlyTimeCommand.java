@@ -47,7 +47,7 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
                 String rawMessage = plugin.getMessageFile().get(MessageEnum.PLAYER_HAS_UNLIMITED);
                 String formattedMessage = rawMessage.replace("%player%", target.getName());
 
-                // Envoyer au console: traduire les & en codes couleurs Minecraft
+
                 commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', formattedMessage));
                 return;
             }
@@ -55,7 +55,7 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
             String rawMessage = plugin.getMessageFile().get(MessageEnum.GET_PLAYER_FLY_TIME);
             String formattedMessage = rawMessage
                     .replace("%player%", target.getName())
-                    .replace("%fly_remaining%", WFlyPlaceholder.formatTimeAlways(plugin, flyRemaining));
+                    .replace("%fly_remaining%", WFlyPlaceholder.formatTime(plugin, flyRemaining, true));
 
             commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', formattedMessage));
             return;
@@ -89,7 +89,7 @@ public class GetPlayerFlyTimeCommand extends Command<WFlyV2> {
 
         String formattedMessage = rawMessage
                 .replace("%player%", target.getName())
-                .replace("%fly_remaining%", WFlyPlaceholder.formatTimeAlways(plugin, flyRemaining));
+                .replace("%fly_remaining%", WFlyPlaceholder.formatTime(plugin, flyRemaining, true));
 
         ColorSupportUtil.sendColorFormat(sender, formattedMessage);
     }

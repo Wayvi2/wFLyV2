@@ -28,4 +28,10 @@ public interface FlyManager {
      */
     void manageFlySpeed(Player player, double speed);
 
+    void loadActionBarConfiguration();
+
+    void FlyActionBar();
+
+
+
 }

@@ -61,6 +61,7 @@ format-placeholder:
     hours_suffixe: "hours"
     days_suffixe: "days"
 
+
 command:
   alias:
     - "wfly"
@@ -112,5 +113,8 @@ cooldown-give:
 
 decrement-offline: false
 
+show-flytime-actionbar:
+  enabled: false
+  actionbar-message: "Flytime : %wfly_fly_remaining%"
 
 
