@@ -87,7 +87,6 @@ public class WTimeFlyManager implements TimeFlyManager {
         AccessPlayerDTO accessPlayerDTO = plugin.getStorage().getPlayerFlyData(player.getUniqueId());
             flyTimes.put(playerUUID, accessPlayerDTO.FlyTimeRemaining());
             isFlying.put(playerUUID, accessPlayerDTO.isinFly());
-            WflyApi.get().getFlyTimeSynchronizer().setPlayerLastUpdate(player,accessPlayerDTO.lastUpdate());
     }
 
     // ---------- PUBLIC MAIN METHODS ----------
@@ -145,7 +144,7 @@ public class WTimeFlyManager implements TimeFlyManager {
                 continue;
             }
 
-            if (getDecrementationDisable(player)) {
+            if (WflyApi.get().getConditionManager().getDecrementationDisable(player)) {
                 continue;
             }
 

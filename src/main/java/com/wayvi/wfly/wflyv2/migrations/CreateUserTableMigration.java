@@ -15,6 +15,6 @@ public class CreateUserTableMigration extends Migration {
      */
     @Override
     public void up() {
-        create("fly", AccessPlayerDTO.class);
+        this.createOrAlter("fly", AccessPlayerDTO.class);
     }
 }

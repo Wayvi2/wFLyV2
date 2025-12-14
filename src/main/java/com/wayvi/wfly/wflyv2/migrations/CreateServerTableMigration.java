@@ -10,6 +10,6 @@ public class CreateServerTableMigration extends Migration {
 
     @Override
     public void up() {
-        create("server", AccessServerDTO.class);
+        this.createOrAlter("server", AccessServerDTO.class);
     }
 }

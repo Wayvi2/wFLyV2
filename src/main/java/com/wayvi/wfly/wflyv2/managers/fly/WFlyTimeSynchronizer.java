@@ -42,7 +42,7 @@ public class WFlyTimeSynchronizer implements FlyTimeSynchronizer {
     public void handlePlayerJoinSynchronizer(Player player) {
 
         boolean decrementOffline = plugin.getConfigFile().get(ConfigEnum.DECREMENT_OFFLINE);
-        if (!decrementOffline && WflyApi.get().getTimeFlyManager().getDecrementationDisable(player)){
+        if (!decrementOffline && WflyApi.get().getConditionManager().getDecrementationDisable(player)){
             return;
         }
         String decrementMethod = plugin.getConfigFile().get(ConfigEnum.FLY_DECREMENT_METHOD);
