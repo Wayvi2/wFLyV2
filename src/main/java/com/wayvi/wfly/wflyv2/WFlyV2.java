@@ -1,10 +1,7 @@
 package com.wayvi.wfly.wflyv2;
 
 import com.wayvi.wconfigapi.wconfigapi.ConfigAPI;
-import com.wayvi.wfly.wflyv2.api.FlyManager;
-import com.wayvi.wfly.wflyv2.api.FlyTimeSynchronizer;
-import com.wayvi.wfly.wflyv2.api.TimeFlyManager;
-import com.wayvi.wfly.wflyv2.api.WflyApi;
+import com.wayvi.wfly.wflyv2.api.*;
 import com.wayvi.wfly.wflyv2.api.storage.FlyTimeStorage;
 import com.wayvi.wfly.wflyv2.commands.all.RemoveAllTimeFlyCommand;
 import com.wayvi.wfly.wflyv2.commands.all.addAllTimeFlyCommand;
@@ -21,11 +18,12 @@ import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.handlers.CustomMessageHandler;
 import com.wayvi.wfly.wflyv2.listeners.FlyTokenListener;
 import com.wayvi.wfly.wflyv2.managers.*;
+import com.wayvi.wfly.wflyv2.managers.conditions.WConditionManager;
+import com.wayvi.wfly.wflyv2.managers.conditions.WConditionManagerV2;
 import com.wayvi.wfly.wflyv2.managers.fly.WFlyTimeSynchronizer;
 import com.wayvi.wfly.wflyv2.messaging.BungeeMessenger;
 import com.wayvi.wfly.wflyv2.migrations.CreateServerTableMigration;
 import com.wayvi.wfly.wflyv2.migrations.CreateUserTableMigration;
-import com.wayvi.wfly.wflyv2.migrations.updates.CreateLastUpdateMigration;
 import com.wayvi.wfly.wflyv2.pluginhook.cluescroll.FlyQuest;
 import com.wayvi.wfly.wflyv2.commands.*;
 
@@ -77,6 +75,8 @@ public final class WFlyV2 extends JavaPlugin {
 
     private UUID serverId;
 
+    ConditionManager conditionManager;
+
     @Override
     public void onEnable() {
 
@@ -107,15 +107,16 @@ public final class WFlyV2 extends JavaPlugin {
         databaseService = new DatabaseService(this);
         databaseService.initializeDatabase();
 
+        // INIT RequestHelper
+        RequestHelper requestHelper = new RequestHelper(databaseService.getConnection(), this.getLogger()::info);
+
         MigrationManager.registerMigration(new CreateUserTableMigration());
         MigrationManager.registerMigration(new CreateServerTableMigration());
-        MigrationManager.registerMigration(new CreateLastUpdateMigration());
         MigrationManager.execute(databaseService.getConnection(), this.getLogger()::info);
 
 
 
-        // INIT RequestHelper
-        RequestHelper requestHelper = new RequestHelper(databaseService.getConnection(), this.getLogger()::info);
+
 
 
         boolean mysqlEnabled = getConfigFile().get(ConfigEnum.MYSQL_ENABLED);
@@ -142,8 +143,15 @@ public final class WFlyV2 extends JavaPlugin {
         WExchangeManager exchangeManager = new WExchangeManager(this);
         WflyApi.inject(exchangeManager);
 
-        WConditionManager conditionManager = new WConditionManager(this);
-        WflyApi.inject(conditionManager);
+
+
+        if(getConfigFile().get(ConfigEnum.ENABLED_NEW_CONDITION_SYSTEM)) {
+            conditionManager = new WConditionManagerV2(this);
+            WflyApi.inject(conditionManager);
+        } else {
+            conditionManager = new WConditionManager(this);
+            WflyApi.inject(conditionManager);
+        }
 
         WflyApi.get().getConditionManager().checkCanFly();
 
@@ -158,6 +166,7 @@ public final class WFlyV2 extends JavaPlugin {
         // INIT TimeFlyManager
         TimeFlyManager timeFlyManager = new WTimeFlyManager(this);
         WflyApi.inject(timeFlyManager);
+
         try {
             timeFlyManager.decrementTimeRemaining();
             timeFlyManager.saveFlyTimes();

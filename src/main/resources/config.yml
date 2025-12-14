@@ -9,7 +9,7 @@
 # NOTE : If you are using spigot server, you can't use Minimessage, you must use HexaDecimals format
 # Example : #FFC77AHello!
 
-version: '1.0.4.0'
+version: '1.0.4.3'
 
 mysql:
   enabled: false
@@ -67,17 +67,73 @@ command:
     - "wfly"
     - "fly"
 
-#conditions: {} if you don't want to use conditions
-conditions:
-  not-authorized:
-    my-first-conditions:
-      placeholder: "%multiverse_world_alias%"
-      equals: "world" #player can't fly in this world (need multiverse plugin and /papi ecloud download Multiverse)
-      commands: "playsound minecraft:entity.enderman.teleport ambient %player% ~ ~ ~ 51000"
-  authorized:
-    my-seconds-conditions:
-      placeholder: "%multiverse_world_alias%"
-      equals: "world_nether" #player can fly in this world (need multiverse plugin and /papi ecloud download Multiverse)
+
+
+fly-rules:
+  admin_bypass:
+    priority: 0
+    conditions:
+      - type: has_permission
+        permission: "wfly.admin"
+    result: ALLOW
+
+
+  nether_ban:
+    priority: 1
+    conditions:
+      - type: string_equals_ignorecase
+        input: "%multiverse_world_alias%"
+        value: "world_nether"
+    result: DENY
+    actions:
+      - "[message] &cYou can't fly in nether!"
+
+  vip_fly:
+    priority: 10
+    conditions:
+      - type: has_permission
+        permission: "fly.vip"
+    result: ALLOW
+    actions:
+      - "[actionbar] &bVip Fly enabled"
+
+  default:
+    priority: 999
+    result: ALLOW
+
+
+decrementation-disable-by-condition:
+  admin_bypass:
+    priority: 0
+    conditions:
+      - type: has_permission
+        permission: "wfly.admin"
+    result: ALLOW
+
+
+  player-decrement-disable:
+    priority: 1
+    conditions:
+      - type: string_equals_ignorecase
+        input: "%player_name%"
+        value: "Wayvi2"
+    result: DENY
+    actions:
+      - "[message] &cYou can't fly in nether!"
+
+  vip_fly:
+    priority: 10
+    conditions:
+      - type: has_permission
+        permission: "fly.vip"
+    result: ALLOW
+    actions:
+      - "[actionbar] &bVip Fly enabled"
+
+  default:
+    priority: 999
+    result: ALLOW
+
 
 # When true, the player will be teleported to the floor when their fly time expires or conditions are not met.
 tp-on-floor-when-fly-disabled: true
@@ -85,6 +141,8 @@ tp-on-floor-when-fly-disabled: true
 auto-reactivate-fly-after-conditions-disable: true
 
 
+
+enabled-new-condition-system: true #useless if you use WFLY since 1.0.4.3
 #This feature is heavily focused on faction servers
 #(and if you have any ideas to make this feature more powerful, let me know on my discord)
 pvp:
@@ -97,8 +155,6 @@ pvp:
       #- "%otherPlaceholder%"  # You can put other placeholder if needed.
 
 
-decrementation-disable-by-condition:
-  - condition: "%player_name%=Wayvi2"
 
 
 cooldown-give:

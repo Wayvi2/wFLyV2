@@ -77,7 +77,9 @@ public enum ConfigEnum implements ConfigKey<Object> {
     DECREMENT_OFFLINE("decrement-offline", false),
 
     SHOW_FLYTIME_ACTIONBAR_ENABLED("show-flytime-actionbar.enabled", false),
-    SHOW_FLYTIME_ACTIONBAR_MESSAGE("show-flytime-actionbar.actionbar-message", "Flytime : %wfly_fly_remaining%");
+    SHOW_FLYTIME_ACTIONBAR_MESSAGE("show-flytime-actionbar.actionbar-message", "Flytime : %wfly_fly_remaining%"),
+
+    ENABLED_NEW_CONDITION_SYSTEM("enabled-new-condition-system", true);
 
     private final String path;
     private final Object defaultValue;

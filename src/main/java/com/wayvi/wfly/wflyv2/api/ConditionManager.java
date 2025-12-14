@@ -100,4 +100,6 @@ public interface ConditionManager {
     void setFlyingBefore(Player player, boolean bool);
 
     void reloadConditions();
+
+    boolean getDecrementationDisable(Player player);
 }

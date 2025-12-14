@@ -1,18 +1,18 @@
 package com.wayvi.wfly.wflyv2.commands;
 
-import com.wayvi.wconfigapi.wconfigapi.ConfigAPI;
 import com.wayvi.wfly.wflyv2.WFlyV2;
+import com.wayvi.wfly.wflyv2.api.ConditionManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.listeners.PvPListener;
-import com.wayvi.wfly.wflyv2.managers.WConditionManager;
+import com.wayvi.wfly.wflyv2.managers.conditions.WConditionManager;
+import com.wayvi.wfly.wflyv2.managers.conditions.WConditionManagerV2;
 import com.wayvi.wfly.wflyv2.services.DatabaseService;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
 import fr.traqueur.commands.spigot.Command;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -23,7 +23,7 @@ public class ReloadCommand extends Command<WFlyV2> {
 
     private final WFlyV2 plugin;
     private final PvPListener pvpListener;
-    private WConditionManager conditionManager;
+    private ConditionManager conditionManager;
     private DatabaseService databaseService;
 
     /**
@@ -33,7 +33,7 @@ public class ReloadCommand extends Command<WFlyV2> {
      * @param pvPListener       PvP listener to reload its configuration values.
      * @param conditionManager  Manager handling fly conditions.
      */
-    public ReloadCommand(WFlyV2 plugin, PvPListener pvPListener, WConditionManager conditionManager) {
+    public ReloadCommand(WFlyV2 plugin, PvPListener pvPListener, ConditionManager conditionManager) {
         super(plugin, "wfly.reload");
         setDescription("Reload file of the plugin.");
         setUsage("/wfly reload");

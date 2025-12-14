@@ -1,4 +1,4 @@
-package com.wayvi.wfly.wflyv2.managers;
+package com.wayvi.wfly.wflyv2.managers.conditions;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.api.ConditionManager;
@@ -53,6 +53,40 @@ public class WConditionManager implements ConditionManager {
     public void reloadConditions() {
         plugin.getConfigFile().reload();
         loadConditions();
+    }
+
+    @Override
+    public boolean getDecrementationDisable(Player player) {
+        List<Map<?, ?>> conditions = plugin.getConfigFile().get(ConfigEnum.DECREMENTATION_DISABLE_BY_CONDITION);
+
+        for (Map<?, ?> entry : conditions) {
+            String condition = (String) entry.get("condition");
+            if (condition == null || !condition.contains("=")) continue;
+
+            String[] parts = condition.split("=", 2);
+            if (parts.length != 2) continue;
+
+            String left = parts[0].trim();
+            String right = parts[1].trim();
+
+            left = applyPlaceholders(player, left);
+            right = applyPlaceholders(player, right);
+
+            if (left.equalsIgnoreCase(right)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private String applyPlaceholders(Player player, String text) {
+        if (text == null) return "";
+        try {
+            return me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, text);
+        } catch (Exception e) {
+            return text;
+        }
     }
 
     /**

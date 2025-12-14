@@ -2,17 +2,12 @@ package com.wayvi.wfly.wflyv2.services;
 
 import com.wayvi.wfly.wflyv2.WFlyV2;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
-import com.wayvi.wfly.wflyv2.migrations.CreateServerTableMigration;
-import com.wayvi.wfly.wflyv2.migrations.CreateUserTableMigration;
-import com.wayvi.wfly.wflyv2.migrations.updates.CreateLastUpdateMigration;
 import fr.maxlego08.sarah.*;
+import fr.maxlego08.sarah.database.DatabaseType;
 import fr.maxlego08.sarah.logger.Logger;
-import fr.maxlego08.sarah.requests.AlterRequest;
 import org.bukkit.Bukkit;
-import org.checkerframework.checker.units.qual.A;
 
 import java.io.File;
-import java.sql.SQLException;
 
 import static fr.maxlego08.sarah.database.DatabaseType.MYSQL;
 
@@ -57,22 +52,26 @@ public class DatabaseService {
                 }
             }
 
-            if (plugin.getConfigFile().get(ConfigEnum.MYSQL_ENABLED)) {
-                DatabaseConfiguration configuration = DatabaseConfiguration.create(
-                        plugin.getConfigFile().get(ConfigEnum.MYSQL_USERNAME),
-                        plugin.getConfigFile().get(ConfigEnum.MYSQL_PASSWORD),
-                        plugin.getConfigFile().get(ConfigEnum.MYSQL_PORT),
-                        plugin.getConfigFile().get(ConfigEnum.MYSQL_HOST),
-                        plugin.getConfigFile().get(ConfigEnum.MYSQL_DATABASE),
-                        true,
-                        MYSQL
-                );
+            //if (plugin.getConfigFile().get(ConfigEnum.MYSQL_ENABLED)) {
+              //  DatabaseConfiguration configuration = DatabaseConfiguration.create(
+                //        plugin.getConfigFile().get(ConfigEnum.MYSQL_USERNAME),
+                  //      plugin.getConfigFile().get(ConfigEnum.MYSQL_PASSWORD),
+                    //    plugin.getConfigFile().get(ConfigEnum.MYSQL_PORT),
+                      //  plugin.getConfigFile().get(ConfigEnum.MYSQL_HOST),
+                        //plugin.getConfigFile().get(ConfigEnum.MYSQL_DATABASE),
+                        //true,
+                        //MYSQL
+                //);
+                if (plugin.getConfigFile().get(ConfigEnum.MYSQL_ENABLED)) {
+                DatabaseConfiguration configuration = new DatabaseConfiguration("", plugin.getConfigFile().get(ConfigEnum.MYSQL_USERNAME), plugin.getConfigFile().get(ConfigEnum.MYSQL_PASSWORD), plugin.getConfigFile().get(ConfigEnum.MYSQL_PORT), plugin.getConfigFile().get(ConfigEnum.MYSQL_HOST), plugin.getConfigFile().get(ConfigEnum.MYSQL_DATABASE), false, MYSQL) {
+                };
 
 
-                this.connection = new MySqlConnection(configuration);
+
+                this.connection = new MySqlConnection(configuration, plugin.getLogger()::info);
             } else {
-                DatabaseConfiguration configuration = DatabaseConfiguration.sqlite(false);
-                this.connection = new SqliteConnection(configuration, plugin.getDataFolder());
+                DatabaseConfiguration configuration = new DatabaseConfiguration("", (String)null, (String)null, 0, (String)null, (String)null, false, DatabaseType.SQLITE);
+                this.connection = new SqliteConnection(configuration, plugin.getDataFolder(), plugin.getLogger()::info);
 
             }
         } catch (Exception e) {
