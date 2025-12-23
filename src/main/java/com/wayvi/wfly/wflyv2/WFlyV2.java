@@ -56,7 +56,6 @@ public final class WFlyV2 extends JavaPlugin {
 
     private TimeFormatTranslatorUtil timeFormatTranslatorUtil;
     private boolean isStartup = false;
-    private CommandManager<WFlyV2> commandManager;
 
     private ConfigAPI<ConfigEnum> configFile;
     private ConfigAPI<MessageEnum> messageFile;
@@ -200,7 +199,7 @@ public final class WFlyV2 extends JavaPlugin {
         // COMMANDS
 
 
-        commandManager = new CommandManager<>(this);
+        CommandManager<WFlyV2> commandManager = new CommandManager<>(this);
         commandManager.setDebug(false);
 
         commandManager.registerConverter(ToggleType.class, new ToggleTypeConverter());

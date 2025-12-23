@@ -33,7 +33,6 @@ public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
         ToggleType state = arguments.get("state");
         Player targetPlayer = arguments.get("player");
 
-
         if (state == null || targetPlayer == null) {
             String message = plugin.getMessageFile().get(MessageEnum.ARG_NOT_RECOGNIZED);
             if (sender instanceof Player) {
@@ -44,14 +43,29 @@ public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
             return;
         }
 
+        boolean isAlreadyFlying = WflyApi.get().getTimeFlyManager().getIsFlying(targetPlayer.getUniqueId());
+
         boolean toActivate = state == ToggleType.ACTIVATE;
 
         if (toActivate) {
+            if (isAlreadyFlying) {
+                String rawMessage = plugin.getMessageFile().get(MessageEnum.PLAYER_IN_FLY);
+                String targetName = targetPlayer.getName();
+                String msg = rawMessage.replace("%player%", targetName);
+                if (sender instanceof Player) {
+                    ColorSupportUtil.sendColorFormat((Player) sender, msg);
+                } else {
+                    plugin.getLogger().info(msg);
+                }
+                return;
+            }
+
             boolean activated = flyCommand.tryActivateFly(targetPlayer);
 
             if (activated) {
-                String message = plugin.getMessageFile().get(MessageEnum.FLY_ACTIVATED_PLAYER);
-                String msg = message.replace("%player%", targetPlayer.getName());
+                String rawMessage = plugin.getMessageFile().get(MessageEnum.FLY_ACTIVATED_PLAYER);
+                String targetName = targetPlayer.getName();
+                String msg = rawMessage.replace("%player%", targetName);
 
                 if (sender instanceof Player) {
                     ColorSupportUtil.sendColorFormat((Player) sender, msg);
@@ -61,25 +75,24 @@ public class ToggleFlyPlayerCommand extends Command<WFlyV2> {
             }
 
         } else {
-            AccessPlayerDTO playerFlyData;
-            playerFlyData = plugin.getStorage().getPlayerFlyData(targetPlayer.getUniqueId());
-
-            if (!playerFlyData.isinFly()) {
-                String message = plugin.getMessageFile().get(MessageEnum.PLAYER_NOT_IN_FLY);
-
+            if (!isAlreadyFlying) {
+                String rawMessage = plugin.getMessageFile().get(MessageEnum.PLAYER_NOT_IN_FLY);
+                String targetName = targetPlayer.getName();
+                String msg = rawMessage.replace("%player%", targetName);
 
                 if (sender instanceof Player) {
-                    ColorSupportUtil.sendColorFormat((Player) sender, message.replace("%player%", targetPlayer.getName()));
+                    ColorSupportUtil.sendColorFormat((Player) sender, msg);
                 } else {
-                    plugin.getLogger().info(message.replace("%player%", targetPlayer.getName()));
+                    plugin.getLogger().info(msg);
                 }
                 return;
             }
 
             WflyApi.get().getFlyManager().manageFly(targetPlayer.getUniqueId(), false);
 
-            String message = plugin.getMessageFile().get(MessageEnum.FLY_DEACTIVATED_PLAYER);
-            String msgSender = message.replace("%player%", targetPlayer.getName());
+            String rawMessage = plugin.getMessageFile().get(MessageEnum.FLY_DEACTIVATED_PLAYER);
+            String targetName = targetPlayer.getName();
+            String msgSender = rawMessage.replace("%player%", targetName);
 
             if (sender instanceof Player) {
                 ColorSupportUtil.sendColorFormat((Player) sender, msgSender);

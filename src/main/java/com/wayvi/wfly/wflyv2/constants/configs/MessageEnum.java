@@ -43,6 +43,7 @@ public enum MessageEnum implements ConfigKey<Object> {
     FLY_ACTIVATED_PLAYER("message.fly-activated-player", "&aYou have activated fly for %player%"),
     FLY_DEACTIVATED_PLAYER("message.fly-deactivated-player", "&cYou have deactivated fly for %player%"),
     PLAYER_NOT_IN_FLY("message.player-not-in-fly", "&cThe %player% is not in fly!"),
+    PLAYER_IN_FLY("message.player-in-fly", "&cThe %player% is currently in fly!"),
     CANNOT_ADD_TIME_UNLIMITED("message.cannot-add-time-unlimited", "&cYou cannot add time to an unlimited player!"),
     PLAYER_HAS_UNLIMITED("message.player-has-unlimited", "&a%player% has unlimited fly!"),
     COOLDOWN_GIVE("message.cooldown-give", "&cYou must wait %seconds% before give fly again!"),
