@@ -16,6 +16,8 @@ import fr.traqueur.commands.spigot.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.sql.SQLException;
+
 /**
  * Command to reload the plugin configuration files.
  */
@@ -58,6 +60,12 @@ public class ReloadCommand extends Command<WFlyV2> {
         plugin.getMessageFile().reload();
         plugin.getConfigFile().reload();
         plugin.getItemsFile().reload();
+
+        try {
+            WflyApi.get().getTimeFlyManager().saveFlyTimes();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
         WflyApi.get().getTimeFlyManager().loadTimeCommandMap();
         WflyApi.get().getConditionManager().reloadConditions();

@@ -32,7 +32,7 @@ redis:
     minIdle: 0
 
 
-save-database-delay: 300 # in seconds
+save-database-delay: 300
 
 #see docs for more info
 fly-decrement-method: PLAYER_FLY_MODE

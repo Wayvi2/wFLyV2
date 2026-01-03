@@ -27,29 +27,19 @@ public class FlyTimeRepository implements FlyTimeStorage {
         if (player == null) return;
 
         UUID uuid = player.getUniqueId();
-        List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
-                table -> table.where("uniqueId", uuid));
-
         int flyTime = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
         boolean isFlying = WflyApi.get().getTimeFlyManager().getIsFlying(uuid);
         long lastUpdate = System.currentTimeMillis();
 
-        if (records.isEmpty()) {
-            requestHelper.insert("fly", table -> {
-                table.uuid("uniqueId", uuid).primary();
-                table.bool("isinFly", isFlying);
-                table.bigInt("FlyTimeRemaining", flyTime);
-                table.bigInt("lastUpdate", lastUpdate);
-            });
-        } else {
-            requestHelper.update("fly", table -> {
-                table.where("uniqueId", uuid);
-                table.bool("isinFly", isFlying);
-                table.bigInt("FlyTimeRemaining", flyTime);
-                table.bigInt("lastUpdate", lastUpdate);
-            });
+
+        requestHelper.upsert("fly", table -> {
+            table.uuid("uniqueId", uuid).primary();
+            table.bool("isinFly", isFlying);
+            table.bigInt("FlyTimeRemaining", flyTime);
+            table.bigInt("lastUpdate", lastUpdate);
+        });
         }
-    }
+
 
     @Override
     public CompletableFuture<Void> saveAsync(Player player) {
@@ -61,18 +51,10 @@ public class FlyTimeRepository implements FlyTimeStorage {
     @Override
     public void saveTimeOffOnDisable() {
         long now = System.currentTimeMillis();
-        final List<AccessServerDTO> records = requestHelper.selectAll("server", AccessServerDTO.class);
+        requestHelper.upsert("server", table -> {
 
-        if (records.isEmpty()) {
-            requestHelper.insert("server", table -> {
-                table.bigInt("shutdownMillisTime", now);
-            });
-        } else {
-            requestHelper.update("server", table -> {
-                table.where("shutdownMillisTime", records.get(records.size() - 1).shutdownMillisTime());
-                table.bigInt("shutdownMillisTime", now);
-            });
-        }
+            table.bigInt("shutdownMillisTime", now).primary();
+        });
     }
 
 
@@ -91,25 +73,13 @@ public class FlyTimeRepository implements FlyTimeStorage {
     public void upsertFlyStatus(final Player player, final boolean isFlying) {
         executor.execute(() -> {
             final UUID uuid = player.getUniqueId();
-            final List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
-                    table -> table.where("uniqueId", uuid));
-
-            if (records.isEmpty()) {
-                requestHelper.insert("fly", table -> {
+                requestHelper.upsert("fly", table -> {
                     table.uuid("uniqueId", uuid).primary();
                     table.bool("isinFly", isFlying);
                     table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
                     table.bigInt("lastUpdate",WflyApi.get().getFlyTimeSynchronizer().getLastUpdate(player.getUniqueId()));
 
                 });
-            } else {
-                requestHelper.update("fly", table -> {
-                    table.where("uniqueId", uuid);
-                    table.bool("isinFly", isFlying);
-                    table.bigInt("FlyTimeRemaining", WflyApi.get().getTimeFlyManager().getTimeRemaining(player));
-                    table.bigInt("lastUpdate",WflyApi.get().getFlyTimeSynchronizer().getLastUpdate(player.getUniqueId()));
-                });
-            }
         });
     }
 
@@ -152,21 +122,12 @@ public class FlyTimeRepository implements FlyTimeStorage {
         List<AccessPlayerDTO> records = requestHelper.select("fly", AccessPlayerDTO.class,
                 table -> table.where("uniqueId", playerData.uniqueId()));
 
-        if (records.isEmpty()) {
-            requestHelper.insert("fly", table -> {
+            requestHelper.upsert("fly", table -> {
                 table.uuid("uniqueId", playerData.uniqueId()).primary();
                 table.bool("isinFly", playerData.isinFly());
                 table.bigInt("FlyTimeRemaining", playerData.FlyTimeRemaining());
                 table.bigInt("lastUpdate",WflyApi.get().getFlyTimeSynchronizer().getLastUpdate(playerData.uniqueId()));
             });
-        } else {
-            requestHelper.update("fly", table -> {
-                table.where("uniqueId", playerData.uniqueId());
-                table.bool("isinFly", playerData.isinFly());
-                table.bigInt("FlyTimeRemaining", playerData.FlyTimeRemaining());
-                table.bigInt("lastUpdate",WflyApi.get().getFlyTimeSynchronizer().getLastUpdate(playerData.uniqueId()));
-            });
-        }
     }
 }
 

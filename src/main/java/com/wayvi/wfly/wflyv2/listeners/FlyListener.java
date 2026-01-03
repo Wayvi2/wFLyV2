@@ -56,7 +56,7 @@ public class FlyListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        plugin.getStorage().save(player);
+        plugin.getStorage().saveAsync(player);
 
         WflyApi.get().getFlyTimeSynchronizer().handlePlayerQuitSynchronizer(player);
 

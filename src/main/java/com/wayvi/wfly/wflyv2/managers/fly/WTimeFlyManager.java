@@ -98,18 +98,23 @@ public class WTimeFlyManager implements TimeFlyManager {
         }
 
         int seconds = plugin.getConfigFile().get(ConfigEnum.SAVE_DATABASE_DELAY);
-        saveTask = Bukkit.getScheduler().runTaskTimer(WflyApi.get().getPlugin(), () -> {
-            if (!needsUpdate.isEmpty()) {
-                for (UUID playerUUID : new HashSet<>(needsUpdate)) {
-                    Player player = Bukkit.getPlayer(playerUUID);
-                    if (player != null) {
-                        plugin.getStorage().save(player);
-                    }
-                }
-                plugin.getLogger().info("Save " + needsUpdate.size() + " player");
+        long interval = 20L * seconds;
+
+        saveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            if (needsUpdate.isEmpty()) return;
+            Set<UUID> targets;
+            synchronized (needsUpdate) {
+                targets = new HashSet<>(needsUpdate);
                 needsUpdate.clear();
             }
-        }, 0L, 20L * seconds);
+
+            int count = 0;
+            for (UUID playerUUID : targets) {
+                plugin.getStorage().save(Bukkit.getPlayer(playerUUID));
+                count++;
+            }
+
+        }, interval, interval);
     }
 
     @Override
