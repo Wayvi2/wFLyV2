@@ -1,6 +1,6 @@
 
 
-[<img alt="Discord" src="https://img.shields.io/badge/-Get_help_on_Discord-7289DA.svg?logo=discord&style=flat-square&logoColor=white" height=32>](https://discord.com/invite/zmjNggAmvU) [![wakatime](https://wakatime.com/badge/user/cedfdde2-fe4f-4473-9162-a7412330eb4f/project/30618949-2549-404c-981b-9088eb540a6b.svg)](https://wakatime.com/badge/user/cedfdde2-fe4f-4473-9162-a7412330eb4f/project/30618949-2549-404c-981b-9088eb540a6b) [![CodeFactor](https://www.codefactor.io/repository/github/wayvi2/wflyv2/badge/master)](https://www.codefactor.io/repository/github/wayvi2/wflyv2/overview/master)
+[<img alt="Discord" src="https://img.shields.io/badge/-Get_help_on_Discord-7289DA.svg?logo=discord&style=flat-square&logoColor=white" height=32>](https://discord.com/invite/zmjNggAmvU) [![wakatime](https://wakatime.com/badge/user/cedfdde2-fe4f-4473-9162-a7412330eb4f/project/30618949-2549-404c-981b-9088eb540a6b.svg)](https://wakatime.com/badge/user/cedfdde2-fe4f-4473-9162-a7412330eb4f/project/30618949-2549-404c-981b-9088eb540a6b) [![CodeFactor](https://www.codefactor.io/repository/github/wayvi2/wflyv2/badge/master)](https://www.codefactor.io/repository/github/wayvi2/wflyv2/overview/master) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/034237c1b57a426c86c346d3eb69c998)](https://app.codacy.com/gh/Wayvi2/wFLyV2/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 ---
 
