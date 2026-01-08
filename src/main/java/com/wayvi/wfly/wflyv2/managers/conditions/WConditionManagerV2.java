@@ -24,17 +24,10 @@ public class WConditionManagerV2 implements ConditionManager {
 
     private final WFlyV2 plugin;
     private final List<FlyRule> activeRules = new ArrayList<>();
-
-
     private final Map<UUID, Location> lastSafeLocation = new HashMap<>();
     private final Map<UUID, Boolean> wasFlyingBefore = new HashMap<>();
     private final Set<String> unregisteredPlaceholders = new HashSet<>();
-
-
-
     private final List<DecrementRule> decrementRules = new ArrayList<>();
-
-    private final Map<UUID, Boolean> bypassCache = new HashMap<>();
 
     public WConditionManagerV2(WFlyV2 plugin) {
         this.plugin = plugin;
@@ -46,7 +39,6 @@ public class WConditionManagerV2 implements ConditionManager {
 
         activeRules.clear();
         resetUnregisteredPlaceholders();
-        bypassCache.clear();
 
         ConfigurationSection flySection = plugin.getConfigFile().getRaw().getConfigurationSection("fly-rules");
 
@@ -109,7 +101,6 @@ public class WConditionManagerV2 implements ConditionManager {
                 DecrementRule rule = new DecrementRule(key, priority, conditions, stopTimer);
                 decrementRules.add(rule);
             }
-            // 4. On TRIE par priorité
             Collections.sort(decrementRules);
             plugin.getLogger().info("[WFly] " + decrementRules.size() + " règles de décrémentation chargées.");
         }
@@ -305,7 +296,7 @@ public class WConditionManagerV2 implements ConditionManager {
 
     @Override
     public List<com.wayvi.wfly.wflyv2.models.Condition> loadConditionsFromConfig(String path) {
-        return Collections.emptyList(); // Obsolète
+        return Collections.emptyList();
     }
 
     @Override

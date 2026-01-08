@@ -16,6 +16,8 @@ import fr.traqueur.commands.spigot.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.sql.SQLException;
+
 /**
  * Command to reload the plugin configuration files.
  */
