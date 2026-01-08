@@ -61,12 +61,6 @@ public class ReloadCommand extends Command<WFlyV2> {
         plugin.getConfigFile().reload();
         plugin.getItemsFile().reload();
 
-        try {
-            WflyApi.get().getTimeFlyManager().saveFlyTimes();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
         WflyApi.get().getTimeFlyManager().loadTimeCommandMap();
         WflyApi.get().getConditionManager().reloadConditions();
         WflyApi.get().getFlyManager().loadActionBarConfiguration();
