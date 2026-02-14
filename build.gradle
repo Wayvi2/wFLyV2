@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.wayvi.wfly'
-version = '1.0.4.6'
+version = '1.0.4.7'
 
 repositories {
     mavenCentral()
@@ -48,6 +48,7 @@ dependencies {
 
     compileOnly('me.clip:placeholderapi:2.11.6')
     compileOnly 'io.github.electro2560:ClueScrollsAPI:master-SNAPSHOT'
+    compileOnly 'net.luckperms:api:5.4'
 
     implementation files("libs/commands-api-spigot-4.2.3.jar")
     implementation files("libs/commands-api-core-4.2.3.jar");

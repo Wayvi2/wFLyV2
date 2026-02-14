@@ -112,3 +112,17 @@ show-flytime-actionbar:
   actionbar-message: "Flytime : %wfly_fly_remaining%"
 
 
+
+
+timed-fly:
+  enabled: false
+  decrement-cooldown-offline: false
+  group:
+    nebula:
+      cooldown: 30
+      fly-time: 120
+    default:
+      cooldown: 60
+      fly-time: 10
+
+

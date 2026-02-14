@@ -10,6 +10,7 @@ import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.models.TimeCommandData;
 import com.wayvi.wfly.wflyv2.storage.models.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
+import net.luckperms.api.model.group.Group;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -122,6 +123,7 @@ public class WTimeFlyManager implements TimeFlyManager {
     public void decrementTimeRemaining() {
         Map<UUID, PlayerSnapshot> snapshots = new HashMap<>();
 
+
         for (UUID uuid : flyTimes.keySet()) {
             Player player = Bukkit.getPlayer(uuid);
             if (player == null || !player.isOnline()) continue;
@@ -145,6 +147,9 @@ public class WTimeFlyManager implements TimeFlyManager {
         String decrementMethod = plugin.getConfigFile().get(ConfigEnum.FLY_DECREMENT_METHOD);
         boolean flyDecrementStatic = plugin.getConfigFile().get(ConfigEnum.FLY_DECREMENT_DISABLED_BY_STATIC);
 
+        // On récupère l'état de la feature une seule fois pour la boucle
+        boolean featureEnabled = plugin.getTimedFlyManager().isEnabled();
+
         for (Map.Entry<UUID, PlayerSnapshot> entry : snapshots.entrySet()) {
             UUID uuid = entry.getKey();
             PlayerSnapshot data = entry.getValue();
@@ -154,13 +159,23 @@ public class WTimeFlyManager implements TimeFlyManager {
             int timeRemaining = flyTimes.getOrDefault(uuid, 0);
             boolean currentlyFlying = isFlying.getOrDefault(uuid, false);
 
+            // --- LOGIQUE QUAND LE TEMPS EST ÉPUISÉ ---
             if (timeRemaining <= 0) {
                 if (currentlyFlying) {
-                    Bukkit.getScheduler().runTask(plugin, () -> handleFlyDeactivation(uuid, data.player));
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        if (featureEnabled) {
+                            Group group = plugin.getTimedFlyManager().getHighestPriorityGroup(uuid);
+                            int groupCooldown = plugin.getTimedFlyManager().getGroupCooldown(group);
+
+                            plugin.getTimedFlyManager().setCooldown(uuid, groupCooldown);
+                        }
+                        handleFlyDeactivation(uuid, data.player);
+                    });
                 }
                 continue;
             }
 
+            // --- LOGIQUE DE DÉCRÉMENTATION ---
             if (data.isStatic && flyDecrementStatic && "PLAYER_FLYING_MODE".equalsIgnoreCase(decrementMethod)) {
                 continue;
             }
@@ -198,6 +213,14 @@ public class WTimeFlyManager implements TimeFlyManager {
     public void addFlytime(Player player, int time) {
         UUID playerUUID = player.getUniqueId();
         int newTime = flyTimes.getOrDefault(playerUUID, 0) + time;
+        flyTimes.put(playerUUID, newTime);
+        needsUpdate.add(playerUUID);
+    }
+
+    @Override
+    public void setFlytime(Player player, int time) {
+        UUID playerUUID = player.getUniqueId();
+        int newTime = time;
         flyTimes.put(playerUUID, newTime);
         needsUpdate.add(playerUUID);
     }
@@ -272,34 +295,6 @@ public class WTimeFlyManager implements TimeFlyManager {
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
-
-
-    // ---------- decrementation-disable-by-condition ----------
-    @Override
-    public boolean getDecrementationDisable(Player player) {
-        List<Map<?, ?>> conditions = plugin.getConfigFile().get(ConfigEnum.DECREMENTATION_DISABLE_BY_CONDITION);
-
-        for (Map<?, ?> entry : conditions) {
-            String condition = (String) entry.get("condition");
-            if (condition == null || !condition.contains("=")) continue;
-
-            String[] parts = condition.split("=", 2);
-            if (parts.length != 2) continue;
-
-            String left = parts[0].trim();
-            String right = parts[1].trim();
-
-            left = applyPlaceholders(player, left);
-            right = applyPlaceholders(player, right);
-
-            if (left.equalsIgnoreCase(right)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
 
 
 

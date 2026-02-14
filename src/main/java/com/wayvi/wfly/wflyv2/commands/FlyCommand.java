@@ -7,6 +7,7 @@ import com.wayvi.wfly.wflyv2.constants.Permissions;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
 import com.wayvi.wfly.wflyv2.listeners.PvPListener;
+import com.wayvi.wfly.wflyv2.placeholders.WFlyPlaceholder;
 import com.wayvi.wfly.wflyv2.storage.models.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import fr.traqueur.commands.api.arguments.Arguments;
@@ -73,13 +74,27 @@ public class FlyCommand extends Command<WFlyV2> {
         boolean hasInfiniteFly = player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp();
         boolean hasBypass = player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || player.isOp();
 
+        // --- AJOUT DE LA CONDITION COOLDOWN ---
         if (!hasInfiniteFly) {
+            // On vérifie si la feature est activée
+            if (plugin.getTimedFlyManager().isEnabled()) {
+                int currentCooldown = plugin.getTimedFlyManager().getPlayerCooldown(player.getUniqueId());
+
+                if (currentCooldown > 0) {
+                    String rawMessage = plugin.getMessageFile().get(MessageEnum.FLY_IN_COOLDOWN);
+                    String formattedMessage = rawMessage.replace("%time%", WFlyPlaceholder.formatTime(plugin,currentCooldown, true));
+                    ColorSupportUtil.sendColorFormat(player, formattedMessage);
+                    return false;
+                }
+            }
+
             if (WflyApi.get().getTimeFlyManager().getTimeRemaining(player) == 0) {
                 String message = plugin.getMessageFile().get(MessageEnum.NO_TIMEFLY_REMAINING);
                 ColorSupportUtil.sendColorFormat(player, message);
                 return false;
             }
         }
+        // --------------------------------------
 
         if (!hasBypass) {
             if (pvpListener.HasNearbyPlayers(player)) {
@@ -99,7 +114,6 @@ public class FlyCommand extends Command<WFlyV2> {
         String message = plugin.getMessageFile().get(MessageEnum.FLY_ACTIVATED);
         ColorSupportUtil.sendColorFormat(player, message);
         return true;
-
     }
 
 }
