@@ -90,22 +90,22 @@ public class WFlyManager implements FlyManager {
 
         if (maxAllowedSpeed == 0) {
             String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED_NO_PERMISSION);
-            ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf((int) speed)));
+            ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(speed)));
             return;
         }
 
-        if (speed < 1) speed = 1;
+        if (speed < 0.1) speed = 0.1;
         if (speed > maxAllowedSpeed) {
             String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED_TOO_HIGH);
             ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(maxAllowedSpeed)));
             return;
         }
 
-        int requestedSpeed = (int) speed;
-        player.setFlySpeed(requestedSpeed / 10.0f);
+        player.setFlySpeed((float) (speed / 10.0));
 
+        String displaySpeed = (speed == (int) speed) ? String.valueOf((int) speed) : String.valueOf(speed);
         String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED);
-        ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(requestedSpeed)));
+        ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", displaySpeed));
     }
 
 
