@@ -90,22 +90,22 @@ public class WFlyManager implements FlyManager {
 
         if (maxAllowedSpeed == 0) {
             String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED_NO_PERMISSION);
-            ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf((int) speed)));
+            ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(speed)));
             return;
         }
 
-        if (speed < 1) speed = 1;
+        if (speed < 0.1) speed = 0.1;
+
         if (speed > maxAllowedSpeed) {
             String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED_TOO_HIGH);
             ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(maxAllowedSpeed)));
             return;
         }
 
-        int requestedSpeed = (int) speed;
-        player.setFlySpeed(requestedSpeed / 10.0f);
+        player.setFlySpeed((float) (speed / 10.0));
 
         String message = plugin.getMessageFile().get(MessageEnum.FLY_SPEED);
-        ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(requestedSpeed)));
+        ColorSupportUtil.sendColorFormat(player, message.replace("%speed%", String.valueOf(speed)));
     }
 
 
@@ -122,13 +122,20 @@ public class WFlyManager implements FlyManager {
             return;
         }
 
+        String decrementMethod = plugin.getConfigFile().get(ConfigEnum.FLY_DECREMENT_METHOD);
+
         for (Player player : Bukkit.getOnlinePlayers()) {
 
             if (!WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId())) {
                 continue;
             }
+
+            if (decrementMethod.equals("PLAYER_FLYING_MODE") && !player.isFlying()){
+                continue;
+            }
+
             String msg = PlaceholderAPI.setPlaceholders(player, actionBarMessage);
-            ActionBar.sendActionBar(player, msg);
+            ActionBar.sendActionBar(player, (String) ColorSupportUtil.convertColorFormat(msg));
         }
     }
 }

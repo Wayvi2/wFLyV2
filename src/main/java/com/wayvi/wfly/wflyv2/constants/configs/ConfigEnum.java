@@ -81,8 +81,8 @@ public enum ConfigEnum implements ConfigKey<Object> {
 
     ENABLED_NEW_CONDITION_SYSTEM("enabled-new-condition-system", true),
     TIMED_FLY_ENABLED("timed-fly.enabled", false),
-    TIMED_FLY_DECREMENT_COOLDOWN_OFFLINE("timed-fly.decrement-cooldown-offline", false);
-
+    TIMED_FLY_DECREMENT_COOLDOWN_OFFLINE("timed-fly.decrement-cooldown-offline", false),
+    RESET_FLY_TIME_AFTER_DISABLE("timed-fly.reset-fly-time-after-disable", false);
     private final String path;
     private final Object defaultValue;
 

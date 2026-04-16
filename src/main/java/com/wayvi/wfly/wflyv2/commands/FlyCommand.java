@@ -68,15 +68,18 @@ public class FlyCommand extends Command<WFlyV2> {
             String message = plugin.getMessageFile().get(MessageEnum.FLY_DEACTIVATED);
             ColorSupportUtil.sendColorFormat(player, message);
             WflyApi.get().getFlyManager().manageFly(player.getUniqueId(), false);
+            if(plugin.getTimedFlyManager().isEnabled()){
+                if (plugin.getConfigFile().get(ConfigEnum.RESET_FLY_TIME_AFTER_DISABLE)){
+                    WflyApi.get().getTimeFlyManager().resetFlytime(player);
+                }
+            }
             return false;
         }
 
         boolean hasInfiniteFly = player.hasPermission(Permissions.INFINITE_FLY.getPermission()) || player.isOp();
         boolean hasBypass = player.hasPermission(Permissions.BYPASS_FLY.getPermission()) || player.isOp();
 
-        // --- AJOUT DE LA CONDITION COOLDOWN ---
         if (!hasInfiniteFly) {
-            // On vérifie si la feature est activée
             if (plugin.getTimedFlyManager().isEnabled()) {
                 int currentCooldown = plugin.getTimedFlyManager().getPlayerCooldown(player.getUniqueId());
 
