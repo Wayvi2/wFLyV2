@@ -68,6 +68,8 @@ public final class WFlyV2 extends JavaPlugin {
     private JedisPool jedisPool;
     private ExecutorService executor;
 
+    TimedFlyManager timedFlyManager;
+
     private long pluginStartupTime;
 
     DatabaseService databaseService;
@@ -189,6 +191,8 @@ public final class WFlyV2 extends JavaPlugin {
         this.serverId = UUID.randomUUID();
 
         handleConfigMigration();
+
+        timedFlyManager = new TimedFlyManager(this);
 
 
 
@@ -316,4 +320,7 @@ public final class WFlyV2 extends JavaPlugin {
         return pluginStartupTime;
     }
 
+    public TimedFlyManager getTimedFlyManager() {
+        return timedFlyManager;
+    }
 }

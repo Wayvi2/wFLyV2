@@ -91,7 +91,10 @@ public enum MessageEnum implements ConfigKey<Object> {
             " &8| &b/wfly reload",
             " &8| &7Reloads the plugins configurations.",
             "&r"
-    ));
+    )),
+
+    COOLDOWN_FINISHED("message.cooldown-finished", "&aYour cooldown is over! You have recovered %time% &aof fly time."),
+    FLY_IN_COOLDOWN("message.fly-in-cooldown", "&cYou must wait %time% &cbefore you can fly again!");
 
 
     private final String path;

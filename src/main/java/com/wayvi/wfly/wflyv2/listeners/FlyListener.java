@@ -5,6 +5,7 @@ import com.wayvi.wfly.wflyv2.api.FlyManager;
 import com.wayvi.wfly.wflyv2.api.WflyApi;
 import com.wayvi.wfly.wflyv2.constants.configs.ConfigEnum;
 import com.wayvi.wfly.wflyv2.constants.configs.MessageEnum;
+import com.wayvi.wfly.wflyv2.managers.TimedFlyManager;
 import com.wayvi.wfly.wflyv2.storage.models.AccessPlayerDTO;
 import com.wayvi.wfly.wflyv2.util.ColorSupportUtil;
 import org.bukkit.Bukkit;
@@ -73,6 +74,8 @@ public class FlyListener implements Listener {
 
         WflyApi.get().getTimeFlyManager().loadFlyTimesForPlayer(player);
 
+        checkAndRefillFlightTime(player);
+
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (WflyApi.get().getTimeFlyManager().getIsFlying(player.getUniqueId())) {
 
@@ -88,6 +91,26 @@ public class FlyListener implements Listener {
         }, 5L);
 
         WflyApi.get().getFlyTimeSynchronizer().handlePlayerJoinSynchronizer(player);
+    }
+
+    private void checkAndRefillFlightTime(Player player) {
+        TimedFlyManager manager = plugin.getTimedFlyManager();
+
+        // On ne fait rien si la feature est désactivée
+        if (!manager.isEnabled()) return;
+
+        // On vérifie s'il a déjà du temps (si > 0, on ne touche à rien)
+        int timeRemaining = WflyApi.get().getTimeFlyManager().getTimeRemaining(player);
+        if (timeRemaining > 0) return;
+
+        // On vérifie s'il est actuellement en cooldown
+        if (manager.getPlayerCooldown(player.getUniqueId()) > 0) return;
+
+        // Si on arrive ici, c'est qu'il n'a ni temps, ni cooldown : on recharge.
+        net.luckperms.api.model.group.Group group = manager.getHighestPriorityGroup(player.getUniqueId());
+        int flyTimeLimit = manager.getGroupFlyTime(group);
+
+        WflyApi.get().getTimeFlyManager().setFlytime(player, flyTimeLimit);
     }
 
     /**

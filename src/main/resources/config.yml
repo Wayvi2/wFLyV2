@@ -69,7 +69,10 @@ command:
 
 
 #see doc to see how to configure this part
-fly-rules: [] #https://wayfly-documentation.gitbook.io/wayfly-wiki/configurations/conditions
+fly-rules:
+  default:
+    priority: 999
+    result: ALLOW
 decrementation-disable-by-condition: [] #https://wayfly-documentation.gitbook.io/wayfly-wiki/configurations/conditions/decrement-disable-by-conditions
 
 
@@ -110,5 +113,20 @@ decrement-offline: false
 show-flytime-actionbar:
   enabled: false
   actionbar-message: "Flytime : %wfly_fly_remaining%"
+
+
+
+
+timed-fly:
+  enabled: false
+  decrement-cooldown-offline: false
+  reset-fly-time-after-disable: false
+  group:
+    nebula:
+      cooldown: 30
+      fly-time: 120
+    default:
+      cooldown: 60
+      fly-time: 10
 
 

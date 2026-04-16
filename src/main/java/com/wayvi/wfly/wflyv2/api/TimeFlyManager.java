@@ -117,7 +117,7 @@ public interface TimeFlyManager {
      */
     void loadTimeCommandMap();
 
-    boolean getDecrementationDisable(Player player);
+    void setFlytime(Player player, int time);
 
 
 }
